@@ -5,8 +5,11 @@
 $root = $env:grwinbuildroot 
 if (!$root) {$root = "C:\gr-build"}
 cd $root
-
+set-alias sz "$root\bin\7za.exe"  
 Add-Type -assembly "system.io.compression.filesystem"
+
+# Check for binary dependencies
+if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder"} 
 
 #check for git/tar
 if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed"} 
@@ -15,6 +18,41 @@ set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"
 # Retrieve packages needed for Stage 1
 cd $root/src-stage1-dependencies
 
+# cppunit 1.12.1
+if (!(Test-Path $root/packages/cppunit-1.12.1)) {
+	mkdir $root/packages/cppunit-1.12.1
+}
+if (!(Test-Path $root/packages/cppunit-1.21.1/cppunit-1.12.1.7z)) {
+	cd $root/packages/cppunit-1.12.1
+	wget http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-1.12.1.7z -OutFile cppunit-1.12.1.7z
+} else {
+	"cppunit-1.12.1 already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/cppunit-1.12.1)) {
+	cd $root/src-stage1-dependencies
+	$archive = "$root/packages/cppunit-1.12.1/cppunit-1.12.1.7z"
+	$destination = "$root/src-stage1-dependencies/cppunit-1.12.1"
+	cd $root/src-stage1-dependencies/
+	sz x $archive
+}
+
+# fftw3.3.5
+if (!(Test-Path $root/packages/fftw-3.3.5)) {
+	mkdir $root/packages/fftw-3.3.5
+}
+if (!(Test-Path $root/packages/fftw-3.3.5/fftw-3.3.5.7z)) {
+	cd $root/packages/fftw-3.3.5
+	wget http://www.gcndevelopment.com/gnuradio/downloads/sources/fftw-3.3.5.7z -OutFile fftw-3.3.5.7z
+} else {
+	"FFTW3 already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/fftw-3.3.5)) {
+	cd $root/src-stage1-dependencies
+	$archive = "$root/packages/fftw-3.3.5/fftw-3.3.5.7z"
+	$destination = "$root/src-stage1-dependencies/fftw-3.3.5"
+	cd $root/src-stage1-dependencies/
+	sz x $archive
+}
 
 #python
 if (!(Test-Path $root/packages/python27)) {

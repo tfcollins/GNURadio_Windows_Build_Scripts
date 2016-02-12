@@ -7,9 +7,11 @@
 $root = $env:grwinbuildroot 
 if (!$root) {$root = "C:\gr-build"}
 cd $root
+set-alias sz "$root\bin\7za.exe"  
 
 # Check for binary dependencies
-# Python (to build boost-python)
+if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder"} 
+
 # CMake (to build gnuradio)
 # ActivePerl (to build OpenSSL)
 
@@ -28,7 +30,22 @@ write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Y
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
 
-#openssl (python depends on this)
+# cppunit
+cd $root\src-stage1-dependencies\cppunit-1.12.1\src
+msbuild .\CppUnitLibraries.sln /p:"configuration=Debug;platform=x64"
+msbuild .\CppUnitLibraries.sln /p:"configuration=Release;platform=x64"
+
+# fftw3
+cd $root\src-stage1-dependencies\fftw-3.3.5\msvc
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Debug;platform=x64"
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Debug DLL;platform=x64"
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Release;platform=x64"
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Release DLL;platform=x64"
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Release-AVX2;platform=x64"
+msbuild .\fftw-3.3-libs.sln /p:"configuration=Release DLL-AVX2;platform=x64"
+
+
+# openssl (python depends on this)
 cd $root/src-stage1-dependencies/openssl
 # The TEST target will not only build but also test
 msbuild openssl.vcxproj /p:"configuration=Debug;platform=x64"
@@ -73,6 +90,7 @@ cp ../../PC/pyc.ico $pythonroot/DLLs
 cp -r ../../Tools $pythonroot
 cp -r ../../../tcltk64/lib/*.* $pythonroot/tcl
 cp -r ../../Include $pythonroot
+cp ../PC/pyconfig.h $pythonroot/Include
 cp ../../README $pythonroot/README.txt
 cp ../../LICENSE $pythonroot/LICENSE.txt
 cp -r ../../Lib/bsddb $pythonroot/Lib
@@ -114,10 +132,13 @@ cmd /c "bootstrap.bat"
 # point boost build to our custom python libraries
 $doubleroot = $root -replace "\\", "\\"
 Add-Content .\project-config.jam "`nusing python : 2.7 : $doubleroot\\src-stage2-python\\gr-python27\\python.exe : $doubleroot\\src-stage2-python\\gr-python27\\Include : $doubleroot\\src-stage2-python\\gr-python27\\Libs ;"
+# always rebuild all because boost will reuse objects from a previous build with different command line options
 # Optimized static+shared release libraries
-cmd /c 'b2.exe --build-type=minimal --prefix=build\avx2 --libdir=build\avx2\lib --includedir=build\avx2\include --stagedir=build\avx2 --layout=versioned address-model=64 threading=multi link=static,shared variant=release cflags="-arch:AVX2 -Ox -Zi" install'
-# Regular  static+shared debug+release libraries
-cmd /c 'b2.exe --build-type=minimal --prefix=build\x64 --libdir=build\x64\lib --includedir=build\x64\include --stagedir=build\x64 --layout=versioned address-model=64 threading=multi link=static,shared variant=release,debug cflags="-Zi" install'
+cmd /c 'b2.exe -a --build-type=minimal --prefix=build\avx2\Release --libdir=build\avx2\Release\lib --includedir=build\avx2\Release\include --stagedir=build\avx2\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags="/arch:AVX2 /Ox /Zi" cflags="/arch:AVX2 /Ox /Zi" install'
+# Regular  static+shared release libraries
+cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Release --libdir=build\x64\Release\lib --includedir=build\x64\Release\include --stagedir=build\x64\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags="-Zi" cflags="-Zi" install'
+# Regular  static+shared debug libraries
+cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Debug --libdir=build\x64\Debug\lib --includedir=build\x64\Debug\include --stagedir=build\x64\Debug --layout=versioned address-model=64 threading=multi link=static,shared variant=debug cxxflags="-Zi" cflags="-Zi" install'
 
 # zlib
 cd zlib/contrib/vstudio/vc14
