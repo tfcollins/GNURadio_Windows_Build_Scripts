@@ -18,6 +18,56 @@ set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"
 # Retrieve packages needed for Stage 1
 cd $root/src-stage1-dependencies
 
+# portaudio v19
+if (!(Test-Path $root/packages/portaudio)) {
+	mkdir $root/packages/portaudio
+}
+if (!(Test-Path $root/packages/portaudio/pa_stable_v19_20140130.tgz)) {
+	cd $root/packages/portaudio
+	wget http://portaudio.com/archives/pa_stable_v19_20140130.tgz -OutFile pa_stable_v19_20140130.tgz
+} else {
+	"portaudio already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/portaudio)) {
+	$archive = "$root/packages/portaudio/pa_stable_v19_20140130.tgz"
+	$archive2 = "pa_stable_v19_20140130.tar"
+	$destination = "$root/src-stage1-dependencies/portaudio"
+	cd $root/src-stage1-dependencies/
+	sz x $archive 2>&1 | write-host
+	sz x $archive2 2>&1 | write-host
+	del $archive2 
+}
+
+# asio SDK for portaudio
+# folder will already exist
+if (!(Test-Path $root/packages/portaudio/asiosdk2.3.zip)) {
+	cd $root/packages/portaudio
+	wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip -OutFile asiosdk2.3.zip
+} else {
+	"ASIO SDK already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/portaudio/src/hostapi/asio/asiosdk)) {
+	$archive = "$root/packages/portaudio/asiosdk2.3.zip"
+	$destination = "$root/src-stage1-dependencies/portaudio/src/hostapi/asio"
+	[io.compression.zipfile]::ExtractToDirectory($archive, $destination)
+	cd $destination
+	ren asiosdk2.3 asiosdk
+}
+
+# VS2015 project files
+if (!(Test-Path $root/packages/portaudio/portaudio_vs2015.7z)) {
+	cd $root/packages/portaudio
+	wget http://www.gcndevelopment.com/gnuradio/downloads/sources/portaudio_vs2015.7z -OutFile portaudio_vs2015.7z
+} else {
+	"portaudio VS project already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/portaudio/build/msvc/portaudio.vcxproj)) {
+	$archive = "$root/packages/portaudio/portaudio_vs2015.7z"
+	$destination = "$root/src-stage1-dependencies/portaudio/build/msvc/"
+	cd $destination
+	sz x $archive 2>&1 | write-host
+}
+
 # cppunit 1.12.1
 if (!(Test-Path $root/packages/cppunit-1.12.1)) {
 	mkdir $root/packages/cppunit-1.12.1

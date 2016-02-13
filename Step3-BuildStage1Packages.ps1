@@ -30,6 +30,16 @@ write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Y
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
 
+#portaudio
+cd $root\src-stage1-dependencies\portaudio\build\msvc
+msbuild .\portaudio.vcxproj /p:"configuration=Debug;platform=x64"
+msbuild .\portaudio.vcxproj /p:"configuration=Debug-Static;platform=x64"
+msbuild .\portaudio.vcxproj /p:"configuration=Release;platform=x64"
+msbuild .\portaudio.vcxproj /p:"configuration=Release-Static;platform=x64"
+msbuild .\portaudio.vcxproj /p:"configuration=Release-AVX2;platform=x64"
+msbuild .\portaudio.vcxproj /p:"configuration=Release-Static-AVX2;platform=x64"
+
+
 # cppunit
 cd $root\src-stage1-dependencies\cppunit-1.12.1\src
 msbuild .\CppUnitLibraries.sln /p:"configuration=Debug;platform=x64"
