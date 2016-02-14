@@ -18,6 +18,35 @@ set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"
 # Retrieve packages needed for Stage 1
 cd $root/src-stage1-dependencies
 
+# SDL 1.2.15
+if (!(Test-Path $root/packages/SDL)) {
+	mkdir $root/packages/SDL
+}
+if (!(Test-Path $root/packages/SDL/SDL-1.2.15.zip)) {
+	cd $root/packages/SDL
+	wget https://libsdl.org/release/SDL-1.2.15.zip -OutFile SDL-1.2.15.zip
+} else {
+	"SDL already present"
+}
+if (!(Test-Path $root/src-stage1-dependencies/SDL-1.2.15)) {
+	$archive = "$root/packages//SDL/SDL-1.2.15.zip"
+	$destination = "$root/src-stage1-dependencies/portaudio"
+	cd $root/src-stage1-dependencies/
+	sz x $archive 2>&1 | write-host
+	[io.compression.zipfile]::ExtractToDirectory($archive, $destination)
+}
+if (!(Test-Path $root/packages/SDL/SDL-1.2.15-vs2015.7z)) {
+	cd $root/packages/SDL
+	wget http://www.gcndevelopment.com/gnuradio/downloads/sources/sdl-1.2.15-vs2015.7z -OutFile sdl-1.2.15-vs2015.7z
+} 
+if (!(Test-Path $root\src-stage1-dependencies\SDL-1.2.15\VisualC\sdl\sdl.vcxproj)) {
+	$archive = "$root/packages/sdl/sdl-1.2.15-vs2015.7z"
+	$destination = "$root\src-stage1-dependencies\SDL-1.2.15\VisualC"
+	cd $destination
+	sz x -y $archive 2>&1 | write-host
+}
+
+
 # portaudio v19
 if (!(Test-Path $root/packages/portaudio)) {
 	mkdir $root/packages/portaudio
