@@ -30,6 +30,27 @@ write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Y
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
 
+# libpng (uses zlib but incorporates the source directly)
+cd $root\src-stage1-dependencies\libpng-1.6.21\projects\vstudio-vs2015
+msbuild vstudio.sln /p:"configuration=Debug;platform=x64"
+msbuild vstudio.sln /p:"configuration=Debug Library;platform=x64"
+msbuild vstudio.sln /p:"configuration=Release;platform=x64"
+msbuild vstudio.sln /p:"configuration=Release Library;platform=x64"
+msbuild vstudio.sln /p:"configuration=Release-AVX2;platform=x64"
+msbuild vstudio.sln /p:"configuration=Release Library-AVX2;platform=x64"
+
+
+# zlib
+cd $root\src-stage1-dependencies\zlib-1.2.8/contrib/vstudio/vc14
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=x64" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=x64" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=x64" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=x64" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=Win32" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=Win32" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=Win32" 
+msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=Win32" 
+
 # SDL
 cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
 msbuild .\sdl.sln /p:"configuration=Debug;platform=x64"
@@ -155,26 +176,18 @@ cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Release --libdir=build
 # Regular  static+shared debug libraries
 cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Debug --libdir=build\x64\Debug\lib --includedir=build\x64\Debug\include --stagedir=build\x64\Debug --layout=versioned address-model=64 threading=multi link=static,shared variant=debug cxxflags="-Zi" cflags="-Zi" install'
 
-# zlib
-cd zlib/contrib/vstudio/vc14
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=x64" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=x64" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=x64" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=x64" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=Win32" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=Win32" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=Win32" 
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=Win32" 
-cp x64/
-
 #libsodium
 cd $root/src-stage1-dependencies/libsodium
-msbuild libsodium.sln /maxcpucount /p:"configuration=Release;platform=x64" 
-msbuild libsodium.sln /maxcpucount /p:"configuration=Debug;platform=x64" 
-msbuild libsodium.sln /maxcpucount /p:"configuration=ReleaseDll;platform=x64" 
-msbuild libsodium.sln /maxcpucount /p:"configuration=Debug;platform=Win32" 
-msbuild libsodium.sln /maxcpucount /p:"configuration=ReleaseDll;platform=Win32" 
-msbuild libsodium.sln /maxcpucount /p:"configuration=Release;platform=Win32" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=Release;platform=x64" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=Debug;platform=x64" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=ReleaseDll;platform=x64" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=Debug;platform=Win32" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=ReleaseDll;platform=Win32" 
+#msbuild libsodium.sln /maxcpucount /p:"configuration=Release;platform=Win32" 
+cd builds\msvc\build
+& .\buildbase.bat ..\vs2015\libsodium.sln 14
+
+#libzmq
 
 #gsl
 cd $root/src-stage1-dependencies/gsl-1.16/build.vc14
