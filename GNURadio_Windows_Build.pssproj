@@ -28,6 +28,8 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Compile Include="ConfigInfo.psd1" />
+    <Compile Include="Functions.psm1" />
     <Compile Include="Step1-BuildStructure.ps1" />
     <Compile Include="Step10-GetStage3Packages.ps1" />
     <Compile Include="Step2-GetStage1Packages.ps1" />
