@@ -105,6 +105,15 @@ GetPackage $url
 $dest = "qwt-" + $Config.VersionInfo.qwt
 GetPatch qwtconfig.7z $dest
 
+#sip
+GetPackage http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
+
+# PyQt
+GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-win-gpl-4.11.4.zip PyQt4
+
+# PyQwt
+GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
+
 # cleanup
 
 # return to original directory

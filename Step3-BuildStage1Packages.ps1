@@ -36,6 +36,7 @@ foreach {
 }
 popd
 write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
+$oldpath = $env:Path
 
 # EVERYTHING ABOVE THIS LINE NEEDS TO BE RUN ONCE BEFORE BUILDING ANY PACKAGES
 break
@@ -129,12 +130,16 @@ $env:Path = $pythonroot+ ";$OLD_PATH"
 # copy the files
 # amd64 for regular build (release and debug combined), amd64-avx for release AVX2 build
 cd amd64
+cp python_d.exe $pythonroot
+cp pythonw_d.exe $pythonroot
+cp python27_d.dll $pythonroot
 cp python.exe $pythonroot
 cp pythonw.exe $pythonroot
+cp python27.dll $pythonroot
 cp *.pyd $pythonroot/DLLs
 cp *.dll $pythonroot/DLLs
-cp python27.dll $pythonroot
 cp *.lib $pythonroot/libs
+cp *.pdb $pythonroot/libs
 cp ../../PC/py.ico $pythonroot/DLLs
 cp ../../PC/pyc.ico $pythonroot/DLLs
 cp -r ../../Tools $pythonroot
@@ -226,6 +231,7 @@ msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release
 
 # qt4
 # must be after openssl
+# TODO find/copy over vc140.pdb
 cd $root/src-stage1-dependencies/Qt4
 # Various things in Qt4 build are intepreted as errors so 
 $ErrorActionPreference = "Continue"
@@ -321,7 +327,136 @@ Invoke-Expression $command
 nmake
 nmake install
 $env:CL = $oldCL
-
 $ErrorActionPreference = "Stop"
+
+#sip
+cd $root\src-stage1-dependencies\sip-4.17
+& $pythonroot\python.exe configure.py -u -p win32-msvc2015 
+nmake
+New-Item -ItemType Directory -Force -Path ./build/x64/DebugDLL
+cd siplib
+copy sip_d.pyd ../build/x64/DebugDLL/sip_d.pyd
+copy sip_d.pdb ../build/x64/DebugDLL/sip_d.pdb
+copy sip_d.ilk ../build/x64/DebugDLL/sip_d.ilk
+copy sip_d.lib ../build/x64/DebugDLL/sip_d.lib
+copy sip_d.pyd ../build/x64/DebugDLL/sip_d.exp
+copy sip.h ../build/x64/DebugDLL/sip.h
+copy sipconfig.py ../build/x64/DebugDLL/sipconfig.py
+cd ../sipgen
+copy sip.exe ../build/x64/DebugDLL/sip.exe
+cd ..
+copy sipdistutils.py build/x64/DebugDLL/sipdistutils.py
+nmake clean
+
+& $pythonroot\python.exe configure.py -u -k -p win32-msvc2015 
+nmake
+New-Item -ItemType Directory -Force -Path ./build/x64/Debug
+cd siplib
+copy sip_d.lib ../build/x64/Debug/sip_d.lib
+copy sip.h ../build/x64/Debug/sip.h
+copy sipconfig.py ../build/x64/Debug/sipconfig.py
+cd ../sipgen
+copy sip.exe ../build/x64/Debug/sip.exe
+cd ..
+copy sipdistutils.py build/x64/Debug/sipdistutils.py
+nmake clean
+
+& $pythonroot\python.exe configure.py -p win32-msvc2015 
+nmake
+New-Item -ItemType Directory -Force -Path ./build/x64/ReleaseDLL
+cd siplib
+copy sip.pyd ../build/x64/ReleaseDLL/sip.pyd
+copy sip.pdb ../build/x64/ReleaseDLL/sip.pdb
+copy sip.ilk ../build/x64/ReleaseDLL/sip.ilk
+copy sip.lib ../build/x64/ReleaseDLL/sip.lib
+copy sip.pyd ../build/x64/ReleaseDLL/sip.exp
+copy sip.h ../build/x64/ReleaseDLL/sip.h
+copy sipconfig.py ../build/x64/ReleaseDLL/sipconfig.py
+cd ../sipgen
+copy sip.exe ../build/x64/ReleaseDLL/sip.exe
+cd ..
+copy sipdistutils.py build/x64/ReleaseDLL/sipdistutils.py
+nmake clean
+
+& $pythonroot\python.exe configure.py -k -p win32-msvc2015 
+nmake
+New-Item -ItemType Directory -Force -Path ./build/x64/Release
+cd siplib
+copy sip.lib ../build/x64/Release/sip.lib
+copy sip.h ../build/x64/Release/sip.h
+copy sipconfig.py ../build/x64/Release/sipconfig.py
+cd ../sipgen
+copy sip.exe ../build/x64/Release/sip.exe
+cd ..
+copy sipdistutils.py build/x64/Release/sipdistutils.py
+nmake clean
+
+#-------------- saving for the install part
+# since we can only have a single type of SIP installed at once
+#cd siplib
+#copy /y sip_d.pyd $pythonroot\Lib\site-packages\sip_d.pyd
+#copy /y sip.h $pythonroot\include\sip.h
+#copy /y sipconfig.py $pythonroot\Lib\site-packages\sipconfig.py
+#cd ..
+#copy /y sipdistutils.py $pythonroot\Lib\site-packages\sipdistutils.py
+#cd sipgen
+#copy /y sip.exe $pythonroot\sip.exe
+
+# PyQt
+$ErrorActionPreference = "Continue"
+cd $root\src-stage1-dependencies\PyQt4
+$env:QMAKESPEC = "win32-msvc2015"
+$env:Path = "$root\src-stage1-dependencies\Qt4\build\Debug\bin;" + $oldpath
+# debug static
+& $pythonroot\python.exe configure.py -u -k --destdir "build\x64\Debug" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui  --b build/x64/Debug/bin -d build/x64/Debug/package -p build/x64/Debug/plugins --sipdir build/x64/Debug/sip
+# BUG FIX
+"all: ;" > .\pylupdate\Makefile
+"install : ;" >> .\pylupdate\Makefile
+"clean : ;" >> .\pylupdate\Makefile
+nmake
+nmake install
+nmake clean
+
+$env:Path = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin;" + $oldpath
+& $pythonroot\python.exe configure.py -u --destdir "build\x64\DebugDLL" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui  --b build/x64/DebugDLL/bin -d build/x64/DebugDLL/package -p build/x64/DebugDLL/plugins --sipdir build/x64/DebugDLL/sip
+# BUG FIX
+"all: ;" > .\pylupdate\Makefile
+"install : ;" >> .\pylupdate\Makefile
+"clean : ;" >> .\pylupdate\Makefile
+nmake
+nmake install
+nmake clean
+
+$env:Path = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin;" + $oldpath
+& $pythonroot\python.exe configure.py --destdir "build\x64\ReleaseDLL" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui  --b build/x64/ReleaseDLL/bin -d build/x64/ReleaseDLL/package -p build/x64/ReleaseDLL/plugins --sipdir build/x64/ReleaseDLL/sip
+# BUG FIX
+"all: ;" > .\pylupdate\Makefile
+"install : ;" >> .\pylupdate\Makefile
+"clean : ;" >> .\pylupdate\Makefile
+nmake
+nmake install
+nmake clean
+
+$env:Path = "$root\src-stage1-dependencies\Qt4\build\Release\bin;" + $oldpath
+& $pythonroot\python.exe configure.py -k --destdir "build\x64\Release" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui  --b build/x64/Release/bin -d build/x64/Release/package -p build/x64/Release/plugins --sipdir build/x64/Release/sip
+# BUG FIX
+"all: ;" > .\pylupdate\Makefile
+"install : ;" >> .\pylupdate\Makefile
+"clean : ;" >> .\pylupdate\Makefile 
+nmake
+nmake install
+nmake clean
+$env:Path = $oldpath
+$ErrorActionPreference = "Stop"
+
+# PyQwt5
+# requires Python, Qwt, Qt, PyQt, and Numpy
+cd $root\src-stage1-dependencies\PyQwt5-master
+cd configure
+& $pythonroot/python.exe configure.py --debug --extra-cflags="-Zi" -I ..\Qwt-5.2.3\build\x64\Debug\include -L ..\Qwt-5.2.3\build\x64\Debug\lib -j4 --sip-include-dirs ..\sip-4.17\build\x64\Debug
+nmake
+nmake install
+
+
 $env:Path = $OLD_PATH
 
