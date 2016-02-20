@@ -46,7 +46,7 @@ cd src-stage1-dependencies
 
 # libpng 
 # uses zlib but incorporates the source directly so doesn't need to be built after zlib
-cd $root\src-stage1-dependencies\libpng-1.6.21\projects\vstudio-vs2015
+cd $root\src-stage1-dependencies\libpng\projects\vstudio-vs2015
 msbuild vstudio.sln /p:"configuration=Debug;platform=x64"
 msbuild vstudio.sln /p:"configuration=Debug Library;platform=x64"
 msbuild vstudio.sln /p:"configuration=Release;platform=x64"
@@ -64,6 +64,32 @@ msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=Win
 msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=Win32" 
 msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=Win32" 
 msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=Win32" 
+
+# freetype
+# freetype is only ever used as a static library, no AVX2
+# ignore the multi/single threaded options as they build against static runtime libs
+cd $root\src-stage1-dependencies\freetype\builds\windows\vc2015
+msbuild freetype.sln /p:"configuration=Release;platform=x64"
+msbuild freetype.sln /p:"configuration=Debug;platform=x64"
+
+# pixman
+cd $root\src-stage1-dependencies\pixman\build
+msbuild .\pixman.sln /p:"configuration=Debug;platform=x64"
+msbuild .\pixman.sln /p:"configuration=DebugDLL;platform=x64"
+msbuild .\pixman.sln /p:"configuration=Release;platform=x64"
+msbuild .\pixman.sln /p:"configuration=ReleaseDLL;platform=x64"
+msbuild .\pixman.sln /p:"configuration=Release-AVX2;platform=x64"
+msbuild .\pixman.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64"
+
+# cairo
+# must be after pixman, zlib, libpng, and freetype
+cd $root\src-stage1-dependencies\cairo\build
+msbuild .\cairo.sln /p:"configuration=Debug;platform=x64"
+msbuild .\cairo.sln /p:"configuration=DebugDLL;platform=x64"
+msbuild .\cairo.sln /p:"configuration=Release;platform=x64"
+msbuild .\cairo.sln /p:"configuration=ReleaseDLL;platform=x64"
+msbuild .\cairo.sln /p:"configuration=Release-AVX2;platform=x64"
+msbuild .\cairo.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64"
 
 # SDL
 cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
@@ -107,6 +133,7 @@ msbuild openssl.vcxproj /t:"Build" /p:"configuration=ReleaseDLL;platform=x64"
 msbuild openssl.vcxproj /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64"
 
 # python (boost depends on this)
+# FIXME need to handle the detection in msvc9compiler.py since MS skipped a MSVC version
 cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
 msbuild pcbuild.sln /p:"configuration=Debug;platform=x64"
 msbuild pcbuild.sln /p:"configuration=Release;platform=x64"
@@ -176,12 +203,15 @@ cp ../../Lib/*.* $pythonroot/Lib
 $env:Path = $pythonroot+ ";$OLD_PATH"
 # these packages will give warnings about files not found that will be errors on powershell if set to "Stop"
 $ErrorActionPreference = "Continue"
-cd $root/src-stage1-dependencies/python27/setuptools-18.0.1
+cd $root/src-stage1-dependencies/setuptools-20.1.1
 & $pythonroot\python.exe setup.py install
-cd $root/src-stage1-dependencies/python27/pip-7.1.0
+cd $root/src-stage1-dependencies/pip-8.0.2
 & $pythonroot\python.exe setup.py install
-cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
+cd $root\src-stage1-dependencies/wheel-0.29.0
 & $pythonroot\python.exe setup.py install
+# TODO do we really need virtualenv since this will be a standalone distro?  Probably not
+# cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
+# & $pythonroot\python.exe setup.py install
 $ErrorActionPreference = "Stop"
 
 # boost
@@ -456,7 +486,21 @@ cd configure
 & $pythonroot/python.exe configure.py --debug --extra-cflags="-Zi" -I ..\Qwt-5.2.3\build\x64\Debug\include -L ..\Qwt-5.2.3\build\x64\Debug\lib -j4 --sip-include-dirs ..\sip-4.17\build\x64\Debug
 nmake
 nmake install
-
-
 $env:Path = $OLD_PATH
+
+# Cython
+cd $root\src-stage1-dependencies\Cython-0.23.4
+& $pythonroot/python setup.py bdist_wheel #install  
+
+
+
+# numpy
+$ErrorActionPreference = "Continue"
+cd $root\src-stage1-dependencies\numpy-1.10.4
+$env:VS90COMNTOOLS = $env:VS140COMNTOOLS
+& $pythonroot/python.exe setup.py config --compiler=msvc2015
+& $pythonroot/python.exe setup.py build
+& $pythonroot/python.exe setup.py install
+$ErrorActionPreference = "Stop"
+
 

@@ -59,7 +59,15 @@ function getPackage
 				tar zxf $archive 2>&1 | write-host 
 			} elseif ($archiveExt -eq ".tar.xz" -or $archiveExt -eq ".tgz" -or $archiveExt -eq ".tar.gz") {
 				sz x -y $archive 
-				sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar"
+				if (!(Test-Path $root\src-stage1-dependencies\$archiveName.tar)) {
+					# some python .tar.gz files put the tar in a dist subfolder
+					cd dist
+					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar"
+					cd ..
+					rm -rf dist
+				} else {
+					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar"
+					}
 				del "$archiveName.tar"
 			} else {
 				throw "Unknown file extension on $archiveName$archiveExt"
