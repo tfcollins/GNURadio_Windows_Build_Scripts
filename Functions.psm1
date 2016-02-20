@@ -23,7 +23,9 @@ function getPackage
 			if (Test-Path $root\src-stage1-dependencies\$archiveName) {
 				Remove-Item  $root\src-stage1-dependencies\$archiveName -Force -Recurse
 			}
+			$ErrorActionPreference = "Continue"
 			git clone --depth=1 $toGet  2>&1 | write-host
+			$ErrorActionPreference = "Stop"
 			if ($newname -ne $null) {
 				if (Test-Path $root\src-stage1-dependencies\$newname) {
 					Remove-Item  $root\src-stage1-dependencies\$newname -Force -Recurse

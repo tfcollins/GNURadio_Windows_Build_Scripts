@@ -50,6 +50,15 @@ GetPatch cairo-vs2015.7z cairo/build
 GetPackage http://cairographics.org/releases/pixman-0.34.0.tar.gz pixman
 GetPatch pixman_vs2015.7z pixman/build
 
+# gettext
+GetPackage https://github.com/gnieboer/gettext-msvc.git
+GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
+GetPackage http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
+cp gettext-0.19.4\* .\gettext-msvc\gettext-0.19.4 -Force -Recurse
+cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
+del .\libiconv-1.14 -Force -Recurse
+del .\gettext-0.19.4 -Force -Recurse
+
 # SDL 1.2.15
 getPackage  https://libsdl.org/release/SDL-1.2.15.zip
 getPatch sdl-1.2.15-vs2015.7z SDL-1.2.15\VisualC

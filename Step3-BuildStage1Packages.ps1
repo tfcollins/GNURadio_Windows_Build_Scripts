@@ -91,6 +91,15 @@ msbuild .\cairo.sln /p:"configuration=ReleaseDLL;platform=x64"
 msbuild .\cairo.sln /p:"configuration=Release-AVX2;platform=x64"
 msbuild .\cairo.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64"
 
+# get-text / libiconv / libintl
+cd $root\src-stage1-dependencies\gettext-msvc
+msbuild .\gettext.sln /p:"configuration=Debug;platform=x64"
+msbuild .\gettext.sln /p:"configuration=DebugDLL;platform=x64"
+msbuild .\gettext.sln /p:"configuration=Release;platform=x64"
+msbuild .\gettext.sln /p:"configuration=ReleaseDLL;platform=x64"
+msbuild .\gettext.sln /p:"configuration=Release-AVX2;platform=x64"
+msbuild .\gettext.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64"
+
 # SDL
 cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
 msbuild .\sdl.sln /p:"configuration=Debug;platform=x64"
