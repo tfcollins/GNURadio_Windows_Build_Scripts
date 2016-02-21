@@ -100,6 +100,12 @@ msbuild .\gettext.sln /p:"configuration=ReleaseDLL;platform=x64"
 msbuild .\gettext.sln /p:"configuration=Release-AVX2;platform=x64"
 msbuild .\gettext.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64"
 
+# libfii
+cd $root\src-stage1-dependencies\libffi\win32\vc14_x64
+msbuild .\libffi-msvc.sln /p:"configuration=Debug;platform=x64"
+msbuild .\libffi-msvc.sln /p:"configuration=Release;platform=x64"
+
+
 # SDL
 cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
 msbuild .\sdl.sln /p:"configuration=Debug;platform=x64"

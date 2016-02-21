@@ -50,6 +50,9 @@ GetPatch cairo-vs2015.7z cairo/build
 GetPackage http://cairographics.org/releases/pixman-0.34.0.tar.gz pixman
 GetPatch pixman_vs2015.7z pixman/build
 
+# libffi
+GetPackage https://github.com/winlibs/libffi.git
+
 # gettext
 GetPackage https://github.com/gnieboer/gettext-msvc.git
 GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
