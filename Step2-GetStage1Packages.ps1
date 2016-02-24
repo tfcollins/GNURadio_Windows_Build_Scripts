@@ -6,62 +6,71 @@ $ErrorActionPreference = "Stop"
 
 # setup helper functions
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
-Import-Module -Name $mypath\Functions -Force
-$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
-
-# path setup
-$root = $env:grwinbuildroot 
-if (!$root) {$root = "C:\gr-build"}
-cd $root
-set-alias sz "$root\bin\7za.exe"  
-Add-Type -assembly "system.io.compression.filesystem"
-
-# Check for binary dependencies
-if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder"} 
-
-# check for git/tar
-if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed"} 
-set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"  
-
-break
+. $mypath\Setup.ps1 -Force
 
 # Retrieve packages needed for Stage 1
 cd $root/src-stage1-dependencies
+SetLog "02-GetPackages"
 
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
 
-# libpng
-getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
-getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
+if ($Config.BuildGTKFromSource) {
 
-# libepoxy
-GetPackage https://github.com/anholt/libepoxy/archive/v1.3.1.tar.gz libepoxy
+	# libpng
+	getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
+	getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
 
-# freetype
-GetPackage http://download.savannah.gnu.org/releases/freetype/freetype-2.6.3.tar.gz freetype
-GetPatch freetype-vc2015.7z freetype/builds/windows
+	# libepoxy
+	GetPackage https://github.com/anholt/libepoxy/archive/v1.3.1.tar.gz libepoxy
 
-# Cairo
-GetPackage http://cairographics.org/releases/cairo-1.14.6.tar.xz cairo
-GetPatch cairo-vs2015.7z cairo/build
+	# freetype
+	GetPackage http://download.savannah.gnu.org/releases/freetype/freetype-2.6.3.tar.gz freetype
+	GetPatch freetype-vc2015.7z freetype/builds/windows
 
-# pixman
-GetPackage http://cairographics.org/releases/pixman-0.34.0.tar.gz pixman
-GetPatch pixman_vs2015.7z pixman/build
+	# Cairo
+	GetPackage http://cairographics.org/releases/cairo-1.14.6.tar.xz cairo
+	GetPatch cairo-vs2015.7z cairo/build
 
-# libffi
-GetPackage https://github.com/winlibs/libffi.git
+	# pixman
+	GetPackage http://cairographics.org/releases/pixman-0.34.0.tar.gz pixman
+	GetPatch pixman_vs2015.7z pixman/build
 
-# gettext
-GetPackage https://github.com/gnieboer/gettext-msvc.git
-GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
-GetPackage http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
-cp gettext-0.19.4\* .\gettext-msvc\gettext-0.19.4 -Force -Recurse
-cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
-del .\libiconv-1.14 -Force -Recurse
-del .\gettext-0.19.4 -Force -Recurse
+	# libffi
+	GetPackage https://github.com/winlibs/libffi.git
 
+	# libxml2 
+	GetPackage https://git.gnome.org/browse/libxml2.git
+
+	# JasPer 1900
+	GetPackage http://www.ece.uvic.ca/~frodo/jasper/software/jasper-1.900.1.zip
+	GetPatch jasper_vs2015.7z .\jasper-1.900.1\src
+
+	# gettext
+	GetPackage https://github.com/gnieboer/gettext-msvc.git
+	GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
+	GetPackage http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
+	cp gettext-0.19.4\* .\gettext-msvc\gettext-0.19.4 -Force -Recurse
+	cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
+	del .\libiconv-1.14 -Force -Recurse
+	del .\gettext-0.19.4 -Force -Recurse
+
+	# glib
+	GetPackage http://ftp.gnome.org/pub/GNOME/sources/glib/2.47/glib-2.47.6.tar.xz glib
+
+	# atk
+	GetPackage http://ftp.gnome.org/pub/GNOME/sources/atk/2.19/atk-2.19.90.tar.xz atk
+
+	# pango
+	GetPackage http://ftp.gnome.org/pub/GNOME/sources/pango/1.39/pango-1.39.0.tar.xz pango
+
+	# gdk-pixbuf
+	GetPackage http://ftp.gnome.org/pub/GNOME/sources/gdk-pixbuf/2.33/gdk-pixbuf-2.33.2.tar.xz gdk-pixbuf
+
+} else {
+	"NOT building GTK from source, retrieving GTK VS2015 binaries"
+	GetPackage https://dl.hexchat.net/gtk-win32/vc14/x64/gtk-x64.7z
+}
 # SDL 1.2.15
 getPackage  https://libsdl.org/release/SDL-1.2.15.zip
 getPatch sdl-1.2.15-vs2015.7z SDL-1.2.15\VisualC
@@ -73,17 +82,20 @@ GetPatch portaudio_vs2015.7z portaudio/build/msvc
 GetPatch asiosdk2.3.7z portaudio/src/hostapi/asio
 # folder will already exist
 if (!(Test-Path $root/packages/portaudio/asiosdk2.3.zip)) {
+	Write-Host -NoNewLine "Retrieving ASIO SDK..."
 	cd $root/packages/portaudio
-	wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip -OutFile asiosdk2.3.zip
+	wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip -OutFile asiosdk2.3.zip >> $Log 
+	Write-Host -NoNewLine "download complete..."
 } else {
-	"ASIO SDK already present"
+	Write-Host -NoNewLine "ASIO SDK already present..."
 }
 if (!(Test-Path $root/src-stage1-dependencies/portaudio/src/hostapi/asio/asiosdk)) {
 	$archive = "$root/packages/portaudio/asiosdk2.3.zip"
 	$destination = "$root/src-stage1-dependencies/portaudio/src/hostapi/asio"
-	[io.compression.zipfile]::ExtractToDirectory($archive, $destination)
+	[io.compression.zipfile]::ExtractToDirectory($archive, $destination) >> $Log 
 	cd $destination
 	ren asiosdk2.3 asiosdk
+	"extracted"
 }
 
 # cppunit 1.12.1
@@ -92,12 +104,12 @@ GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-1.12
 # fftw3.3.5
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/fftw-3.3.5.7z
 
-#python
+# python
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/libraries/python27/python2710-x64-Source.7z
 GetPatch python-pcbuild.vc14.zip python27/Python-2.7.10
-GetPatch python27_msvccompiler.7z python27\Python-2.7.10\Lib\distutils
 GetPackage https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tar.xz
 # patch distutils because it doesn't correctly detect MSVC 14.0 / 2015
+GetPatch python27_msvccompiler.7z python27\Python-2.7.10\Lib\distutils
 GetPatch python27_msvccompiler.7z Python-2.7.11\Lib\distutils
 GetPackage https://pypi.python.org/packages/source/s/setuptools/setuptools-20.1.1.zip
 GetPackage https://pypi.python.org/packages/source/p/pip/pip-8.0.2.tar.gz
@@ -107,23 +119,23 @@ GetPackage https://pypi.python.org/packages/source/w/wheel/wheel-0.29.0.tar.gz
 # note: libpng is expecting zlib to be in a folder with the -1.2.8 version of the name
 GetPackage https://github.com/gnieboer/zlib.git zlib-1.2.8
 
-#libsodium
+# libsodium
 GetPackage https://github.com/gnieboer/libsodium.git 
 
-#GSL
+# GSL
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gsl-1.16.7z
 GetPatch gsl-1.16.build.vc14.zip gsl-1.16
 
-#openssl
+# openssl
 $openssl_version = $Config.VersionInfo.openssl
 GetPackage ftp://ftp.openssl.org/source/openssl-$openssl_version.tar.gz openssl
 GetPatch openssl-vs14.zip openssl
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\DebugDLL
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release-AVX2
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL-AVX2
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\DebugDLL -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release-AVX2 -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL-AVX2 -Force >> $Log 
 
 # Qt
 GetPackage http://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz Qt4
@@ -137,7 +149,7 @@ GetPackage $url
 $dest = "qwt-" + $Config.VersionInfo.qwt
 GetPatch qwtconfig.7z $dest
 
-#sip
+# sip
 GetPackage http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
 
 # PyQt
@@ -151,6 +163,9 @@ GetPackage http://cython.org/release/Cython-0.23.4.zip
 
 # numpy 1.10.4
 GetPackage https://github.com/numpy/numpy/archive/v1.10.4.zip
+
+# scipy 0.17.0
+GetPackage https://github.com/scipy/scipy/releases/download/v0.17.0/scipy-0.17.0.tar.xz scipy
 
 # cleanup
 
