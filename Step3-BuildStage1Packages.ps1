@@ -11,16 +11,12 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions and variables
-# can't run when we "run selection" in VS2015 since we aren't in a directory
-if ($script -ne $null) {
-	$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
-	Import-Module $mypath\Functions.psm1 -Force
-}
-
-Setup
+$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+. $mypath\Setup.ps1 -Force
 
 # EVERYTHING ABOVE THIS LINE NEEDS TO BE RUN ONCE BEFORE BUILDING ANY PACKAGES
-#break
+
+$debug = {
 
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
@@ -31,12 +27,12 @@ cd src-stage1-dependencies
 SetLog "03-libpng"
 Write-Host -NoNewline "building libpng..."
 cd $root\src-stage1-dependencies\libpng\projects\vstudio-vs2015
-msbuild vstudio.sln /p:"configuration=Debug;platform=x64" >> $Log 
-msbuild vstudio.sln /p:"configuration=Debug Library;platform=x64" >> $Log
-msbuild vstudio.sln /p:"configuration=Release;platform=x64" >> $Log
-msbuild vstudio.sln /p:"configuration=Release Library;platform=x64" >> $Log
-msbuild vstudio.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild vstudio.sln /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
+msbuild vstudio.sln /m /p:"configuration=Debug;platform=x64" >> $Log 
+msbuild vstudio.sln /m /p:"configuration=Debug Library;platform=x64" >> $Log
+msbuild vstudio.sln /m /p:"configuration=Release;platform=x64" >> $Log
+msbuild vstudio.sln /m /p:"configuration=Release Library;platform=x64" >> $Log
+msbuild vstudio.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild vstudio.sln /m /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -44,14 +40,14 @@ msbuild vstudio.sln /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
 SetLog "04-zlib"
 Write-Host -NoNewline "Building zlib..."
 cd $root\src-stage1-dependencies\zlib-1.2.8/contrib/vstudio/vc14
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=x64" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=x64" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=x64" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=ReleaseWithoutAsm;platform=Win32" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release;platform=Win32" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Debug;platform=Win32" >> $Log
-msbuild zlibvc.sln /maxcpucount /p:"configuration=Release-AVX2;platform=Win32" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Release;platform=x64" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=x64" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=Win32" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Release;platform=Win32" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Debug;platform=Win32" >> $Log
+msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=Win32" >> $Log
 "complete"
 
 if ($Config.BuildGTKFromSource) {
@@ -184,9 +180,9 @@ if ($Config.BuildGTKFromSource) {
 SetLog "13-SDL"
 Write-Host -NoNewline "building SDL..."
 cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
-msbuild .\sdl.sln /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\sdl.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild .\sdl.sln /p:"configuration=Release;platform=x64" >> $Log
+msbuild .\sdl.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild .\sdl.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild .\sdl.sln /m /p:"configuration=Release;platform=x64" >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -194,12 +190,12 @@ msbuild .\sdl.sln /p:"configuration=Release;platform=x64" >> $Log
 SetLog "14-portaudio"
 Write-Host -NoNewline "building portaudio..."
 cd $root\src-stage1-dependencies\portaudio\build\msvc
-msbuild .\portaudio.vcxproj /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /p:"configuration=Debug-Static;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /p:"configuration=Release;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /p:"configuration=Release-Static;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /p:"configuration=Release-Static-AVX2;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Debug-Static;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Release;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static-AVX2;platform=x64" >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -207,8 +203,8 @@ msbuild .\portaudio.vcxproj /p:"configuration=Release-Static-AVX2;platform=x64" 
 SetLog "15-cppunit"
 Write-Host -NoNewline "building cppunit..."
 cd $root\src-stage1-dependencies\cppunit-1.12.1\src >> $Log
-msbuild .\CppUnitLibraries.sln /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\CppUnitLibraries.sln /p:"configuration=Release;platform=x64" >> $Log
+msbuild .\CppUnitLibraries.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild .\CppUnitLibraries.sln /m /p:"configuration=Release;platform=x64" >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -216,12 +212,12 @@ msbuild .\CppUnitLibraries.sln /p:"configuration=Release;platform=x64" >> $Log
 SetLog "16-fftw3"
 Write-Host -NoNewline "building fftw3..."
 cd $root\src-stage1-dependencies\fftw-3.3.5\msvc
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Debug DLL;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Release;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Release DLL;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-msbuild .\fftw-3.3-libs.sln /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug DLL;platform=x64" >> $Log
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release;platform=x64" >> $Log
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL;platform=x64" >> $Log
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -232,12 +228,12 @@ cd $root/src-stage1-dependencies/openssl
 # The TEST target will not only build but also test
 # Note, it appears the static libs are still linked to the /MT runtime
 # don't change config names because they are linked to python's config names below
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=Debug;platform=x64" >> $Log
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=DebugDLL;platform=x64" >> $Log
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=Release;platform=x64" >> $Log
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=ReleaseDLL;platform=x64" >> $Log
-msbuild openssl.vcxproj /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Debug;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=DebugDLL;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL;platform=x64" >> $Log
+msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
 "complete"
 
 
@@ -247,9 +243,9 @@ msbuild openssl.vcxproj /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x6
 SetLog "18-python"
 Write-Host -NoNewline "building core python..."
 cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
-msbuild pcbuild.sln /p:"configuration=Debug;platform=x64" >> $Log
-msbuild pcbuild.sln /p:"configuration=Release;platform=x64" >> $Log
-msbuild pcbuild.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log
+msbuild pcbuild.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+msbuild pcbuild.sln /m /p:"configuration=Release;platform=x64" >> $Log
+msbuild pcbuild.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 "complete"
 
 # now place the binaries where we need them
@@ -280,53 +276,53 @@ Function gatherPython {
 	cp *.pdb $pythonroot/libs
 	cp ../../PC/py.ico $pythonroot/DLLs
 	cp ../../PC/pyc.ico $pythonroot/DLLs
-	cp -r ../../Tools $pythonroot
-	cp -r ../../../tcltk64/lib/*.* $pythonroot/tcl
-	cp -r ../../Include $pythonroot
+	cp -r -fo ../../Tools $pythonroot
+	cp -r -fo ../../../tcltk64/lib/*.* $pythonroot/tcl
+	cp -r -fo ../../Include $pythonroot
 	cp ../../PC/pyconfig.h $pythonroot/Include
 	cp ../../README $pythonroot/README.txt
 	cp ../../LICENSE $pythonroot/LICENSE.txt
-	cp -r ../../Lib/bsddb $pythonroot/Lib
-	cp -r ../../Lib/compiler $pythonroot/Lib
-	cp -r ../../Lib/ctypes $pythonroot/Lib
-	cp -r ../../Lib/curses $pythonroot/Lib
-	cp -r ../../Lib/distutils $pythonroot/Lib
-	cp -r ../../Lib/email $pythonroot/Lib
-	cp -r ../../Lib/encodings $pythonroot/Lib
-	cp -r ../../Lib/hotshot $pythonroot/Lib
-	cp -r ../../Lib/idlelib $pythonroot/Lib
-	cp -r ../../Lib/importlib $pythonroot/Lib
-	cp -r ../../Lib/json $pythonroot/Lib
-	cp -r ../../Lib/lib2to3 $pythonroot/Lib
-	cp -r ../../Lib/lib-tk $pythonroot/Lib
-	cp -r ../../Lib/logging $pythonroot/Lib
-	cp -r ../../Lib/msilib $pythonroot/Lib
-	cp -r ../../Lib/multiprocessing $pythonroot/Lib
-	cp -r ../../Lib/pydoc_data $pythonroot/Lib
-	cp -r ../../Lib/sqlite3 $pythonroot/Lib
-	cp -r ../../Lib/test $pythonroot/Lib
-	cp -r ../../Lib/unittest $pythonroot/Lib
-	cp -r ../../Lib/wsgiref $pythonroot/Lib
-	cp -r ../../Lib/xml $pythonroot/Lib
+	cp -r -fo ../../Lib/bsddb $pythonroot/Lib
+	cp -r -fo ../../Lib/compiler $pythonroot/Lib
+	cp -r -fo ../../Lib/ctypes $pythonroot/Lib
+	cp -r -fo ../../Lib/curses $pythonroot/Lib
+	cp -r -fo ../../Lib/distutils $pythonroot/Lib
+	cp -r -fo ../../Lib/email $pythonroot/Lib
+	cp -r -fo ../../Lib/encodings $pythonroot/Lib
+	cp -r -fo ../../Lib/hotshot $pythonroot/Lib
+	cp -r -fo ../../Lib/idlelib $pythonroot/Lib
+	cp -r -fo ../../Lib/importlib $pythonroot/Lib
+	cp -r -fo ../../Lib/json $pythonroot/Lib
+	cp -r -fo ../../Lib/lib2to3 $pythonroot/Lib
+	cp -r -fo ../../Lib/lib-tk $pythonroot/Lib
+	cp -r -fo ../../Lib/logging $pythonroot/Lib
+	cp -r -fo ../../Lib/msilib $pythonroot/Lib
+	cp -r -fo ../../Lib/multiprocessing $pythonroot/Lib
+	cp -r -fo ../../Lib/pydoc_data $pythonroot/Lib
+	cp -r -fo ../../Lib/sqlite3 $pythonroot/Lib
+	cp -r -fo ../../Lib/test $pythonroot/Lib
+	cp -r -fo ../../Lib/unittest $pythonroot/Lib
+	cp -r -fo ../../Lib/wsgiref $pythonroot/Lib
+	cp -r -fo ../../Lib/xml $pythonroot/Lib
 	cp ../../Lib/*.* $pythonroot/Lib
 
 	# then install key packages
-	$env:Path = $pythonroot+ ";$OLD_PATH"
+	$env:Path = $pythonroot+ ";$oldpath"
 	# these packages will give warnings about files not found that will be errors on powershell if set to "Stop"
 	$ErrorActionPreference = "Continue"
 	cd $root/src-stage1-dependencies/setuptools-20.1.1
-	& $pythonroot\$pythonexe setup.py install >> $Log
+	& $pythonroot\$pythonexe setup.py install 2>&1  >> $Log
 	cd $root/src-stage1-dependencies/pip-8.0.2
-	& $pythonroot\$pythonexe setup.py install >> $Log
+	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
 	cd $root\src-stage1-dependencies/wheel-0.29.0
-	& $pythonroot\$pythonexe setup.py install >> $Log
+	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
 	# TODO do we really need virtualenv since this will be a standalone distro?  Probably not
 	# cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
 	# & $pythonroot\python.exe setup.py install
 	$ErrorActionPreference = "Stop"
-	}
+}
 
-Write-Host -NoNewline "creating python core installs..." 
+Write-Host -NoNewline "staging core python..." 
 $pythonexe = "python.exe"
 $pythonroot = "$root\src-stage2-python\gr-python27"
 cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14/amd64
@@ -346,7 +342,7 @@ GatherPython
 SetLog "19-boost"
 Write-Host -NoNewline "building boost..."
 cd $root/src-stage1-dependencies/boost
-cmd /c "bootstrap.bat"
+cmd /c "bootstrap.bat" >> $Log
 # point boost build to our custom python libraries
 $doubleroot = $root -replace "\\", "\\"
 Add-Content .\project-config.jam "`nusing python : 2.7 : $doubleroot\\src-stage2-python\\gr-python27\\python.exe : $doubleroot\\src-stage2-python\\gr-python27\\Include : $doubleroot\\src-stage2-python\\gr-python27\\Libs ;"
@@ -386,73 +382,79 @@ cd $root/src-stage1-dependencies/gsl-1.16/build.vc14
 #prep headers
 msbuild gsl.lib.sln /t:gslhdrs >> $Log
 #static
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
-msbuild gsl.lib.sln /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
+msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
 #dll
-msbuild gsl.dll.sln /t:gslhdrs /p:Configuration="Debug" /p:Platform="Win32" >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
-msbuild gsl.dll.sln /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
+msbuild gsl.dll.sln /m /t:gslhdrs /p:Configuration="Debug" /p:Platform="Win32" >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
+msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
 "complete"
-
+}
 # ____________________________________________________________________________________________________________
 # qt4
 # must be after openssl
 SetLog "23-Qt4"
 Write-Host -NoNewline "building Qt4..."
+Function MakeQt
+{
+	$type = $args[0]
+	Write-Host -NoNewline "$type"
+	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
+	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
+	$flags += if ($type -match "Dll") {""} else {" -static"}
+	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
+	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt4/build/$type/bin >> $Log
+	cp -Force $root\src-stage1-dependencies/Qt4/bin/qmake.exe $root/src-stage1-dependencies/Qt4/build/$type/bin
+	.\configure.exe $flags -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
+	nmake 2>&1 >> $Log
+	nmake install 2>&1 >> $Log 
+	nmake confclean 2>&1 >> $Log
+	Write-Host -NoNewline "-done..."
+}
 # TODO find/copy over vc140.pdb
 cd $root/src-stage1-dependencies/Qt4
 # Various things in Qt4 build are intepreted as errors so 
 $ErrorActionPreference = "Continue"
-$env:QMAKESPEC = win32-msvc2015
+$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
+$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
+$env:Path = "$root\src-stage1-dependencies\Qt4\bin;" + $oldPath
 # Qt doesn't do a great job of allowing reconfiguring, so we go a little overkill
 # with the "extra strong" cleaning routines.
-if (!(Test-Path $root/src-stage1-dependencies/Qt4/Makefile)) {
-	nmake clean >> $Log
-	nmake confclean >> $Log
-	nmake distclean >> $Log
+# even this doesn't always work (50%??) so your best bet really is to wipe the Qt4 folder every time you rebuild.
+# more experimentation needed.
+if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile) {
+	nmake clean 2>&1 >> $Log
+	nmake confclean 2>&1 >> $Log
+	nmake distclean 2>&1 >> $Log
 	}
-.\configure.exe -debug -prefix $root/src-stage1-dependencies/Qt4/build/DebugDll -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Debug -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Debug\Include" -make nmake   >> $Log
-nmake >> $Log
-nmake install >> $Log 
-nmake confclean >> $Log
-.\configure.exe -release  -prefix $root/src-stage1-dependencies/Qt4/build/ReleaseDll -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Release" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Release -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Release\Include"  -make nmake   >> $Log
-nmake  >> $Log
-nmake install  >> $Log
-nmake confclean >> $Log
-.\configure.exe -debug -prefix $root/src-stage1-dependencies/Qt4/build/Debug -static -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Debug -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Debug\Include" -make nmake   >> $Log
-nmake >> $Log
-nmake install >> $Log 
+.\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix . 
+nmake confclean 2>&1 >> $Log
+# debugDLL build
+MakeQT "DebugDLL"
+# releaseDLL build
+MakeQT "ReleaseDLL"
+# debug static build
+MakeQT "Debug"
 # switch to AVX2 mode
-$oldCL = $env:CL
-$env:CL = "/Ox /arch:AVX2 " + $env:CL
-nmake confclean >> $Log
-.\configure.exe -release -prefix $root/src-stage1-dependencies/Qt4/build/Release-AVX2 -static -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Release" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Release -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Release\Include" -make nmake   >> $Log
-nmake  >> $Log
-nmake install  >> $Log
-nmake confclean >> $Log
-.\configure.exe -release -prefix $root/src-stage1-dependencies/Qt4/build/ReleaseDLL-AVX2 -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Release" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Release -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Release\Include" -make nmake   >> $Log
-nmake  >> $Log
-nmake install  >> $Log
-$env:CL = $oldCL
+# release AVX2 static build
+MakeQT "Release-AVX2"
+# release AVX2 DLL build
+MakeQT "ReleaseDLL-AVX2"
 # do release last because that's the "default" config, and qmake does some strange things
 # like save the last config persistently and globally.
-nmake confclean >> $Log
-.\configure.exe -release -prefix $root/src-stage1-dependencies/Qt4/build/Release -static -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Release" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\Release -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\Release\Include" -make nmake   >> $Log
-nmake  >> $Log
-nmake install  >> $Log
+MakeQT "Release"
 
 #clean up enormous amount of temp files
-nmake clean >> $Log
-nmake confclean >> $Log
-nmake distclean >> $Log
+nmake clean  2>&1>> $Log
+nmake distclean 2>&1 >> $Log
 "complete"
 
 # ____________________________________________________________________________________________________________
@@ -464,47 +466,30 @@ nmake distclean >> $Log
 # and the static/dll libs have different names, so no conflict...
 SetLog "24-Qwt"
 Write-Host -NoNewline "building qwt..."
+Function MakeQwt {
+	nmake /NOLOGO clean 2>&1 >> $Log
+	nmake /NOLOGO distclean 2>&1 >> $Log
+	Invoke-Expression $command 2>&1 >> $Log
+	nmake /NOLOGO 2>&1 >>  $Log
+	nmake /NOLOGO install 2>&1 >> $Log
+}
 $ErrorActionPreference = "Continue"
-$env:QMAKESPEC = win32-msvc2015
+$env:QMAKESPEC = "win32-msvc2015"
 cd $root\src-stage1-dependencies\qwt-5.2.3 
 $command = "$root\src-stage1-dependencies\Qt4\build\Debug\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\Release\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+MakeQwt
 $oldCL = $env:CL
 $env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $env:CL
 $command = "$root\src-stage1-dependencies\Qt4\build\Release-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
-nmake clean >> $Log
-nmake distclean >> $Log
-Invoke-Expression $command >> $Log
-nmake >> $Log
-nmake install >> $Log
+
 $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
 "complete"

@@ -198,7 +198,7 @@ if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC"))
 # TODO check for WIX
 	
 # set VS 2015 environment
-if (!$oldpath) 
+if (!(Test-Path variable:global:oldpath))
 {
 	pushd "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC"
 	cmd /c "vcvarsall.bat amd64&set" |
@@ -217,9 +217,10 @@ if (!$oldpath)
 		$hasIFORT = $false
 	}
 	# Now set a persistent variable holding the original path. vcvarsall will continue to add to the path until it explodes
-	Set-Variable -Name oldpath -Value "$env:Path" -Description “original %Path%” -Option readonly
+	Set-Variable -Name oldpath -Value "$env:Path" -Description “original %Path%” -Option readonly -Scope "Global"
 }
-if (!$oldlib) {Set-Variable -Name oldlib -Value "$env:Lib" -Description “original %LIB%” -Option readonly}
+if (!(Test-Path variable:global:oldlib)) {Set-Variable -Name oldlib -Value "$env:Lib" -Description “original %LIB%” -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldcl)) {Set-Variable -Name oldcl -Value "$env:CL" -Description “original %CL%” -Option readonly -Scope "Global"}
 
 # import .NET modules
 Add-Type -assembly "system.io.compression.filesystem"
