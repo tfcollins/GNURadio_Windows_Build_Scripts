@@ -221,6 +221,7 @@ if (!(Test-Path variable:global:oldpath))
 }
 if (!(Test-Path variable:global:oldlib)) {Set-Variable -Name oldlib -Value "$env:Lib" -Description “original %LIB%” -Option readonly -Scope "Global"}
 if (!(Test-Path variable:global:oldcl)) {Set-Variable -Name oldcl -Value "$env:CL" -Description “original %CL%” -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldlink)) {Set-Variable -Name oldlink -Value "$env:LINK" -Description “original %CL%” -Option readonly -Scope "Global"}
 
 # import .NET modules
 Add-Type -assembly "system.io.compression.filesystem"

@@ -402,22 +402,24 @@ msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Rele
 # qt4
 # must be after openssl
 SetLog "23-Qt4"
-Write-Host -NoNewline "building Qt4..."
-Function MakeQt
+Write-Host "building Qt4..."
+Function MakeQt 
 {
 	$type = $args[0]
-	Write-Host -NoNewline "$type"
+	Write-Host -NoNewline "$type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
-	$flags += if ($type -match "Dll") {""} else {" -static"}
+	$staticflag = if ($type -match "Dll") {""} else {"-static"}
 	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
 	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt4/build/$type/bin >> $Log
 	cp -Force $root\src-stage1-dependencies/Qt4/bin/qmake.exe $root/src-stage1-dependencies/Qt4/build/$type/bin
-	.\configure.exe $flags -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
+	.\configure.exe $flags $staticflag -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
+	Write-Host -NoNewline "building..."
 	nmake 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
 	nmake install 2>&1 >> $Log 
 	nmake confclean 2>&1 >> $Log
-	Write-Host -NoNewline "-done..."
+	Write-Host "done"
 }
 # TODO find/copy over vc140.pdb
 cd $root/src-stage1-dependencies/Qt4
@@ -430,12 +432,16 @@ $env:Path = "$root\src-stage1-dependencies\Qt4\bin;" + $oldPath
 # with the "extra strong" cleaning routines.
 # even this doesn't always work (50%??) so your best bet really is to wipe the Qt4 folder every time you rebuild.
 # more experimentation needed.
-if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile) {
+if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile) 
+{
 	nmake clean 2>&1 >> $Log
 	nmake confclean 2>&1 >> $Log
 	nmake distclean 2>&1 >> $Log
-	}
-.\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix . 
+}
+# The below configure builds the base qmake.exe in the "root" directory and will point the environment to the main source tree.  Then the following build commands will convince Qt to build in a different directory
+# while still using the original as the source base.  THIS IS A HACK.  Qt4 does not like there to be more than one build on the same machine and is very troublesome in that regard.
+# if there are build fails, wipe the whole Qt4 directory and start over.  confclean doesn't do everything it promises.
+.\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix .  -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp 2>&1 >> $Log
 nmake confclean 2>&1 >> $Log
 # debugDLL build
 MakeQT "DebugDLL"
@@ -464,6 +470,8 @@ nmake distclean 2>&1 >> $Log
 # when building in more than one configuration
 # Also note that 4 builds go into a single folder... because debug and release libraries have different names
 # and the static/dll libs have different names, so no conflict...
+# Note that even the static builds are linking against the DLL builds of Qt.  This is important, PyQwt will
+# fail with 10 linker errors otherwise.
 SetLog "24-Qwt"
 Write-Host -NoNewline "building qwt..."
 Function MakeQwt {
@@ -476,19 +484,20 @@ Function MakeQwt {
 $ErrorActionPreference = "Continue"
 $env:QMAKESPEC = "win32-msvc2015"
 cd $root\src-stage1-dependencies\qwt-5.2.3 
-$command = "$root\src-stage1-dependencies\Qt4\build\Debug\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
 MakeQwt
-$command = "$root\src-stage1-dependencies\Qt4\build\Release\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
 MakeQwt
-$oldCL = $env:CL
-$env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $env:CL
-$command = "$root\src-stage1-dependencies\Qt4\build\Release-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
+
+$env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $oldCL
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
 MakeQwt
 $command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
+MakeQwt
 
 $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
