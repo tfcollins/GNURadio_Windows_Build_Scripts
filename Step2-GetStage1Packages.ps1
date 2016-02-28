@@ -12,6 +12,7 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 cd $root/src-stage1-dependencies
 SetLog "02-GetPackages"
 
+break
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
 
@@ -166,6 +167,24 @@ GetPackage https://github.com/numpy/numpy/archive/v1.10.4.zip
 
 # scipy 0.17.0
 GetPackage https://github.com/scipy/scipy/releases/download/v0.17.0/scipy-0.17.0.tar.xz scipy
+
+# pyopengl 3.1.0
+GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-3.1.0.tar.gz
+
+# pyopengl-accelerate 3.1.0
+GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-3.1.0.tar.gz
+
+# pygobject
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/3.19/pygobject-3.19.90.tar.xz
+
+# PyGTK
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-2.24.0.tar.gz
+
+# py2cairo
+GetPackage http://cairographics.org/releases/py2cairo-1.10.0.tar.bz2
+
+# pkgconfig
+GetPackage https://pypi.python.org/packages/source/p/pkgconfig/pkgconfig-1.1.0.tar.gz
 
 # cleanup
 

@@ -347,6 +347,90 @@ Function SetupPython
 	$env:CL = $oldCL
 	$ErrorActionPreference = "Stop"
 	"done"
+
+	#__________________________________________________________________________________________
+	# PyOpenGL
+	# requires Python
+	#
+	Write-Host -NoNewline "installing PyOpenGL..."
+	cd $root\src-stage1-dependencies\PyOpenGL-3.1.0
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	"done"
+
+	#__________________________________________________________________________________________
+	# PyOpenGL-accelerate
+	# requires Python, PyOpenGL
+	#
+	Write-Host -NoNewline "installing PyOpenGL-accelerate..."
+	cd $root\src-stage1-dependencies\PyOpenGL-accelerate-3.1.0
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	"done"
+
+	#__________________________________________________________________________________________
+	# pkg-config
+	# TODO this is probably not a necessary package, py2cairo is looking for pkg-config, not pkgconfig
+	#
+	Write-Host -NoNewline "building pkg-config..."
+	cd $root\src-stage1-dependencies\pkgconfig-1.1.0
+	& $pythonroot/$pythonexe setup.py build 
+	Write-Host -NoNewline "building..."
+	$ErrorActionPreference = "Continue" 
+	& $pythonroot/$pythonexe setup.py install
+	$ErrorActionPreference = "Stop" 
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel
+	"done"
+
+	#__________________________________________________________________________________________
+	# py2cairo
+	# requires pkg-config
+	# uses wierd setup python script called WAF which has an archive embedded in it which
+	# creates files that then fail to work.  So we need to extract them and then patch them
+	# and run again.
+	Write-Host -NoNewline "configuring py2cairo..."
+	cd $root\src-stage1-dependencies\py2cairo-1.10.0
+	$env:path = "$root\bin;$root\src-stage1-dependencies\x64\bin;" + $oldPath
+	$ErrorActionPreference = "Continue" 
+	$env:CL = $oldCL
+	& $pythonroot/$pythonexe waf.py configure --nocache --out=build --prefix=build/x64/$configuration 
+	Write-Host -NoNewline "building..."
+	$oldInclude = $env:INCLUDE
+	$env:INCLUDE = "$root/src-stage1/dependencies/x64/include;" + $oldInclude 
+	$env:LIB = "$root/src-stage1-dependencies/cairo/build/x64/Release;$root/src-stage1-dependencies/cairo/build/x64/ReleaseDLL;$pythonroot/libs;" + $oldlib 
+	$env:_CL_ = "/MD /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
+	$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
+	& $pythonroot/$pythonexe waf.py build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include
+	$env:_LINK_ = ""
+	$env:_CL_ = ""
+	$env:LIB = $oldLib
+	$env:INCLUDE = $oldInclude 
+	Write-Host -NoNewline "installing..."
+	& $pythonroot/$pythonexe waf.py install --nocache --out=build --prefix=build/x64/$configuration
+	Write-Host -NoNewline "done..."
+
+	#__________________________________________________________________________________________
+	# Pygobject
+	# requires Python
+	#
+	Write-Host -NoNewline "installing Pygobject..."
+	cd $root\src-stage1-dependencies\Pygobject-3.19.90
+	
+
+	#__________________________________________________________________________________________
+	# PyGTK
+	# requires Python, Pygobject
+	#
+	Write-Host -NoNewline "installing PyGTK..."
+	cd $root\src-stage1-dependencies\pygtk-2.24.0
+	& $pythonroot/$pythonexe setup.py build 2>&1 >> $log
+
+
+
+	
 }
 
 $pythonexe = "python.exe"
