@@ -159,14 +159,15 @@ if ($Config.BuildGTKFromSource) {
 	# first and foremost.
 	SetLog "12-glib"
 	Write-Host -NoNewline "building glib..."
-	$GlibEtcInstallRoot = "..\..\..\..\gtk-build\x64\Debug"
+	cd $root\src-stage1-dependencies\glib\build\win32\vs14
+	$GlibEtcInstallRoot = "..\..\..\..\gtk-build\x64\Release"
 	New-Item -ItemType Directory -Force -Path $GlibEtcInstallRoot  >> $Log
 	New-Item -ItemType Directory -Force -Path $GlibEtcInstallRoot\include >> $Log
 	New-Item -ItemType Directory -Force -Path $GlibEtcInstallRoot\lib >> $Log
-	cp 
-	cd $root\src-stage1-dependencies\glib\build\win32\vs14
 	$ErrorActionPreference = "Continue"
-	msbuild .\glib.vcxproj /p:"configuration=Debug;platform=x64;glibetcinstallroot=$GlibEtcInstallRoot" >> $Log
+	$env:_CL_ = "/I$root/src-stage1-dependencies/glib/glib/pcre /MD"
+	$env:LIB = "$root\src-stage1-dependencies\x64\lib;" + $oldlib
+	msbuild .\glib.vcxproj /p:"configuration=Release;platform=x64;glibetcinstallroot=$GlibEtcInstallRoot" >> $Log
 	$ErrorActionPreference = "Stop"
 	"complete"
 

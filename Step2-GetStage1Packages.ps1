@@ -175,16 +175,21 @@ GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-3.1.0.tar
 GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-3.1.0.tar.gz
 
 # pygobject
-GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/3.19/pygobject-3.19.90.tar.xz
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.28/pygobject-2.28.6.tar.xz
+GetPatch gtk-pkgconfig.7z x64/lib
+GetPatch runtests-windows.7z pygobject-2.28.6\tests
 
 # PyGTK
 GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-2.24.0.tar.gz
+GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_2_22_0_WINDOWS.tar.xz
 
 # py2cairo
 GetPackage http://cairographics.org/releases/py2cairo-1.10.0.tar.bz2
+GetPatch py2cairo-1.10.0.7z py2cairo-1.10.0
 
 # pkgconfig
 GetPackage https://pypi.python.org/packages/source/p/pkgconfig/pkgconfig-1.1.0.tar.gz
+GetPackage http://downloads.sourceforge.net/project/pkgconfiglite/0.28-1/pkg-config-lite-0.28-1_bin-win32.zip
 
 # cleanup
 

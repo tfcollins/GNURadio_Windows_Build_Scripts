@@ -131,6 +131,7 @@ Function SetupPython
 	$configuration = $args[0]
 	"installing python packages for $configuration"
 	if ($configuration -match "Debug") { $d = "d" } else {$d = ""}
+	if ($configuration -match "Debug") { $debug = "--debug" } else {$debug = ""}
 
 	$configuration="ReleaseDLL"
 	$pythonroot = "$root\src-stage2-python\gr-python27"
@@ -167,13 +168,17 @@ Function SetupPython
 	#__________________________________________________________________________________________
 	# Cython
 	#
+	# TODO This is not working properly on the debug build... essentially it is linking against
+	#      python27 instead of python27_d
 	Write-Host -NoNewline "installing Cython..."
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\Cython-0.23.4
-	& $pythonroot/$pythonexe setup.py install  2>&1 >> $log
+	if ($configuration -match "Debug") {$env:_CL_ = "-DPy_DEBUG"}
+	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
 	Write-Host -NoNewline "creating wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
-	move dist/Cython-0.23.4-cp27-cp27$dm-win_amd64.whl dist/Cython-0.23.4-cp27-cp27$dm-win_amd64.$configuration.whl -Force
+	$env:_CL_ = ""
+	move dist/Cython-0.23.4-cp27-cp27${d}m-win_amd64.whl dist/Cython-0.23.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
 	$ErrorActionPreference = "Stop"
 	"done"
 
@@ -235,14 +240,14 @@ Function SetupPython
 	$env:VS90COMNTOOLS = $env:VS140COMNTOOLS
 	& $pythonroot/$pythonexe setup.py config --compiler=msvc2015  2>&1 >> $log
 	Write-Host -NoNewline "building..."
-	& $pythonroot/$pythonexe setup.py build 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py build $debug 2>&1 >> $log
 	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "creating wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	move dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.whl dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 
 	"done"
-
+	
 	#__________________________________________________________________________________________
 	# scipy
 	#
@@ -292,7 +297,7 @@ Function SetupPython
 		& $pythonroot/$pythonexe setup.py clean  2>&1 >> $log
 		& $pythonroot/$pythonexe setup.py config --fcompiler=intelvem --compiler=msvc  2>&1 >> $log
 		Write-Host -NoNewline "building..."
-		& $pythonroot/$pythonexe setup.py build --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
+		& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
 		Write-Host -NoNewline "installing..."
 		& $pythonroot/$pythonexe setup.py install  2>&1 >> $log
 		Write-Host -NoNewline "creating wheel..."
@@ -351,6 +356,7 @@ Function SetupPython
 	#__________________________________________________________________________________________
 	# PyOpenGL
 	# requires Python
+	# python-only package
 	#
 	Write-Host -NoNewline "installing PyOpenGL..."
 	cd $root\src-stage1-dependencies\PyOpenGL-3.1.0
@@ -364,25 +370,32 @@ Function SetupPython
 	# requires Python, PyOpenGL
 	#
 	Write-Host -NoNewline "installing PyOpenGL-accelerate..."
+	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\PyOpenGL-accelerate-3.1.0
-	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	move dist/PyOpenGL_accelerate-3.1.0-cp27-cp27${d}m-win_amd64.whl dist/PyOpenGL_accelerate-3.1.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
+	$ErrorActionPreference = "Stop"
 	"done"
 
 	#__________________________________________________________________________________________
 	# pkg-config
-	# TODO this is probably not a necessary package, py2cairo is looking for pkg-config, not pkgconfig
+	# both the binary (using pkg-config-lite to avoid dependency issues) and the python wrapper
 	#
 	Write-Host -NoNewline "building pkg-config..."
+	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\pkgconfig-1.1.0
-	& $pythonroot/$pythonexe setup.py build 
+	& $pythonroot/$pythonexe setup.py build  $debug 2>&1 >> $log
 	Write-Host -NoNewline "building..."
-	$ErrorActionPreference = "Continue" 
-	& $pythonroot/$pythonexe setup.py install
-	$ErrorActionPreference = "Stop" 
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
-	& $pythonroot/$pythonexe setup.py bdist_wheel
+	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	# yes, this copies the same file three times, but since it's conceptually linked to 
+	# the python wrapper, I kept this here for ease of maintenance
+	cp $root\src-stage1-dependencies\pkg-config-lite-0.28-1\bin\pkg-config.exe $root\bin -Force 
+	$ErrorActionPreference = "Stop"
 	"done"
 
 	#__________________________________________________________________________________________
@@ -391,46 +404,97 @@ Function SetupPython
 	# uses wierd setup python script called WAF which has an archive embedded in it which
 	# creates files that then fail to work.  So we need to extract them and then patch them
 	# and run again.
+	# TODO ensure pkgconfig-light is downloaded to the gr-build/bin directory
 	Write-Host -NoNewline "configuring py2cairo..."
 	cd $root\src-stage1-dependencies\py2cairo-1.10.0
 	$env:path = "$root\bin;$root\src-stage1-dependencies\x64\bin;" + $oldPath
 	$ErrorActionPreference = "Continue" 
 	$env:CL = $oldCL
-	& $pythonroot/$pythonexe waf.py configure --nocache --out=build --prefix=build/x64/$configuration 
+	# HACK the below will fail, but will run the command to unpack the rest of the library
+	# what we really should do here is run just the python needed to unpack the library
+	# and not intentionally run code that will error out
+	& $pythonroot/$pythonexe waf configure --nocache --out=build --prefix=build/x64/$configuration  2>&1 >> $log
+	Copy-Item -Force msvc.py .\waf-1.6.3-3c3129a3ec8fb4a5bbc7ba3161463b22\waflib\Tools\msvc.py 2>&1 >> $log
+	Copy-Item -Force python.py .\waf-1.6.3-3c3129a3ec8fb4a5bbc7ba3161463b22\waflib\Tools\python.py 2>&1 >> $log
+	# now it will work
+	& $pythonroot/$pythonexe waf configure --nocache --out=build --prefix=build/x64/$configuration  2>&1 >> $log
 	Write-Host -NoNewline "building..."
 	$oldInclude = $env:INCLUDE
 	$env:INCLUDE = "$root/src-stage1/dependencies/x64/include;" + $oldInclude 
 	$env:LIB = "$root/src-stage1-dependencies/cairo/build/x64/Release;$root/src-stage1-dependencies/cairo/build/x64/ReleaseDLL;$pythonroot/libs;" + $oldlib 
 	$env:_CL_ = "/MD /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
 	$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
-	& $pythonroot/$pythonexe waf.py build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include
+	& $pythonroot/$pythonexe waf build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include 2>&1 >> $log
 	$env:_LINK_ = ""
 	$env:_CL_ = ""
 	$env:LIB = $oldLib
 	$env:INCLUDE = $oldInclude 
 	Write-Host -NoNewline "installing..."
-	& $pythonroot/$pythonexe waf.py install --nocache --out=build --prefix=build/x64/$configuration
+	& $pythonroot/$pythonexe waf install --nocache --out=build --prefix=build/x64/$configuration 2>&1 >> $log
+	cp -Recurse -Force build/x64/$configuration/lib/python2.7/site-packages/cairo $pythonroot\lib\site-packages 2>&1 >> $log
+	cp -Force $root\src-stage1-dependencies\py2cairo-1.10.0\pycairo.pc $pythonroot\lib\pkgconfig
+	& $pythonroot/$pythonexe waf clean  2>&1 >> $log
 	Write-Host -NoNewline "done..."
 
 	#__________________________________________________________________________________________
 	# Pygobject
 	# requires Python
 	#
-	Write-Host -NoNewline "installing Pygobject..."
-	cd $root\src-stage1-dependencies\Pygobject-3.19.90
-	
+	# VERSION WARNING: higher than 2.28 does not have setup.py so do not try to use
+	#
+	Write-Host -NoNewline "building Pygobject..."
+	$ErrorActionPreference = "Continue" 
+	cd $root\src-stage1-dependencies\Pygobject-2.28.6
+	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;" + $oldpath
+	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
+	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
+	& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --enable-threading  2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	& $pythonroot/$pythonexe setup.py install  2>&1 >> $Log
+	Write-Host -NoNewline "creating exe..."
+	& $pythonroot/$pythonexe setup.py bdist_wininst 2>&1 >> $Log
+	Write-Host -NoNewline "crafting wheel from exe..."
+	New-Item -ItemType Directory -Force -Path .\dist\gtk-2.0 2>&1 >> $Log
+	cd dist
+	& $pythonroot/Scripts/wheel.exe convert pygobject-2.28.6.win-amd64-py2.7.exe 2>&1 >> $Log
+	move gtk-2.0/pygobject-cp27-none-win_amd64.whl gtk-2.0/pygobject-cp27-none-win_amd64.$configuration.whl -Force
+	cd ..
+	$env:_CL_ = $null
+	$env:PATH = $oldPath
+	$env:PKG_CONFIG_PATH = $null
+	$ErrorActionPreference = "Stop" 
+	"done"
 
 	#__________________________________________________________________________________________
 	# PyGTK
 	# requires Python, Pygobject
 	#
-	Write-Host -NoNewline "installing PyGTK..."
-	cd $root\src-stage1-dependencies\pygtk-2.24.0
-	& $pythonroot/$pythonexe setup.py build 2>&1 >> $log
-
-
-
-	
+	# TODO need to update pkgconfig.7z on server!!!
+	# TODO also need to set the bindings manually
+	Write-Host -NoNewline "building PyGTK..."
+	cd $root\src-stage1-dependencies\pygtk-2.24.0-win
+	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
+	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot" + $oldpath
+	$env:_CL_ = "/I$root/src-stage1-dependencies/x64/lib/gtk-2.0/include /I$root/src-stage1-dependencies/py2cairo-1.10.0/src " + $env:_CL_
+	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
+	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $Log
+	& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --enable-threading 2>&1 >> $log
+	Write-Host -NoNewline "installing..."
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $Log
+	Write-Host -NoNewline "building exe..."
+	& $pythonroot/$pythonexe setup.py bdist_wininst 2>&1 >> $Log
+	New-Item -ItemType Directory -Force -Path .\dist\gtk-2.0 2>&1 >> $Log
+	cd dist
+	$ErrorActionPreference = "Continue" 
+	Write-Host -NoNewline "crafting wheel from exe..."
+	& $pythonroot/Scripts/wheel.exe convert pygtk-2.24.0.win-amd64-py2.7.exe 2>&1 >> $Log
+	move gtk-2.0/pygtk-cp27-none-win_amd64.whl gtk-2.0/pygtk-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $Log
+	cd ..
+	$env:_CL_ = $null
+	$env:PATH = $oldPath
+	$env:PKG_CONFIG_PATH = $null
+	$ErrorActionPreference = "Stop" 
+	"done"
 }
 
 $pythonexe = "python.exe"
@@ -444,3 +508,25 @@ SetLog("34-Setting up debug Python")
 $pythonexe = "python_d.exe"
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 SetupPython "DebugDLL"
+
+break
+
+# these are just here for quick debugging
+
+$configuration = "ReleaseDLL"
+$pythonroot = "$root\src-stage2-python\gr-python27"
+$pythonexe = "python.exe"
+$d = ""
+$debug = ""
+
+$configuration = "ReleaseDLL-AVX2"
+$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+$pythonexe = "python.exe"
+$d = ""
+$debug = ""
+
+$configuration = "DebugDLL"
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+$pythonexe = "python_d.exe"
+$d = "d"
+$debug = "--debug"
