@@ -64,20 +64,18 @@ function getPackage
 			} elseif ($archiveExt -eq ".zip") {
 				$destination = "$root/src-stage1-dependencies"
 				[io.compression.zipfile]::ExtractToDirectory($archive, $destination) >> $Log
-			} elseif ($archiveExt -eq ".tar.gz11" ) {
-				tar zxf $archive 2>&1 >> $Log
-			} elseif ($archiveExt -eq ".tar.xz" -or $archiveExt -eq ".tgz" -or $archiveExt -eq ".tar.gz") {
+			} elseif ($archiveExt -eq ".tar.xz" -or $archiveExt -eq ".tgz" -or $archiveExt -eq ".tar.gz" -or $archiveExt -eq ".tar.bz2") {
 				sz x -y $archive >> $Log
 				if (!(Test-Path $root\src-stage1-dependencies\$archiveName.tar)) {
 					# some python .tar.gz files put the tar in a dist subfolder
 					cd dist
 					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar" >> $Log
 					cd ..
-					rm -rf dist >> $Log
+					rm -Recurse -Force dist >> $Log
 				} else {
 					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar" >> $Log
+					del "$archiveName.tar" -Force
 					}
-				del "$archiveName.tar"
 			} else {
 				throw "Unknown file extension on $archiveName$archiveExt"
 			}
