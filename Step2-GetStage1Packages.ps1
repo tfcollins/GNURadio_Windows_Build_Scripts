@@ -191,6 +191,13 @@ GetPatch py2cairo-1.10.0.7z py2cairo-1.10.0
 GetPackage https://pypi.python.org/packages/source/p/pkgconfig/pkgconfig-1.1.0.tar.gz
 GetPackage http://downloads.sourceforge.net/project/pkgconfiglite/0.28-1/pkg-config-lite-0.28-1_bin-win32.zip
 
+# wxpython
+GetPackage http://downloads.sourceforge.net/wxpython/wxPython-src-3.0.2.0.tar.bz2 wxpython
+GetPatch wxpython_vs2015_patch.7z wxpython
+
+# cheetah 2.4.4
+GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-2.4.4.tar.gz
+
 # cleanup
 
 # return to original directory

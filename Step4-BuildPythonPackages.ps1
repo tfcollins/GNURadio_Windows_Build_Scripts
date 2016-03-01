@@ -246,6 +246,7 @@ Function SetupPython
 	Write-Host -NoNewline "creating wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	move dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.whl dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 
+	$ErrorActionPreference = "Stop"
 	"done"
 	
 	#__________________________________________________________________________________________
@@ -253,6 +254,7 @@ Function SetupPython
 	#
 	if ($hasIFORT) {
 		Write-Host -NoNewline "configuring scipy..."
+		$ErrorActionPreference = "Continue"
 		cd $root\src-stage1-dependencies\scipy
 		$env:Path = "${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\bin\intel64;" + $oldPath 
 		$env:LIB = "${env:IFORT_COMPILER16}compiler\lib\intel64_win;" + $oldLib
@@ -302,7 +304,7 @@ Function SetupPython
 		& $pythonroot/$pythonexe setup.py install  2>&1 >> $log
 		Write-Host -NoNewline "creating wheel..."
 		& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
-		move dist/scipy-0.17.0-cp27-cp27$dm-win_amd64.whl dist/scipy-0.17.0-cp27-cp27$dm-win_amd64.$configuration.whl -Force
+		move dist/scipy-0.17.0-cp27-cp27${d}m-win_amd64.whl dist/scipy-0.17.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
 		$ErrorActionPreference = "Stop"
 	} else {
 		# TODO can't compile scipy without a fortran compiler, and gfortran won't work here
@@ -471,6 +473,7 @@ Function SetupPython
 	#
 	# TODO need to update pkgconfig.7z on server!!!
 	# TODO also need to set the bindings manually
+
 	Write-Host -NoNewline "building PyGTK..."
 	cd $root\src-stage1-dependencies\pygtk-2.24.0-win
 	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
@@ -495,6 +498,56 @@ Function SetupPython
 	$env:PKG_CONFIG_PATH = $null
 	$ErrorActionPreference = "Stop" 
 	"done"
+
+	#__________________________________________________________________________________________
+	# wxpython
+	#
+	# v3.0.2 is not VC140 compatible, so the patch fixes those things
+	# TODO submit changes to source tree
+
+	Write-Host -NoNewline "prepping wxpython..."
+	cd $root\src-stage1-dependencies\wxpython\wxPython
+	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2 "} else {$env:_CL_ = $null}
+	if ($configation -match "Debug") {$env:_CL_ = "/D__WXDEBUG__  " + $env:_CL_} 
+	$env:_CL_ = "/I$root/src-stage1-dependencies/wxpython/include/msvc /I$root/src-stage1-dependencies/wxpython/lib/vcFIXME_dll/mswud " + $env:_CL_
+	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot" + $oldpath
+	$ErrorActionPreference = "Continue"
+	& $pythonroot\$pythonexe build-wxpython.py --clean 2>&1 >> $Log
+	& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build $debug --force_config  2>&1 >> $Log
+	Write-Host -NoNewline "configing..."
+	& $pythonroot\$pythonexe setup.py clean 2>&1 >> $Log
+	& $pythonroot\$pythonexe setup.py config 2>&1 >> $Log
+	Write-Host -NoNewline "building..."
+	& $pythonroot\$pythonexe setup.py build 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot\$pythonexe setup.py bdist_wininst 2>&1 >> $Log
+	cd dist
+	& $pythonroot/Scripts/wheel.exe convert wxpython-3.0.2.0.win-amd64-py2.7.exe 2>&1 >> $Log
+	del wxpython-3.0.2.0.win-amd64-py2.7.exe
+	move wx-3.0-cp27-none-win_amd64.whl wx-3.0-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $Log
+	move .\wxPython-common-3.0.2.0.win-amd64.exe .\wxPython-common-3.0.2.0.win-amd64.$configuration.exe -Force 2>&1 >> $Log
+	$ErrorActionPreference = "Stop" 
+	$env:_CL_ = $null
+	$env:PATH = $oldPath
+	"done"
+
+	#__________________________________________________________________________________________
+	# cheetah
+	#
+	# will download and install Markdown automatically
+	Write-Host -NoNewline "building cheetah..."
+	$ErrorActionPreference = "Continue"
+	cd $root\src-stage1-dependencies\Cheetah-2.4.4
+	& $pythonroot/$pythonexe setup.py build  $debug 2>&1 >> $log
+	Write-Host -NoNewline "building..."
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	move dist/Cheetah-2.4.4-cp27-cp27${d}m-win_amd64.whl dist/Cheetah-2.4.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	"done"
 }
 
 $pythonexe = "python.exe"
@@ -508,7 +561,6 @@ SetLog("34-Setting up debug Python")
 $pythonexe = "python_d.exe"
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 SetupPython "DebugDLL"
-
 break
 
 # these are just here for quick debugging

@@ -46,7 +46,7 @@ function getPackage
 		# store it in the packages dir so we can reuse it if we
 		# clean the whole install
 		if (!(Test-Path $root/packages/$archiveName)) {
-			mkdir $root/packages/$archiveName
+			mkdir $root/packages/$archiveName >> $Log
 		}
 		if (!(Test-Path $root/packages/$archiveName/$archiveName$archiveExt)) {
 			cd $root/packages/$archiveName
