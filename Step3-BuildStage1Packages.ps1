@@ -504,5 +504,84 @@ $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
 "complete"
 
+# ____________________________________________________________________________________________________________
+# Mako
+# Mako is a python-only package can be installed automatically
+# used by UHD drivers
+#
+SetLog "25-Mako"
+Write-Host -NoNewline "installing Mako using pip..."
+$ErrorActionPreference = "Continue" # pip will "error" if there is a new version available
+$pythonroot = "$root\src-stage2-python\gr-python27"
+& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
+$ErrorActionPreference = "Stop"
+"complete"
+
+# ____________________________________________________________________________________________________________
+# libusb
+#
+# 
+#
+SetLog "26-libusb"
+Write-Host -NoNewline "building libusb..."
+cd $root\src-stage1-dependencies\libusb\msvc
+Write-Host -NoNewline "Debug..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+Write-Host -NoNewline "Release..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
+Write-Host -NoNewline "Release-AVX2..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+"complete"
+
+# ____________________________________________________________________________________________________________
+# UHD 3.9.2
+#
+# requires libsub, boost, python, mako
+#
+
+SetLog "27-UHD"
+Write-Host "building uhd..."
+$ErrorActionPreference = "Continue"
+cd $root\src-stage1-dependencies\uhd\host
+New-Item -ItemType Directory -Force -Path .\build  2>&1 >> $Log
+cd build 
+
+Function makeUHD {
+	$configuration = $args[0]
+	Write-Host -NoNewline "Configuring $configuration..."
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
+
+	& cmake .. `
+		-G "Visual Studio 14 2015 Win64" `
+		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+		-DBoost_INCLUDE_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/include/boost-1_60" `
+		-DBoost_LIBRARY_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/lib" `
+		-DLIBUSB_INCLUDE_DIRS="$root/src-stage1-dependencies/libusb/libusb" `
+		-DLIBUSB_LIBRARIES="$root/src-stage1-dependencies/libusb/x64/$configuration/lib/libusb-1.0.lib" 2>&1 >> $Log 
+	Write-Host -NoNewline "building..."
+	msbuild .\UHD.sln /m /p:"configuration=$configuration;platform=x64" 2>&1 >> $Log 
+	Write-Host -NoNewline "installing..."
+	& cmake -DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/uhd\dist\$configuration" -DBUILD_TYPE="$boostconfig" -P cmake_install.cmake 2>&1 >> $Log
+	"complete"
+}
+
+# AVX2 build
+$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+makeUHD "Release-AVX2"
+
+# Release build
+$pythonroot = "$root\src-stage2-python\gr-python27"
+makeUHD "Release"
+
+# Debug build
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+makeUHD "Debug"
+
+
 
 

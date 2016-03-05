@@ -198,6 +198,13 @@ GetPatch wxpython_vs2015_patch.7z wxpython
 # cheetah 2.4.4
 GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-2.4.4.tar.gz
 
+# libusb 1.0.20
+GetPackage https://github.com/libusb/libusb/releases/download/v1.0.20/libusb-1.0.20.tar.bz2 libusb
+GetPatch libusb_VS2015.7z libusb
+
+# UHD
+GetPackage git://github.com/EttusResearch/uhd.git
+
 # cleanup
 
 # return to original directory
