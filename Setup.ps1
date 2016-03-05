@@ -25,7 +25,7 @@ function getPackage
 				Remove-Item  $root\src-stage1-dependencies\$archiveName -Force -Recurse
 			}
 			$ErrorActionPreference = "Continue"
-			git clone --depth=1 $toGet  2>&1 >> $Log 
+			git clone --recursive --depth=1 $toGet  2>&1 >> $Log 
 			$ErrorActionPreference = "Stop"
 			if ($LastErrorCode -eq 1) {
 				Write-Host -BackgroundColor Red -ForegroundColor White "git clone FAILED"
@@ -185,6 +185,7 @@ set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"
 
 # CMake (to build gnuradio)
 if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed"} 
+Set-Alias cmake "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe"
 	
 # ActivePerl (to build OpenSSL)
 if (-not (test-path "$env:ProgramFiles\perl64\bin\perl.exe")) {throw "ActiveState Perl must be installed"} 

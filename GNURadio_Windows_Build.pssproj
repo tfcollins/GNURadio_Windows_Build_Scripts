@@ -32,7 +32,8 @@
     <Compile Include="Functions.psm1" />
     <Compile Include="Setup.ps1" />
     <Compile Include="Step1-BuildStructure.ps1" />
-    <Compile Include="Step10-GetStage3Packages.ps1" />
+    <Compile Include="Step5-ConsolidateLibs.ps1" />
+    <Compile Include="Step9-GetStage3Packages.ps1" />
     <Compile Include="Step2-GetStage1Packages.ps1" />
     <Compile Include="Step3-BuildStage1Packages.ps1" />
     <Compile Include="Step4-BuildPythonPackages.ps1" />

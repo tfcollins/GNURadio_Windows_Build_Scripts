@@ -9,9 +9,8 @@
 # are set redundantly.  This is to enable easier debugging if one package needs to be re-run
 #
 # This module builds the various python packages above the essentials included
-# in the build originally.  We are building two versions, one for AVX2 only
-# and one for release.
-# TODO build one for the debug binaries.
+# in the build originally.  We are building three versions, one for AVX2 only
+# and one for release and one for debug
 
 # script setup
 $ErrorActionPreference = "Stop"
