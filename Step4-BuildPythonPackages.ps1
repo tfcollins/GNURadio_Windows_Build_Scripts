@@ -22,7 +22,7 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
 
-break
+#break
 
 #__________________________________________________________________________________________
 # sip
@@ -73,7 +73,7 @@ $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
 MakeSip "Release-AVX2"
 MakeSip "ReleaseDLL-AVX2"
 $ErrorActionPreference = "Stop"
-
+"complete"
 
 #__________________________________________________________________________________________
 # PyQt
@@ -131,10 +131,6 @@ Function SetupPython
 	"installing python packages for $configuration"
 	if ($configuration -match "Debug") { $d = "d" } else {$d = ""}
 	if ($configuration -match "Debug") { $debug = "--debug" } else {$debug = ""}
-
-	$configuration="ReleaseDLL"
-	$pythonroot = "$root\src-stage2-python\gr-python27"
-	SetLog "99-Test"
 
 	#__________________________________________________________________________________________
 	# PyQt4
@@ -333,7 +329,7 @@ Function SetupPython
 	} else {
 		& $pythonroot/$pythonexe configure.py         --extra-cflags="-Zi -Ox -arch:AVX2 -wd4577" -I $root\src-stage1-dependencies\Qwt-5.2.3\build\x64\Release-AVX2\include  -L $root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib -l qtcore4  -L $root\src-stage1-dependencies\Qwt-5.2.3\build\x64\Release-AVX2\lib  -l"$root\src-stage1-dependencies\Qwt-5.2.3\build\x64\Release-AVX2\lib\qwt"   -j4 --sip-include-dirs ..\..\sip-4.17\build\x64\Release-AVX2 2>&1 >> $log
 	}
-	nmake clean
+	nmake clean 2>&1 >> $log
 	Write-Host -NoNewline "building..."
 	Exec {nmake} 2>&1 >> $log
 	Write-Host -NoNewline "installing..."
@@ -357,13 +353,15 @@ Function SetupPython
 	#__________________________________________________________________________________________
 	# PyOpenGL
 	# requires Python
-	# python-only package
+	# python-only package so no need to rename the wheels since there is only one
 	#
 	Write-Host -NoNewline "installing PyOpenGL..."
+	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\PyOpenGL-3.1.0
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
 	"done"
 
 	#__________________________________________________________________________________________
@@ -471,7 +469,7 @@ Function SetupPython
 	# requires Python, Pygobject
 	#
 	# TODO need to update pkgconfig.7z on server!!!
-	# TODO also need to set the bindings manually
+	# TODO also need to set the bindings manually (what did I mean by this??)
 
 	Write-Host -NoNewline "building PyGTK..."
 	cd $root\src-stage1-dependencies\pygtk-2.24.0-win
@@ -540,13 +538,61 @@ Function SetupPython
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\Cheetah-2.4.4
 	& $pythonroot/$pythonexe setup.py build  $debug 2>&1 >> $log
-	Write-Host -NoNewline "building..."
+	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	move dist/Cheetah-2.4.4-cp27-cp27${d}m-win_amd64.whl dist/Cheetah-2.4.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
 	$ErrorActionPreference = "Stop"
 	"done"
+
+	#__________________________________________________________________________________________
+	# sphinx
+	#
+	# will also download/install a large number of dependencies
+	# pytz, babel, colorama, snowballstemmer, sphinx-rtd-theme, six, Pygments, docutils, Jinja2, alabaster, sphinx
+	# all are python only packages
+	Write-Host -NoNewline "installing sphinx using pip..."
+	$ErrorActionPreference = "Continue" # pip will "error" if there is a new version available
+	& $pythonroot/Scripts/pip.exe install -U sphinx 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	"done"
+
+	#__________________________________________________________________________________________
+	# lxml
+	#
+	# this was a royal pain to get to statically link the dependent libraries
+	# but now there are no dependencies, just install the wheel
+	Write-Host -NoNewline "configuring lxml..."
+	$ErrorActionPreference = "Continue"
+	$xsltconfig = ($configuration -replace "DLL", "")
+	cd $root\src-stage1-dependencies\lxml
+	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
+	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include "
+	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$oldinclude = $env:INCLUDE
+	$oldlibrary = $env:LIBRARY
+	$env:LIBRARY = "$root/src-stage1-dependencies/lxml/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
+	cp -Force $root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib $root/src-stage1-dependencies/lxml/libs/$xsltconfig/xml2.lib
+	cp -Force $root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig/libiconv.lib $root/src-stage1-dependencies/lxml/libs/$xsltconfig/iconv_a.lib
+	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
+	del -Recurse -Force build 
+	Write-Host -NoNewline "building..."
+	& $pythonroot/$pythonexe setup.py build --static $debug 2>&1 >> $log
+	Write-Host -NoNewline "installing..."
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel --static 2>&1 >> $log
+	move dist/lxml-3.5.0-cp27-cp27${d}m-win_amd64.whl dist/lxml-3.5.0-cp27-cp27${d}m-win_amd64.$xsltconfig.whl -Force 2>&1 >> $log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$env:LIBRARY = $oldlibrary
+	$env:INCLUDE = $oldinclude
+	$ErrorActionPreference = "Stop"
+	"done"
+
+	"finished installing python packages for $configuration"
 }
 
 $pythonexe = "python.exe"

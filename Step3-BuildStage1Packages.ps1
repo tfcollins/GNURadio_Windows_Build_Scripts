@@ -567,6 +567,8 @@ Function makeUHD {
 	msbuild .\UHD.sln /m /p:"configuration=$configuration;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "installing..."
 	& cmake -DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/uhd\dist\$configuration" -DBUILD_TYPE="$boostconfig" -P cmake_install.cmake 2>&1 >> $Log
+	New-Item -ItemType Directory -Path $root/src-stage1-dependencies/uhd\dist\$configuration\share\uhd\examples\ -Force
+	cp -Recurse -Force $root/src-stage1-dependencies/uhd/host/build/examples/$configuration/* $root/src-stage1-dependencies/uhd\dist\$configuration\share\uhd\examples\
 	"complete"
 }
 
@@ -583,5 +585,32 @@ $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 makeUHD "Debug"
 
 
+# ____________________________________________________________________________________________________________
+# libxslt 1.1.28 w/ CVE-2015-7995 patch
+#
+# uses libxml, zlib, and iconv
+SetLog "28-libxslt"
+Write-Host "building libxslt..."
+$ErrorActionPreference = "Continue"
+cd $root\src-stage1-dependencies\libxslt\win32
+function MakeXSLT {
+	$configuration = $args[0]
+	Write-Host -NoNewline "$configuration..."
+	if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
+	& nmake /NOLOGO clean 2>&1 >> $Log 
+	Write-Host -NoNewline "configuring..."
+	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
+	Write-Host -NoNewline "building..." 
+	& nmake /NOLOGO 2>&1 >> $Log 
+	Write-Host -NoNewline "installing..."
+	& nmake /NOLOGO install 2>&1 >> $Log 
+	Move-Item -Path ..\build\$configuration\bin\libexslt.pdb ..\build\$configuration\lib
+	Move-Item -Path ..\build\$configuration\bin\libxslt.pdb ..\build\$configuration\lib
+	"done"
+}
+MakeXSLT "Release"
+MakeXSLT "Release-AVX2"
+MakeXSLT "Debug"
+$ErrorActionPreference = "Stop"
 
 

@@ -205,6 +205,12 @@ GetPatch libusb_VS2015.7z libusb
 # UHD
 GetPackage git://github.com/EttusResearch/uhd.git
 
+# libxslt
+GetPackage https://git.gnome.org/browse/libxslt/snapshot/CVE-2015-7995.tar.xz libxslt
+
+# lxml
+GetPackage git://github.com/lxml/lxml.git 
+
 # cleanup
 
 # return to original directory
