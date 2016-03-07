@@ -10,10 +10,10 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
 # prep for cmake
-	if (!(Test-Path $root/src-stage3/build)) {
-		cd $root/src-stage3
-		mkdir build
-	} 
+if (!(Test-Path $root/src-stage3/build)) {
+	cd $root/src-stage3
+	mkdir build
+} 
 
 function BuildGNURadio {
 	$configuration = $args[0]
@@ -21,6 +21,10 @@ function BuildGNURadio {
 	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
 	# prep for cmake
 	SetLog "60-Build GNURadio $configuration"
+	if (!(Test-Path $root/src-stage3/staged_install/$configuration)) {
+		cd $root/src-stage3/staged_install
+		mkdir $configuration
+	} 
 	if (!(Test-Path $root/src-stage3/build/$configuration)) {
 		cd $root/src-stage3/build
 		mkdir $configuration
@@ -30,6 +34,7 @@ function BuildGNURadio {
 	$env:PATH = "$root/build/$configuration/lib;$pythonroot/Dlls;" + $oldPath
 
 	$ErrorActionPreference = "Continue"
+	# Always use the DLL version of Qt to avoid errors about parent being on a different thread.
 	cmake ../../src/gnuradio `
 		-G "Visual Studio 14 2015 Win64" `
 		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
@@ -62,15 +67,16 @@ function BuildGNURadio {
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
 	Write-Host -NoNewline "building..."
 	# TODO relwithDebInfo isn't working at the moment
-	msbuild .\gnuradio.sln /m /p:"configuration=Release;platform=x64" 2>&1 >> $Log 
+	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
-	msbuild .\INSTALL.vcxproj /m  /p:"configuration=Release;platform=x64" 2>&1 >> $Log 
+	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
 	Write-Host -NoNewline "moving add'l libraries..."
 	cp $root/build/$configuration/lib/*.dll $root\src-stage3\staged_install\$configuration\bin\
 	Write-Host -NoNewline "moving python..."
-	Move-Item -Path $pythonroot $root/src-stage3/staged_install/$configuration
+	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
+	Copy-Item -Force -Path $root\src-stage3\build\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
 	"complete"
 }
 
@@ -85,3 +91,15 @@ BuildGNURadio "Release"
 # Debug build
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 BuildGNURadio "Debug"
+
+break
+
+#these are just here for quicker debugging
+$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+$configuration = "Release-AVX2"
+
+$pythonroot = "$root\src-stage2-python\gr-python27"
+$configuration = "Release"
+
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+$configuration = "Debug"

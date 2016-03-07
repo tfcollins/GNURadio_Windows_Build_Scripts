@@ -48,10 +48,10 @@ Function Consolidate {
 
 	# move Qt
 	Write-Host -NoNewline "Consolidating Qt..."
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtCore4.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui4.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL4.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtSVG4.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtCore4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtSVG4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtOpenGL* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtGui* $root/build/$configuration/include/ 2>&1 >> $log

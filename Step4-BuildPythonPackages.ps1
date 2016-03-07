@@ -387,13 +387,14 @@ Function SetupPython
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\pkgconfig-1.1.0
 	& $pythonroot/$pythonexe setup.py build  $debug 2>&1 >> $log
-	Write-Host -NoNewline "building..."
+	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	# yes, this copies the same file three times, but since it's conceptually linked to 
 	# the python wrapper, I kept this here for ease of maintenance
 	cp $root\src-stage1-dependencies\pkg-config-lite-0.28-1\bin\pkg-config.exe $root\bin -Force 
+	New-Item -ItemType Directory -Force $pythonroot\lib\pkgconfig
 	$ErrorActionPreference = "Stop"
 	"done"
 
@@ -431,9 +432,9 @@ Function SetupPython
 	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe waf install --nocache --out=build --prefix=build/x64/$configuration 2>&1 >> $log
 	cp -Recurse -Force build/x64/$configuration/lib/python2.7/site-packages/cairo $pythonroot\lib\site-packages 2>&1 >> $log
-	cp -Force $root\src-stage1-dependencies\py2cairo-1.10.0\pycairo.pc $pythonroot\lib\pkgconfig
+	cp -Force $root\src-stage1-dependencies\py2cairo-1.10.0\pycairo.pc $pythonroot\lib\pkgconfig\
 	& $pythonroot/$pythonexe waf clean  2>&1 >> $log
-	Write-Host -NoNewline "done..."
+	"done..."
 
 	#__________________________________________________________________________________________
 	# Pygobject
@@ -474,7 +475,7 @@ Function SetupPython
 	Write-Host -NoNewline "building PyGTK..."
 	cd $root\src-stage1-dependencies\pygtk-2.24.0-win
 	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
-	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot" + $oldpath
+	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot;" + $oldpath
 	$env:_CL_ = "/I$root/src-stage1-dependencies/x64/lib/gtk-2.0/include /I$root/src-stage1-dependencies/py2cairo-1.10.0/src " + $env:_CL_
 	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $Log

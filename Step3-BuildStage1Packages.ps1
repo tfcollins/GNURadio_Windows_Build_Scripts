@@ -288,6 +288,7 @@ Function gatherPython {
 	cp -r -fo ../../Lib/ctypes $pythonroot/Lib
 	cp -r -fo ../../Lib/curses $pythonroot/Lib
 	cp -r -fo ../../Lib/distutils $pythonroot/Lib
+	cp -fo $pythonroot/lib/distutils/command/wininst-9.0-amd64.exe $pythonroot/lib/distutils/command/wininst-14.0-amd64.exe
 	cp -r -fo ../../Lib/email $pythonroot/Lib
 	cp -r -fo ../../Lib/encodings $pythonroot/Lib
 	cp -r -fo ../../Lib/hotshot $pythonroot/Lib
