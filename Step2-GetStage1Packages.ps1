@@ -10,7 +10,7 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 
 # Retrieve packages needed for Stage 1
 cd $root/src-stage1-dependencies
-SetLog "02-GetPackages"
+SetLog "GetPackages"
 
 break
 # libzmq

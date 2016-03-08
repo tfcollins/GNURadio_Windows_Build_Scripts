@@ -23,7 +23,7 @@ break
 
 cd $root
 
-SetLog "50-Consolidate Libraries"
+SetLog "Consolidate Libraries"
 New-Item -ItemType Directory -Force -Path $root/build 2>&1 >> $log
 
 Function Consolidate {

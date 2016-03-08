@@ -162,8 +162,16 @@ function Exec
 
 function SetLog ($name)
 {
-	$Global:Log = "$root\logs\$name.txt"
+	$LogNumStr = $Global:LogNumber.ToString("00")
+	$Global:Log = "$root\logs\$LogNumStr-$name.txt"
 	"" > $Log 
+	$Global:LogNumber ++
+}
+
+function ResetLog 
+{
+	$Global:LogNumber = 1
+	del $root/logs/*.*
 }
 
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 

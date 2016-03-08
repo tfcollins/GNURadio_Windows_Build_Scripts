@@ -20,7 +20,7 @@ function BuildGNURadio {
 	if ($configuration -match "Release") {$buildtype = "RELEASE"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
 	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
 	# prep for cmake
-	SetLog "60-Build GNURadio $configuration"
+	SetLog "Build GNURadio $configuration"
 	if (!(Test-Path $root/src-stage3/staged_install/$configuration)) {
 		cd $root/src-stage3/staged_install
 		mkdir $configuration
@@ -95,6 +95,9 @@ BuildGNURadio "Debug"
 break
 
 #these are just here for quicker debugging
+
+ResetLog
+
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
 $configuration = "Release-AVX2"
 

@@ -12,7 +12,7 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
 # gnuradio
-SetLog "60-Retrieve GNURadio"
+SetLog "Retrieve GNURadio"
 if (!(Test-Path $root/src-stage3-gnuradio/src)) {
 		cd $root/src-stage3-gnuradio
 		mkdir src

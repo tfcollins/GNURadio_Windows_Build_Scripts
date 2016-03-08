@@ -27,7 +27,7 @@ $pythondebugexe = "python_d.exe"
 #__________________________________________________________________________________________
 # sip
 $ErrorActionPreference = "Continue"
-SetLog "30-sip"
+SetLog "sip"
 Write-Host -NoNewline "building sip..."
 cd $root\src-stage1-dependencies\sip-4.17
 
@@ -81,7 +81,7 @@ $ErrorActionPreference = "Stop"
 # building libraries separate from the actual install into Python
 #
 $ErrorActionPreference = "Continue"
-SetLog "31-PyQt"
+SetLog "PyQt"
 cd $root\src-stage1-dependencies\PyQt4
 $env:QMAKESPEC = "win32-msvc2015"
 Write-Host -NoNewline "building PyQT..."
@@ -478,6 +478,7 @@ Function SetupPython
 	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot;" + $oldpath
 	$env:_CL_ = "/I$root/src-stage1-dependencies/x64/lib/gtk-2.0/include /I$root/src-stage1-dependencies/py2cairo-1.10.0/src " + $env:_CL_
 	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
+	$ErrorActionPreference = "Continue" 
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $Log
 	& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --enable-threading 2>&1 >> $log
 	Write-Host -NoNewline "installing..."
@@ -486,7 +487,6 @@ Function SetupPython
 	& $pythonroot/$pythonexe setup.py bdist_wininst 2>&1 >> $Log
 	New-Item -ItemType Directory -Force -Path .\dist\gtk-2.0 2>&1 >> $Log
 	cd dist
-	$ErrorActionPreference = "Continue" 
 	Write-Host -NoNewline "crafting wheel from exe..."
 	& $pythonroot/Scripts/wheel.exe convert pygtk-2.24.0.win-amd64-py2.7.exe 2>&1 >> $Log
 	move gtk-2.0/pygtk-cp27-none-win_amd64.whl gtk-2.0/pygtk-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $Log
@@ -597,19 +597,21 @@ Function SetupPython
 }
 
 $pythonexe = "python.exe"
-SetLog("32-Setting up Python")
+SetLog("Setting up Python")
 $pythonroot = "$root\src-stage2-python\gr-python27"
 SetupPython "ReleaseDLL"
-SetLog("33-Setting up AVX2 Python")
+SetLog("Setting up AVX2 Python")
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
 SetupPython "ReleaseDLL-AVX2"
-SetLog("34-Setting up debug Python")
+SetLog("Setting up debug Python")
 $pythonexe = "python_d.exe"
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 SetupPython "DebugDLL"
 break
 
 # these are just here for quick debugging
+
+ResetLog
 
 $configuration = "ReleaseDLL"
 $pythonroot = "$root\src-stage2-python\gr-python27"

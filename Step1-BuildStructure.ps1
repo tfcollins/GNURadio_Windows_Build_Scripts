@@ -4,6 +4,8 @@
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
+ResetLog
+SetupLog "Initial Configuration"
 Write-Host -NoNewline "Setting up directories..." 
 # build basic directories
 $Log = "$root/logs/01-Setup.txt"
