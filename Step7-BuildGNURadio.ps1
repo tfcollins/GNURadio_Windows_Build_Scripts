@@ -76,7 +76,9 @@ function BuildGNURadio {
 	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
-	Copy-Item -Force -Path $root\src-stage3\build\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
+	# TODO this files are not in an archived patch yet
+	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
+	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
 	"complete"
 }
 

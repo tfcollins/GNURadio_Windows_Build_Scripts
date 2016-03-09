@@ -447,7 +447,7 @@ Function SetupPython
 	cd $root\src-stage1-dependencies\Pygobject-2.28.6
 	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;" + $oldpath
 	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
-	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
+	if ($configuration -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
 	& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --enable-threading  2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install  2>&1 >> $Log
@@ -474,7 +474,7 @@ Function SetupPython
 
 	Write-Host -NoNewline "building PyGTK..."
 	cd $root\src-stage1-dependencies\pygtk-2.24.0-win
-	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
+	if ($configuration -match "AVX2") {$env:_CL_ = "/arch:AVX2"} else {$env:_CL_ = $null}
 	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot;" + $oldpath
 	$env:_CL_ = "/I$root/src-stage1-dependencies/x64/lib/gtk-2.0/include /I$root/src-stage1-dependencies/py2cairo-1.10.0/src " + $env:_CL_
 	$env:PKG_CONFIG_PATH = "$root/bin;$root/src-stage1-dependencies/x64/lib/pkgconfig;$pythonroot/lib/pkgconfig"
@@ -502,25 +502,41 @@ Function SetupPython
 	#
 	# v3.0.2 is not VC140 compatible, so the patch fixes those things
 	# TODO submit changes to source tree
+	# TODO wxpython/include/msvc/wx/setup.h cahnges need to be added to patch file
+	#
+	# TODO so the debug build is not working because of it's looking for the wrong file to link to
+	# (debug vs non-debug).  So the workaround is to build wx in release even when python is
+	# being built in debug.
+	#
 
 	Write-Host -NoNewline "prepping wxpython..."
 	cd $root\src-stage1-dependencies\wxpython\wxPython
-	if ($configation -match "AVX2") {$env:_CL_ = "/arch:AVX2 "} else {$env:_CL_ = $null}
-	if ($configation -match "Debug") {$env:_CL_ = "/D__WXDEBUG__  " + $env:_CL_} 
-	$env:_CL_ = "/I$root/src-stage1-dependencies/wxpython/include/msvc /I$root/src-stage1-dependencies/wxpython/lib/vcFIXME_dll/mswud " + $env:_CL_
+	$canbuildwxdebug = $false
+	$wxdebug = ($canbuildwxdebug -and $d -eq "d")
+	$env:WXWIN="$root\src-stage1-dependencies\wxpython"
+	if ($configuration -match "AVX2") {$env:_CL_ = " /DwxMSVC_VERSION_AUTO /D_UNICODE /DUNICODE /DMSLU /arch:AVX2 "} else {$env:_CL_ = " /DWXWIN=.. /DMSLU /D_UNICODE /DUNICODE /DwxMSVC_VERSION_AUTO "}
+	if ($wxdebug) {
+		$env:_CL_ = " /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswud /D__WXDEBUG__ /D_DEBUG  " + $env:_CL_ 
+		$wxdebugstring = "--debug"
+	} else {
+		$env:_CL_ = " /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswu " + $env:_CL_
+		$wxdebugstring = ""
+	}
+	$env:_CL_ = "/I$root/src-stage1-dependencies/wxpython/include/msvc " + $env:_CL_
 	$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot" + $oldpath
 	$ErrorActionPreference = "Continue"
+	del -recurse .\build\*.*
 	& $pythonroot\$pythonexe build-wxpython.py --clean 2>&1 >> $Log
-	& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build $debug --force_config  2>&1 >> $Log
-	Write-Host -NoNewline "configing..."
-	& $pythonroot\$pythonexe setup.py clean 2>&1 >> $Log
-	& $pythonroot\$pythonexe setup.py config 2>&1 >> $Log
-	Write-Host -NoNewline "building..."
-	& $pythonroot\$pythonexe setup.py build 2>&1 >> $Log
-	Write-Host -NoNewline "installing..."
-	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
+	& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config --install $wxdebugstring 2>&1 >> $Log
+	#Write-Host -NoNewline "configing..."
+	#& $pythonroot\$pythonexe setup.py clean 2>&1 >> $Log
+	#& $pythonroot\$pythonexe setup.py config MONOLITHIC=1 2>&1 >> $Log
+	#Write-Host -NoNewline "building..."
+	#& $pythonroot\$pythonexe setup.py build $wxdebugstring MONOLITHIC=1 2>&1 >> $Log
+	#Write-Host -NoNewline "installing..."
+	#& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
 	Write-Host -NoNewline "crafting wheel..."
-	& $pythonroot\$pythonexe setup.py bdist_wininst 2>&1 >> $Log
+	& $pythonroot\$pythonexe setup.py bdist_wininst UNICODE=1 BUILD_BASE=build 2>&1 >> $Log
 	cd dist
 	& $pythonroot/Scripts/wheel.exe convert wxpython-3.0.2.0.win-amd64-py2.7.exe 2>&1 >> $Log
 	del wxpython-3.0.2.0.win-amd64-py2.7.exe
