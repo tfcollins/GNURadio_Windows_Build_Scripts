@@ -3,26 +3,36 @@
 #
 function getPackage
 {
-	$toGet = $args[0]
-	$newname = $args[1]
+	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$True,Position=1)]
+		[string]$toGet,
+	
+		[Parameter(Mandatory=$False, Position=2)]
+		[string]$newname = "",
+
+		[Parameter(Mandatory=$False)]
+		[switch]$Stage3
+	)
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
 	$isTar = [io.path]::GetExtension($archiveName)
+	if ($Stage3) {$destdir = "src-stage3\oot_code"} else {$destdir = "src-stage1-dependencies"}
 	Write-Host -NoNewline "$archiveName..."
 	if ($isTar -eq ".tar") {
 		$archiveExt = $isTar + $archiveExt
 		$archiveName = [io.path]::GetFileNameWithoutExtension($archiveName)  
 	}
-	if ($archiveExt -eq ".git") {
+	if ($archiveExt -eq ".git" -or $toGet.StartsWith("git://")) {
 		# the source is a git repo, so make a shallow clone
 		# no need to store anything in the packages dir
-		if (((Test-Path $root\src-stage1-dependencies\$archiveName) -and ($newname -eq $null)) -or
-			(($newname -ne $null) -and (Test-Path $root\src-stage1-dependencies\$newname))) {
+		if (((Test-Path "$root\$destdir\$archiveName") -and ($newname -eq "")) -or
+			(($newname -ne "") -and (Test-Path $root\$destdir\$newname))) {
 			"previously shallowed cloned"
 		} else {
-			cd $root\src-stage1-dependencies	
-			if (Test-Path $root\src-stage1-dependencies\$archiveName) {
-				Remove-Item  $root\src-stage1-dependencies\$archiveName -Force -Recurse
+			cd $root\$destdir	
+			if (Test-Path $root\$destdir\$archiveName) {
+				Remove-Item  $root\$destdir\$archiveName -Force -Recurse
 			}
 			$ErrorActionPreference = "Continue"
 			git clone --recursive --depth=1 $toGet  2>&1 >> $Log 
@@ -32,12 +42,12 @@ function getPackage
 			} else {
 				"shallow cloned"
 			}
-			if ($newname -ne $null) {
-				if (Test-Path $root\src-stage1-dependencies\$newname) {
-					Remove-Item  $root\src-stage1-dependencies\$newname -Force -Recurse
+			if ($newname -ne "") {
+				if (Test-Path $root\$destdir\$newname) {
+					Remove-Item  $root\$destdir\$newname -Force -Recurse
 				}
-				if (Test-Path $root\src-stage1-dependencies\$archiveName) {
-					ren $root\src-stage1-dependencies\$archiveName $root\src-stage1-dependencies\$newname
+				if (Test-Path $root\$destdir\$archiveName) {
+					ren $root\$destdir\$archiveName $root\$destdir\$newname
 				}
 			}
 		}
@@ -56,35 +66,35 @@ function getPackage
 			Write-Host -NoNewLine "already downloaded..."
 		}
 		# extract the package if the final destination directory doesn't exist
-		if (!((Test-Path $root\src-stage1-dependencies\$archiveName) -or ($newname -ne $null -and (Test-Path $root\src-stage1-dependencies\$newName)))) {
+		if (!((Test-Path $root\$destdir\$archiveName) -or ($newname -ne "" -and (Test-Path $root\$destdir\$newName)))) {
 			$archive = "$root/packages/$archiveName/$archiveName$archiveExt"
-			cd "$root\src-stage1-dependencies"
+			cd "$root\$destdir"
 			if ($archiveExt -eq ".7z" -or ($archiveExt -eq ".zip")) {
 				sz x -y $archive 2>&1 >> $Log
 			} elseif ($archiveExt -eq ".zip") {
-				$destination = "$root/src-stage1-dependencies"
+				$destination = "$root/$destdir"
 				[io.compression.zipfile]::ExtractToDirectory($archive, $destination) >> $Log
 			} elseif ($archiveExt -eq ".tar.xz" -or $archiveExt -eq ".tgz" -or $archiveExt -eq ".tar.gz" -or $archiveExt -eq ".tar.bz2") {
 				sz x -y $archive >> $Log
-				if (!(Test-Path $root\src-stage1-dependencies\$archiveName.tar)) {
+				if (!(Test-Path $root\$destdir\$archiveName.tar)) {
 					# some python .tar.gz files put the tar in a dist subfolder
 					cd dist
-					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar" >> $Log
+					sz x -aoa -ttar -o"$root\$destdir" "$archiveName.tar" >> $Log
 					cd ..
 					rm -Recurse -Force dist >> $Log
 				} else {
-					sz x -aoa -ttar -o"$root\src-stage1-dependencies" "$archiveName.tar" >> $Log
+					sz x -aoa -ttar -o"$root\$destdir" "$archiveName.tar" >> $Log
 					del "$archiveName.tar" -Force
 					}
 			} else {
 				throw "Unknown file extension on $archiveName$archiveExt"
 			}
-			if ($newname -ne $null) {
-				if (Test-Path $root\src-stage1-dependencies\$newname) {
-					Remove-Item  $root\src-stage1-dependencies\$newname -Force -Recurse >> $Log
+			if ($newname -ne "") {
+				if (Test-Path $root\$destdir\$newname) {
+					Remove-Item  $root\$destdir\$newname -Force -Recurse >> $Log
 					}
-				if (Test-Path $root\src-stage1-dependencies\$archiveName) {
-					ren $root\src-stage1-dependencies\$archiveName $root\src-stage1-dependencies\$newname
+				if (Test-Path $root\$destdir\$archiveName) {
+					ren $root\$destdir\$archiveName $root\$destdir\$newname
 					}
 			}
 			"extracted"
@@ -162,6 +172,7 @@ function Exec
 
 function SetLog ($name)
 {
+	if ($Global:LogNumber -eq $null) {$Global:LogNumber = 1}
 	$LogNumStr = $Global:LogNumber.ToString("00")
 	$Global:Log = "$root\logs\$LogNumStr-$name.txt"
 	"" > $Log 

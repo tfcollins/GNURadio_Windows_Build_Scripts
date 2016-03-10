@@ -38,6 +38,7 @@
     <Compile Include="Step2-GetStage1Packages.ps1" />
     <Compile Include="Step3-BuildStage1Packages.ps1" />
     <Compile Include="Step4-BuildPythonPackages.ps1" />
+    <Compile Include="Step8-BuildOOTModules.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
