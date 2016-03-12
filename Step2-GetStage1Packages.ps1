@@ -211,6 +211,10 @@ GetPackage https://git.gnome.org/browse/libxslt/snapshot/CVE-2015-7995.tar.xz li
 # lxml
 GetPackage git://github.com/lxml/lxml.git 
 
+# pthreads
+GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-2-9-1-release.7z pthreads
+GetPatch pthreads.2.7z pthreads/pthreads.2
+
 # cleanup
 
 # return to original directory

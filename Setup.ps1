@@ -106,9 +106,18 @@ function getPackage
 
 # Patches are overlaid on top of the main source for gnuradio-specific adjustments
 function getPatch
-{
-	$toGet = $args[0]
-	$whereToPlace = $args[1]
+{	[CmdletBinding()]
+	Param(
+		[Parameter(Mandatory=$True,Position=1)]
+		[string]$toGet,
+	
+		[Parameter(Mandatory=$True, Position=2)]
+		[string]$whereToPlace = "",
+
+		[Parameter(Mandatory=$False)]
+		[switch]$Stage3
+	)
+	if ($Stage3) {$IntDir = "src-stage3/oot_code"} else {$IntDir = "src-stage1-dependencies"}
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
 	$isTar = [io.path]::GetExtension($archiveName)
@@ -133,7 +142,7 @@ function getPatch
 	}
 	
 	$archive = "$root/packages/patches/$toGet"
-	$destination = "$root/src-stage1-dependencies/$whereToPlace"
+	$destination = "$root/$IntDir/$whereToPlace"
 	if ($archiveExt -eq ".7z" -or $archiveExt -eq ".zip") {
 		New-Item -path $destination -type directory -force >> $Log
 		cd $destination 

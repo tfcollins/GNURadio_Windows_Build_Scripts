@@ -614,4 +614,23 @@ MakeXSLT "Release-AVX2"
 MakeXSLT "Debug"
 $ErrorActionPreference = "Stop"
 
-
+# ____________________________________________________________________________________________________________
+# pthreads
+#
+SetLog "pthreads"
+Write-Host "building pthreads..."
+$ErrorActionPreference = "Continue"
+cd $root\src-stage1-dependencies\pthreads\pthreads.2
+Write-Host -NoNewline "Debug..."
+msbuild .\pthread.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+Write-Host -NoNewline "DLL..."
+msbuild .\pthread.sln /m /p:"configuration=DebugDLL;platform=x64" >> $Log
+Write-Host -NoNewline "Release..."
+msbuild .\pthread.sln /m /p:"configuration=Release;platform=x64" >> $Log
+Write-Host -NoNewline "DLL..."
+msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL;platform=x64" >> $Log
+Write-Host -NoNewline "Release-AVX2..."
+msbuild .\pthread.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+Write-Host -NoNewline "DLL..."
+msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
+"complete"
