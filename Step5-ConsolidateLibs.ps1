@@ -125,13 +125,17 @@ Function Consolidate {
 
 	# libusb
 	Write-Host -NoNewline "Consolidating libusb..."
+	New-Item -ItemType Directory -Path $root/build/$configuration/MS64/dll/  -Force  2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/dll/libusb-1.0.dll $root/build/$configuration/MS64/dll/ 2>&1 >> $log # purely so bladeRF will build as is
 	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/dll/libusb-1.0.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/dll/libusb-1.0.dll $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/libusb/libusb/libusb.h $root/build/$configuration/include/ 2>&1 >> $log
+		cp -Recurse -Force $root/src-stage1-dependencies/libusb/libusb/libusb.h $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# pthreads
 	Write-Host -NoNewline "Consolidating pthreads..."
+	New-Item -ItemType Directory -Path $root/build/$configuration/dll/x64/  -Force  2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/x64/$configDLL/pthreadVC2.dll $root/build/$configuration/dll/x64/ 2>&1 >> $log # purely so bladeRF will build as is
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/x64/$configuration/pthreadVC2.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/COPYING.lib $root/build/$configuration/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/pthread.h $root/build/$configuration/include/ 2>&1 >> $log
