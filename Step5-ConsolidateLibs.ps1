@@ -125,13 +125,15 @@ Function Consolidate {
 
 	# libusb
 	Write-Host -NoNewline "Consolidating libusb..."
-	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/lib/libusb-1.0.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/dll/libusb-1.0.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/libusb/x64/$configuration/dll/libusb-1.0.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/libusb/libusb/libusb.h $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# pthreads
 	Write-Host -NoNewline "Consolidating pthreads..."
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/x64/$configuration/pthreadVC2.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/COPYING.lib $root/build/$configuration/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/pthread.h $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/sched.h $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
