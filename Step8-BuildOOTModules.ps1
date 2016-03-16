@@ -154,6 +154,41 @@ function BuildDrivers
 
 	# ____________________________________________________________________________________________________________
 	#
+	# gr-iqbal
+	#
+	# this doesn't add gnuradio-pmt.lib as a linker input, so we hack it manually
+	# TODO submit issue to source (add gnuradio-pmt.lib as a linker input to gr-iqbal)
+	#
+	SetLog "gr-iqbal $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-iqbal..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\x64\$configuration\lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
+		-DLINK_LIBRARIES="gnuradio.pmt.lib"
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-iqbal..."
+	msbuild .\gr-iqbalance.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_LINK_ = ""
+	"complete"
+	
+
+
+	# ____________________________________________________________________________________________________________
+	#
 	# gr-osmosdr
 	# 
 	# Note this must be built at the end, after all the other libraries are ready

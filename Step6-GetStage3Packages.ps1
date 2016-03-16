@@ -50,6 +50,12 @@ GetPackage https://github.com/glfw/glfw.git -Stage3
 GetPackage git://git.osmocom.org/gr-osmosdr -Stage3
 GetPackage git://git.osmocom.org/osmo-sdr -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gr-iqbal
+#
+GetPackage https://github.com/osmocom/gr-iqbal -Stage3 
+
 # gnuradio
 SetLog "Retrieve GNURadio"
 if (!(Test-Path $root/src-stage3/src)) {
