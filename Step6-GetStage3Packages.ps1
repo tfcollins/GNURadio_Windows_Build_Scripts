@@ -40,7 +40,7 @@ GetPackage https://github.com/mossmann/hackrf.git -Stage3
 #
 # gr-fosphor
 #
-GetPackage http://git.osmocom.org/gr-fosphor/ -Stage3
+GetPackage https://github.com/osmocom/gr-fosphor.git -Stage3 
 GetPackage https://github.com/glfw/glfw.git -Stage3
 
 # ____________________________________________________________________________________________________________
@@ -55,6 +55,13 @@ GetPackage git://git.osmocom.org/osmo-sdr -Stage3
 # gr-iqbal
 #
 GetPackage https://github.com/osmocom/gr-iqbal -Stage3 
+
+
+# ____________________________________________________________________________________________________________
+#
+# gr-becnhmark
+#
+GetPackage https://github.com/osh/gr-benchmark.git -Stage3
 
 # gnuradio
 SetLog "Retrieve GNURadio"

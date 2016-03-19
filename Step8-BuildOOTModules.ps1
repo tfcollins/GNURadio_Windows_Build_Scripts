@@ -29,9 +29,9 @@ function BuildDrivers
 	msbuild .\airspy_2015.sln /m /p:"configuration=$configuration;platform=x64"  2>&1 >> $Log
 	Write-Host -NoNewLine "installing..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/staged_install/$configuration/include/libairspy  2>&1 >> $Log
-	Move-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.lib" "$root/src-stage3/staged_install/$configuration/lib" 2>&1 >> $Log
-	Move-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.dll" "$root/src-stage3/staged_install/$configuration/bin" 2>&1 >> $Log
-	Move-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/*.exe" "$root/src-stage3/staged_install/$configuration/bin" 2>&1 >> $Log
+	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.lib" "$root/src-stage3/staged_install/$configuration/lib" 2>&1 >> $Log
+	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.dll" "$root/src-stage3/staged_install/$configuration/bin" 2>&1 >> $Log
+	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/*.exe" "$root/src-stage3/staged_install/$configuration/bin" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy_commands.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	"complete"
@@ -67,7 +67,7 @@ function BuildDrivers
 	msbuild .\bladeRF.sln /m /p:"configuration=$buildconfig;platform=x64"  2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	Move-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll" "$root/src-stage3/staged_install/$configuration/bin"
+	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll" "$root/src-stage3/staged_install/$configuration/bin"
 	"complete"
 
 	# ____________________________________________________________________________________________________________
@@ -117,8 +117,8 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	# this installs hackrf libs to the bin dir, we want to move them
-	Move-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf.lib" "$root/src-stage3/staged_install/$configuration/lib"
-	Move-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf_static.lib" "$root/src-stage3/staged_install/$configuration/lib"
+	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf.lib" "$root/src-stage3/staged_install/$configuration/lib"
+	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf_static.lib" "$root/src-stage3/staged_install/$configuration/lib"
 	"complete"
 
 	# ____________________________________________________________________________________________________________
@@ -163,7 +163,9 @@ function BuildDrivers
 	Write-Host -NoNewline "configuring $configuration gr-iqbal..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
-	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG "
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
@@ -171,12 +173,13 @@ function BuildDrivers
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\x64\$configuration\lib" `
+		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch " `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
-		-DLINK_LIBRARIES="gnuradio.pmt.lib"
+		-DLINK_LIBRARIES="gnuradio-pmt.lib"  `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building gr-iqbal..."
 	msbuild .\gr-iqbalance.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
@@ -238,11 +241,83 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	"complete"
+	# ____________________________________________________________________________________________________________
+	#
+	# glfw
+	#
+	#
+	SetLog "glfw $configuration"
+	Write-Host -NoNewline "configuring $configuration glfw..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/glfw/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/glfw/build/$configuration
+	if ($configuration -match "AVX2") { $env:_CL_ = " /arch:AVX2"} else {$env:_CL_ = ""}
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DBUILD_SHARED_LIBS="true"  2>&1 >> $Log
+	Write-Host -NoNewline "building for shared..."
+	msbuild .\glfw.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DBUILD_SHARED_LIBS="false"  2>&1 >> $Log
+	Write-Host -NoNewline "building for static..."
+	msbuild .\glfw.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	$env:_CL_ = ""
+	"complete"
+	 
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-fosphor
+	#
+	# need to macro out __attribute__, include gnuradio-pmt, and include glew64.lib
+	# still not working though, gets an error and crashes.
+	SetLog "gr-fosphor $configuration"
+	if ($env:AMDAPPSDKROOT) {
+		Write-Host -NoNewline "configuring $configuration gr-fosphor..."
+		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-fosphor/build/$configuration  2>&1 >> $Log
+		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration 
+		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
+		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
+		$env:_CL_ = $env:_CL_ + " -I""$env:AMDAPPSDKROOT/include"" "
+		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib ""$env:AMDAPPSDKROOT/lib/x86_64/glew64.lib"" /DEBUG /OPT:ref,icf "
+		cmake ../../ `
+			-G "Visual Studio 14 2015 Win64" `
+			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+			-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+			-DBOOST_ROOT="$root/build/$configuration/" `
+			-DOpenCL_LIBRARY="$env:AMDAPPSDKROOT/lib/x86_64/OpenCL.lib" `
+			-DOpenCL_INCLUDE_DIR="$env:AMDAPPSDKROOT/include" `
+			-DFREETYPE2_PKG_INCLUDE_DIRS="$root/src-stage1-dependencies/freetype/" `
+			-DFREETYPE2_PKG_LIBRARY_DIRS="$root\src-stage1-dependencies\freetype\objs\vc2015\x64" `
+			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
+			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+			-DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe" `
+			-DGLFW3_PKG_INCLUDE_DIRS="$root\src-stage3\oot_code\glfw\include\" `
+			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$baseconfig" `
+			-Wno-dev 2>&1 >> $Log
+		Write-Host -NoNewline "building gr-fosphor..."
+		msbuild .\gr-fosphor.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+		Write-Host -NoNewline "installing..."
+		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+		cp $env:AMDAPPSDKROOT/bin/x86_64/glew64.dll $root/src-stage3/staged_install/$configuration/bin
+		$env:_LINK_ = ""
+		$env:_CL_ = ""
+		"complete"
+	} else {
+		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
+	}
 }
 
-BuildDrivers "Debug"
 BuildDrivers "Release"
 BuildDrivers "Release-AVX2"
+BuildDrivers "Debug"
 
 # debug shortcuts below
 break
