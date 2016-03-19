@@ -427,7 +427,7 @@ Function SetupPython
 	Write-Host -NoNewline "installing PyOpenGL..."
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\PyOpenGL-3.1.0
-	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py install--single-version-externally-managed --root=/ 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	$ErrorActionPreference = "Stop"
@@ -441,7 +441,7 @@ Function SetupPython
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\PyOpenGL-accelerate-3.1.0
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
-	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py build $debug install --single-version-externally-managed --root=/ 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	move dist/PyOpenGL_accelerate-3.1.0-cp27-cp27${d}m-win_amd64.whl dist/PyOpenGL_accelerate-3.1.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
@@ -491,7 +491,7 @@ Function SetupPython
 	$oldInclude = $env:INCLUDE
 	$env:INCLUDE = "$root/src-stage1/dependencies/x64/include;" + $oldInclude 
 	$env:LIB = "$root/src-stage1-dependencies/cairo/build/x64/Release;$root/src-stage1-dependencies/cairo/build/x64/ReleaseDLL;$pythonroot/libs;" + $oldlib 
-	$env:_CL_ = "/MD /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
+	$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
 	$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
 	& $pythonroot/$pythonexe waf build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include 2>&1 >> $log
 	$env:_LINK_ = ""

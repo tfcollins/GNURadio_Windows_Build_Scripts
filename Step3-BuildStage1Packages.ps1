@@ -313,7 +313,7 @@ Function gatherPython {
 	# these packages will give warnings about files not found that will be errors on powershell if set to "Stop"
 	$ErrorActionPreference = "Continue"
 	cd $root/src-stage1-dependencies/setuptools-20.1.1
-	& $pythonroot\$pythonexe setup.py install 2>&1  >> $Log
+	& $pythonroot\$pythonexe setup.py install --single-version-externally-managed --root=/ 2>&1  >> $Log
 	cd $root/src-stage1-dependencies/pip-8.0.2
 	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
 	cd $root\src-stage1-dependencies/wheel-0.29.0

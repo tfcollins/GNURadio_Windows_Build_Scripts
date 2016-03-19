@@ -52,9 +52,9 @@ function BuildGNURadio {
 	$ErrorActionPreference = "Stop"
 	# current errors to investigate:
 	#
-	# xgetbv not detected, overruling avx
-	# cvtpi32_ps not detected, overruling avx
-	# only SSE2 and generic machines detected
+	# xgetbv not detected, overruling avx			(fixed, sent patch to volk)
+	# cvtpi32_ps not detected, overruling avx		(fixed, sent patch to volk)
+	# only SSE2 and generic machines detected		(fixed, sent patch to volk)
 	# incorrectly detects compiler (vs 10.0)
 	# doesn't find MSVC-ASM ? (nasm)
 	# python lxml not found							(fixed, built lxml with all static dependencies)
