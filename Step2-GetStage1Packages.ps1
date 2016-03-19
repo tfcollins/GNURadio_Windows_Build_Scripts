@@ -215,6 +215,17 @@ GetPackage git://github.com/lxml/lxml.git
 GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-2-9-1-release.7z pthreads
 GetPatch pthreads.2.7z pthreads/pthreads.2
 
+# openblas
+if (!$Config.BuildNumpyWithMKL) {
+	GetPackage https://github.com/xianyi/OpenBLAS.git 
+}
+
+# lapack reference build
+if (!$Config.BuildNumpyWithMKL) {
+	GetPackage http://www.netlib.org/lapack/lapack-3.6.0.tgz lapack
+	GetPatch lapack_3.6.0.7z lapack/SRC
+}
+
 # cleanup
 
 # return to original directory

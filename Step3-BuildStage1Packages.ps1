@@ -634,3 +634,90 @@ msbuild .\pthread.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 Write-Host -NoNewline "DLL..."
 msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
 "complete"
+
+# ____________________________________________________________________________________________________________
+# openblas
+#
+# for the moment this only generates a DLL.  The CMAKE code is too immature to support anything else at this point
+# TODO make a static lib
+# Also note that openblas will be slow as the assembly code is not used because it's not in MSVC format
+# TODO upgrade openblas asm format
+# openblas lapack and lapacke have a ton of external errors during build
+# TODO build patch for modified CMAKE
+if (!$Config.BuildNumpyWithMKL) {
+	SetLog "openblas"
+	Write-Host -NoNewline "starting openblas..."
+	function MakeOpenBLAS {
+		$ErrorActionPreference = "Continue"
+		$configuration = $args[0]
+		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"; $debug="ON"} else {$cmakebuildtype = "Release"; $debug="OFF"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " -D__64BIT__ /arch:AVX2 "} else {$env:_CL_ = " -D__64BIT__ "}
+		Write-Host -NoNewline "configuring $configuration..."
+		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\OpenBLAS\build\$configuration 2>&1 >> $Log 
+		cd $root\src-stage1-dependencies\openblas\build\$configuration
+		cmake ..\..\ `
+			-Wno-dev `
+			-G "Visual Studio 14 Win64" `
+			-DTARGET="HASWELL" `
+			-DBUILD_DEBUG="$debug" `
+			-DF_COMPILER="INTEL" `
+			-DCMAKE_Fortran_COMPILER="ifort" `
+			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " `
+			-DNO_LAPACKE="1" `
+			-DNO_LAPACK="1"  2>&1 >> $Log 
+		$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
+		Write-Host -NoNewline "building..."
+		msbuild .\OpenBLAS.sln /m /p:"configuration=$cmakebuildtype;platform=x64" 2>&1 >> $Log 
+		cp $root\src-stage1-dependencies\OpenBLAS\build\$configuration\lib\$cmakebuildtype\libopenblas.lib $root\src-stage1-dependencies\OpenBLAS\build\$configuration\lib\libopenblas_static.lib 2>&1 >> $Log 
+		$env:_CL_ = ""
+		$env:__INTEL_POST_FFLAGS = ""
+		"done"
+		$ErrorActionPreference = "Stop"
+	}
+	MakeOpenBlas "Debug"
+	MakeOpenBlas "Release"
+	MakeOpenBlas "Release-AVX2"
+	"complete"
+}
+
+# ____________________________________________________________________________________________________________
+# lapack
+#
+# like scipy, this requires a fortran compiler to be installed, and gfortran doesn't work well with MSVC
+# so there isn't a free option, we look for Intel Fortran Compiler during setup.
+# Don't despair though, if not fort then we'll just download binary wheels later.
+# There is a bug in 3.6.0 where a library is misspelled and will give an error (zerbla vs xerbla in zgetrf2.f @ line 147, it is fixed in the SVN
+if (!$Config.BuildNumpyWithMKL -and $hasIFORT) {
+	SetLog "lapack"
+	Write-Host -NoNewline "starting lapack..."
+	function MakeLapack {
+		$ErrorActionPreference = "Continue"
+		$configuration = $args[0]
+		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"} else {$cmakebuildtype = "Release"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+		Write-Host -NoNewline "configuring $configuration..."
+		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\lapack\build\$configuration 2>&1 >> $Log 
+		cd $root\src-stage1-dependencies\lapack\build\$configuration
+		cmake ..\..\ `
+			-Wno-dev `
+			-G "Visual Studio 14 Win64" `
+			-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
+			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+			-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/lapack/dist/$configuration/" `
+			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " 2>&1 >> $Log 
+		$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
+		Write-Host -NoNewline "building..."
+		# use devenv instead of msbuild because of vfproj files unsupported by msbuild
+		devenv .\lapack.sln /project lapack /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
+		devenv .\lapack.sln /project blas /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
+		Write-Host -NoNewline "packaging..."
+		# don't run the INSTALL vcproj because it will fail because the dependencies won't link
+		cmake -DBUILD_TYPE="$cmakebuildtype" -P cmake_install.cmake 2>&1 >> $Log 
+		$env:_CL_ = ""
+		$env:__INTEL_POST_FFLAGS = ""
+		"complete"
+	}
+	MakeLapack "Debug"
+	MakeLapack "Release"
+	MakeLapack "Release-AVX2"
+}

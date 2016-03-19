@@ -238,7 +238,7 @@ if (!(Test-Path variable:global:oldpath))
 	write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
 	# set Intel Fortran environment (if exists)
 	if (Test-Path env:IFORT_COMPILER16) {
-		& $env:IFORT_COMPILER16\mkl\bin\mklvars.bat intel64
+		& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015
 		$hasIFORT = $true
 	} else {
 		$hasIFORT = $false

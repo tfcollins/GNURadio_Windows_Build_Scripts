@@ -193,11 +193,16 @@ Function SetupPython
 	# mkl_libs site.cfg lines generated with the assistance of:
 	# https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 	#
+	# TODO numpy Debug OpenBLAS crashes during numpy.test('full')
+	#
 	Write-Host -NoNewline "configuring numpy..."
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\numpy-1.10.4
 	# $static indicates if the MKL/OpenBLAS libraries will be linked statically into numpy/scipy or not.  numpy/scipy themselves will be built as DLLs/pyd's always
+	# openblas lapack is always static
 	$static = $true
+	$staticconfig = ($configuration -replace "DLL", "") 
+	if ($static -eq $true) {$staticlib = "_static"} else {$staticlib = ""}
 	if ($Config.BuildNumpyWithMKL) {
 		# Build with MKL
 		if ($static -eq $false) {
@@ -207,10 +212,10 @@ Function SetupPython
 			"library_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 			"mkl_libs = mkl_rt" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"lapack_libs = " | Out-File -filepath site.cfg -Encoding ascii -Append
-			if ($configuration -eq "ReleaseDLL-AVX2") {
+			if ($configuration -match "AVX2") {
 				"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
-			} elseif ($configuration -eq "DebugDLL") {
-				"extra_compile_args=/MD /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
+			} elseif ($configuration -match "Debug") {
+				"extra_compile_args=/MDd /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
 			} else {
 				"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
 			}
@@ -221,27 +226,58 @@ Function SetupPython
 			"library_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 			"mkl_libs = mkl_intel_lp64, mkl_core, mkl_intel_thread, libiomp5md" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"lapack_libs = " | Out-File -filepath site.cfg -Encoding ascii -Append
-			if ($configuration -eq "ReleaseDLL-AVX2") {
+			if ($configuration -match "AVX2") {
 				"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
-			} elseif ($configuration -eq "DebugDLL") {
-				"extra_compile_args=/MD /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
+			} elseif ($configuration -match "Debug") {
+				"extra_compile_args=/MDd /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
 			} else {
 				"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
 			}
 		}
 	} else {
-		# TODO Build scipy with OpenBLAS
+		"[default]" | Out-File -filepath site.cfg -Encoding ascii
+		"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"include_dirs = $root/src-stage1-dependencies\OpenBLAS\lapack-netlib\CBLAS\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"lapack_libs = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		if ($configuration -match "AVX2") {
+			"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
+		} elseif ($configuration -match "Debug") {
+			"extra_compile_args=/MDd /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
+		} else {
+			"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
+		}
+		"[openblas]" | Out-File -filepath site.cfg -Encoding ascii -Append 
+		"libraries = libopenblas$staticlib,lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"include_dirs = $root/src-stage1-dependencies\OpenBLAS\lapack-netlib\CBLAS\include/" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"lapack_libs = lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		if ($static -eq $false) {"runtime_library_dirs = $root/src-stage1-dependencies/openblas/build/lib/$staticconfig" | Out-File -filepath site.cfg -Encoding ascii -Append }
+		"[lapack]" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"lapack_libs = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"library_dirs = $root/src-stage1-dependencies/lapack/dist/$staticconfig/lib/" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"[blas]" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+		"include_dirs = $root/src-stage1-dependencies/OpenBLAS/lapack-netlib/CBLAS/include" | Out-File -filepath site.cfg -Encoding ascii -Append		
 	}
 	$env:VS90COMNTOOLS = $env:VS140COMNTOOLS
-	& $pythonroot/$pythonexe setup.py config --compiler=msvc2015  2>&1 >> $log
+	# clean doesn't really get it all...
+	del build/*.* -Recurse 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py clean  2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py config --compiler=msvc2015 --fcompiler=intelvem  2>&1 >> $log
 	Write-Host -NoNewline "building..."
+	$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib"" /NODEFAULTLIB:""LIBMMT.lib"" "
 	& $pythonroot/$pythonexe setup.py build $debug 2>&1 >> $log
 	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	# TODO This is a hack to move the openblas library into the right place.  We should either link statically or figure a better so install moves this for us
+	if (!($Config.BuildNumpyWithMKL) -and ($static = $false)) { cp $root/src-stage1-dependencies/openblas/build/lib/$staticconfig/libopenblas.dll $pythonroot\lib\site-packages\numpy-1.10.4-py2.7-win-amd64.egg\numpy\core }
 	Write-Host -NoNewline "creating wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 	move dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.whl dist/numpy-1.10.4-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 
 	$ErrorActionPreference = "Stop"
+	$env:_LINK_= ""
 	"done"
 	
 	#__________________________________________________________________________________________
@@ -253,7 +289,10 @@ Function SetupPython
 		cd $root\src-stage1-dependencies\scipy
 		$env:Path = "${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\bin\intel64;" + $oldPath 
 		$env:LIB = "${env:IFORT_COMPILER16}compiler\lib\intel64_win;" + $oldLib
-	
+		# $static indicates if the MKL/OpenBLAS libraries will be linked statically into numpy/scipy or not.  numpy/scipy themselves will be built as DLLs/pyd's always
+		# openblas lapack is always static$static = $true
+		$staticconfig = ($configuration -replace "DLL", "") 
+		if ($static -eq $true) {$staticlib = "_static"} else {$staticlib = ""} 
 		if ($Config.BuildNumpyWithMKL) {
 			# Build with MKL
 			if ($static -eq $false) {
@@ -263,9 +302,9 @@ Function SetupPython
 				"library_dirs = $env:IFORT_COMPILER16\compiler\lib\intel64_win;$env:IFORT_COMPILER16\mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_rt" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_rt, mkl_lapack95_lp64,mkl_blas95_lp64" | Out-File -filepath site.cfg -Encoding ascii -Append
-				if ($configuration -eq "ReleaseDLL-AVX2") {
+			if ($configuration -match "AVX2") {
 					"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
-				} elseif ($configuration -eq "DebugDLL") {
+				} elseif ($configuration -match "Debug") {
 					"extra_compile_args=/MD /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
 				} else {
 					"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
@@ -277,16 +316,41 @@ Function SetupPython
 				"library_dirs = ${env:IFORT_COMPILER16}compiler\lib\intel64_win;${env:IFORT_COMPILER16}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
-				if ($configuration -eq "ReleaseDLL-AVX2") {
+				if ($configuration -match "AVX2") {
 					"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
-				} elseif ($configuration -eq "DebugDLL") {
-					"extra_compile_args=/MD /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
+				} elseif ($configuration -match "Debug") {
+					"extra_compile_args=/MDd /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
 				} else {
 					"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
 				}
 			}
 		} else {
-			# TODO Build scipy with OpenBLAS
+			# Build scipy with OpenBLAS
+			"[default]" | Out-File -filepath site.cfg -Encoding ascii
+			"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"include_dirs = $root/src-stage1-dependencies\OpenBLAS\lapack-netlib\CBLAS\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"lapack_libs = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+			if ($configuration -match "AVX2") {
+				"extra_compile_args=/MD /Zi /Oy /Ox /Oi /arch:AVX2" | Out-File -filepath site.cfg -Encoding ascii -Append
+			} elseif ($configuration -match "Debug") {
+				"extra_compile_args=/MDd /Zi" | Out-File -filepath site.cfg -Encoding ascii -Append
+			} else {
+				"extra_compile_args=/MD /Zi /Oy /Ox /Oi" | Out-File -filepath site.cfg -Encoding ascii -Append
+			}
+			"[openblas]" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"include_dirs = $root/src-stage1-dependencies/OpenBLAS/lapack-netlib/CBLAS/include" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"runtime_library_dirs = " | Out-File -filepath site.cfg -Encoding ascii -Append
+			"[lapack]" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"lapack_libs = lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"libraries = lapack"  | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = $root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"[blas]" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"include_dirs = $root/src-stage1-dependencies/OpenBLAS/lapack-netlib/CBLAS/include" | Out-File -filepath site.cfg -Encoding ascii -Append		
 		}
 		$env:VS90COMNTOOLS = $env:VS140COMNTOOLS
 		# clean doesn't really get it all...
@@ -294,12 +358,17 @@ Function SetupPython
 		& $pythonroot/$pythonexe setup.py clean  2>&1 >> $log
 		& $pythonroot/$pythonexe setup.py config --fcompiler=intelvem --compiler=msvc  2>&1 >> $log
 		Write-Host -NoNewline "building..."
-		& $pythonroot/$pythonexe setup.py build $debug --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
+		$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib"" /NODEFAULTLIB:""LIBMMT.lib"" /DEFAULTLIB:""LIBMMD.lib"" "
+		# setup.py doesn't handle debug flag correctly for windows ifort, it adds a -g flag which is ambiguous so we'll do our best to emulate it manually
+		if ($configuration -match "Debug") {$env:__INTEL_POST_FFLAGS = " /debug:all "} else {$env:__INTEL_POST_FFLAGS = ""}
+		& $pythonroot/$pythonexe setup.py build --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
 		Write-Host -NoNewline "installing..."
 		& $pythonroot/$pythonexe setup.py install  2>&1 >> $log
 		Write-Host -NoNewline "creating wheel..."
 		& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
 		move dist/scipy-0.17.0-cp27-cp27${d}m-win_amd64.whl dist/scipy-0.17.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
+		$env:_LINK_=""
+		$env:__INTEL_POST_FFLAGS = ""
 		$ErrorActionPreference = "Stop"
 	} else {
 		# TODO can't compile scipy without a fortran compiler, and gfortran won't work here
