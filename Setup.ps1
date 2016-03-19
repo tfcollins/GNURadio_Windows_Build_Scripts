@@ -194,6 +194,18 @@ function ResetLog
 	del $root/logs/*.*
 }
 
+# Used to check each build step to see if the critical files have been built as an indicator of success
+# We need this because powershell doesn't seem to handle exit codes well, particular when they are nested in calls, so it's hard to tell if a build call succeeded.
+function Validate
+{
+	foreach ($i in $args)
+	{
+		if (!(Test-Path $i)) {
+			throw "Validation Failed, $i was not found and is required"
+		}
+	}
+}
+
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
 
 # setup paths
@@ -201,7 +213,7 @@ $Global:root = $env:grwinbuildroot
 if (!$Global:root) {$Global:root = "C:/gr-build"}
 
 # ensure on a 64-bit machine
-if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"}
+if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"} 
 $myprog = "${Env:ProgramFiles(x86)}"
 
 # Check for binary dependencies
