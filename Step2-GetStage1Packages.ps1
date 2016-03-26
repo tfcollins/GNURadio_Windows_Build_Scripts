@@ -15,6 +15,7 @@ SetLog "GetPackages"
 break
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
+getPackage https://github.com/zeromq/pyzmq/archive/v14.7.0.zip 
 
 if ($Config.BuildGTKFromSource) {
 

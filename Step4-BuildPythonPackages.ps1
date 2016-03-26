@@ -678,6 +678,38 @@ Function SetupPython
 	$ErrorActionPreference = "Stop"
 	"done"
 
+	#__________________________________________________________________________________________
+	# pyzmq
+	#
+	Write-Host -NoNewline "configuring pyzmq..."
+	$ErrorActionPreference = "Continue"
+	cd C:\gr-build\src-stage1-dependencies\pyzmq-14.7.0
+	# this stdint.h file prevents the import of the real stdint file and causes the build to fail
+	# TODO submit upstream patch
+	if (Test-Path buildutils/include_win32/stdint.h) 
+	{
+		if (Test-Path buildutils/include_win32/stdint.old.h) {del buildutils/include_win32/stdint.old.h}
+		Rename-Item -Force buildutils/include_win32/stdint.h stdint.old.h
+	}
+	$env:_CL_ = ""
+	$env:_LINK_ = " /MANIFEST "
+	$env:LIBRARY = $oldlibrary
+	$env:INCLUDE = $oldinclude
+	$env:CL = $oldcl
+	$env:LINK = $oldlink
+	& $pythonroot/$pythonexe setup.py configure --zmq=../libzmq 2>&1 >> $log
+	Write-Host -NoNewline "building..."
+	& $pythonroot/$pythonexe setup.py build_ext --inplace 2>&1 >> $log
+	Write-Host -NoNewline "testing..."
+	& $pythonroot/$pythonexe setup.py test 2>&1 >> $log
+	Write-Host -NoNewline "installing..."
+	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+	Write-Host -NoNewline "crafting wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
+	move dist/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.whl dist/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	"done"
+
 	"finished installing python packages for $configuration"
 }
 
