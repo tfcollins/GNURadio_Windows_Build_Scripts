@@ -59,7 +59,7 @@ GetPackage https://github.com/osmocom/gr-iqbal -Stage3
 
 # ____________________________________________________________________________________________________________
 #
-# gr-becnhmark
+# gr-benchmark
 #
 GetPackage https://github.com/osh/gr-benchmark.git -Stage3
 
