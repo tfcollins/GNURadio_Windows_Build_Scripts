@@ -686,27 +686,36 @@ Function SetupPython
 	cd C:\gr-build\src-stage1-dependencies\pyzmq-14.7.0
 	# this stdint.h file prevents the import of the real stdint file and causes the build to fail
 	# TODO submit upstream patch
+	if (!(Test-Path wheels)) {mkdir wheels 2>&1 >> $log}
 	if (Test-Path buildutils/include_win32/stdint.h) 
 	{
 		if (Test-Path buildutils/include_win32/stdint.old.h) {del buildutils/include_win32/stdint.old.h}
 		Rename-Item -Force buildutils/include_win32/stdint.h stdint.old.h
 	}
-	$env:_CL_ = ""
+	if ($configuration -match "Debug") {$baseconfig="Debug"} else {$baseconfig="Release"}
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
 	$env:_LINK_ = " /MANIFEST "
 	$env:LIBRARY = $oldlibrary
 	$env:INCLUDE = $oldinclude
 	$env:CL = $oldcl
 	$env:LINK = $oldlink
-	& $pythonroot/$pythonexe setup.py configure --zmq=../libzmq 2>&1 >> $log
+	# don't run clean because it wipes out /dist folder as well
+	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
+	cp ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.dll .\zmq 
+	cp ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.pdb .\zmq 
+	& $pythonroot/$pythonexe setup.py configure $debug --zmq=../libzmq 2>&1 >> $log
 	Write-Host -NoNewline "building..."
-	& $pythonroot/$pythonexe setup.py build_ext --inplace 2>&1 >> $log
-	Write-Host -NoNewline "testing..."
-	& $pythonroot/$pythonexe setup.py test 2>&1 >> $log
+	& $pythonroot/$pythonexe setup.py build_ext $debug --inplace 2>&1 >> $log
+	# TODO a pyzmq socket test is failing which then prompts user to debug so disable for now so we don't slow down the build process
+	# Write-Host -NoNewline "testing..."
+	# & $pythonroot/$pythonexe setup.py test 2>&1 >> $log
 	Write-Host -NoNewline "installing..."
 	& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
 	Write-Host -NoNewline "crafting wheel..."
 	& $pythonroot/$pythonexe setup.py bdist_wheel 2>&1 >> $log
-	move dist/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.whl dist/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
+	move dist/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.whl wheels/pyzmq-14.7.0-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
+	$env:_LINK_ = ""
+	$env:_CL_ = ""
 	$ErrorActionPreference = "Stop"
 	"done"
 

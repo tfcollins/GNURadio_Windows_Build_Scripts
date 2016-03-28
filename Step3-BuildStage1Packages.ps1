@@ -372,7 +372,9 @@ cd builds\msvc\build
 # must be after libsodium
 SetLog "libzmq"
 Write-Host -NoNewline "building libzmq..."
-cd $root/src-stage1-dependencies/libzmq/builds/msvc/build
+cd $root/src-stage1-dependencies/libzmq/builds/msvc
+& .\configure.bat
+cd build
 & .\buildbase.bat ..\vs2015\libzmq.sln 14 >> $Log
 "complete"
 
