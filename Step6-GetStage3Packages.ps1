@@ -38,13 +38,6 @@ GetPackage https://github.com/mossmann/hackrf.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
-# gr-fosphor
-#
-GetPackage https://github.com/osmocom/gr-fosphor.git -Stage3 
-GetPackage https://github.com/glfw/glfw.git -Stage3
-
-# ____________________________________________________________________________________________________________
-#
 # osmosdr
 #
 GetPackage git://git.osmocom.org/gr-osmosdr -Stage3
@@ -62,6 +55,32 @@ GetPackage https://github.com/osmocom/gr-iqbal -Stage3
 # gr-benchmark
 #
 GetPackage https://github.com/osh/gr-benchmark.git -Stage3
+
+
+# ____________________________________________________________________________________________________________
+#
+# gr-fosphor
+#
+GetPackage https://github.com/osmocom/gr-fosphor.git -Stage3 
+GetPackage https://github.com/glfw/glfw.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# gqrx (windows port)
+#
+GetPackage https://github.com/pothosware/gqrx.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# GNUTLS (binaries!)
+#
+GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.4.9-w32.zip -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# GNSS-SDR
+#
+GetPackage https://github.com/gnss-sdr/gnss-sdr.git -Stage3
 
 # gnuradio
 SetLog "Retrieve GNURadio"

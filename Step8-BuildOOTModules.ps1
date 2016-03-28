@@ -160,6 +160,7 @@ function BuildDrivers
 	# TODO submit issue to source (add gnuradio-pmt.lib as a linker input to gr-iqbal)
 	#
 	SetLog "gr-iqbal $configuration"
+	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-iqbal..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
@@ -186,6 +187,7 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
 	"complete"
 	
 
@@ -241,6 +243,7 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	"complete"
+
 	# ____________________________________________________________________________________________________________
 	#
 	# glfw
@@ -265,13 +268,48 @@ function BuildDrivers
 	$env:_CL_ = ""
 	"complete"
 	 
+	
+	# ____________________________________________________________________________________________________________
+	#
+	# GNSS-SDR
+	#
+	# NOT WORKING
+	#
+	# Requires Armadillo
+	#
+	SetLog "gnss-sdr $configuration"
+	Write-Host -NoNewline "configuring $configuration gnss-sdr..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gnss-sdr/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gnss-sdr/build/$configuration
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DGNUTLS_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
+		-DGNUTLS_INCLUDE_DIR="../../../gnutls/include" `
+		-DGNUTLS_OPENSSL_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
+		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DENABLE_OSMOSDR="ON" `
+		-DLAPACK="ON" `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building..."
+	msbuild .\gnss-sdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	"complete"
 
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-fosphor
 	#
+	# NOT WORKING
+	#
 	# need to macro out __attribute__, include gnuradio-pmt, and include glew64.lib
-	# still not working though, gets an error and crashes.
+	# still not working though, gets an error and crashes, something in the way OpenGL is being initialized.  Tried to patch and failed, though I could get around
+	# the crash in a standalone program with some manual inits.
 	SetLog "gr-fosphor $configuration"
 	if ($env:AMDAPPSDKROOT) {
 		Write-Host -NoNewline "configuring $configuration gr-fosphor..."
@@ -280,7 +318,7 @@ function BuildDrivers
 		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
-		$env:_CL_ = $env:_CL_ + " -I""$env:AMDAPPSDKROOT/include"" "
+		$env:_CL_ = $env:_CL_ + " -D_WIN32 -Zi -I""$env:AMDAPPSDKROOT/include"" "
 		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib ""$env:AMDAPPSDKROOT/lib/x86_64/glew64.lib"" /DEBUG /OPT:ref,icf "
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
@@ -313,6 +351,32 @@ function BuildDrivers
 	} else {
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
 	}
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gqrx
+	#
+	# NOT WORKING
+	#
+	# Requires Qt5 apparently so we'd have to build that as well
+	#
+	SetLog "gqrx $configuration"
+	Write-Host -NoNewline "configuring $configuration gqrx..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gqrx/build/$configuration
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe"
+	
+	Write-Host -NoNewline "building..."
+	msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	"complete"
+
 }
 
 BuildDrivers "Release"
