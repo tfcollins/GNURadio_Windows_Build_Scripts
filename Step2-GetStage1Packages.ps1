@@ -17,7 +17,7 @@ break
 getPackage https://github.com/zeromq/libzmq.git
 
 # pyzmq
-getPackage https://github.com/zeromq/pyzmq/archive/v14.7.0.zip 
+getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
 
 if ($Config.BuildGTKFromSource) {
 
@@ -75,9 +75,9 @@ if ($Config.BuildGTKFromSource) {
 	"NOT building GTK from source, retrieving GTK VS2015 binaries"
 	GetPackage https://dl.hexchat.net/gtk-win32/vc14/x64/gtk-x64.7z
 }
-# SDL 1.2.15
-getPackage  https://libsdl.org/release/SDL-1.2.15.zip
-getPatch sdl-1.2.15-vs2015.7z SDL-1.2.15\VisualC
+# SDL
+getPackage  https://libsdl.org/release/SDL-$sdl_version.zip
+getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC
 
 # portaudio v19
 GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz
@@ -102,22 +102,22 @@ if (!(Test-Path $root/src-stage1-dependencies/portaudio/src/hostapi/asio/asiosdk
 	"extracted"
 }
 
-# cppunit 1.12.1
-GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-1.12.1.7z
+# cppunit 
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-$cppunit_version.7z
 
-# fftw3.3.5
-GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/fftw-3.3.5.7z
+# fftw
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/fftw-$fftw_version.7z
 
 # python
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/libraries/python27/python2710-x64-Source.7z
 GetPatch python-pcbuild.vc14.zip python27/Python-2.7.10
-GetPackage https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tar.xz
 # patch distutils because it doesn't correctly detect MSVC 14.0 / 2015
 GetPatch python27_msvccompiler.7z python27\Python-2.7.10\Lib\distutils
-GetPatch python27_msvccompiler.7z Python-2.7.11\Lib\distutils
 GetPackage https://pypi.python.org/packages/source/s/setuptools/setuptools-20.1.1.zip
 GetPackage https://pypi.python.org/packages/source/p/pip/pip-8.0.2.tar.gz
 GetPackage https://pypi.python.org/packages/source/w/wheel/wheel-0.29.0.tar.gz
+#GetPackage https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tar.xz
+#GetPatch python27_msvccompiler.7z Python-2.7.11\Lib\distutils
 
 # zlib
 # note: libpng is expecting zlib to be in a folder with the -1.2.8 version of the name
@@ -127,11 +127,10 @@ GetPackage https://github.com/gnieboer/zlib.git zlib-1.2.8
 GetPackage https://github.com/gnieboer/libsodium.git 
 
 # GSL
-GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gsl-1.16.7z
-GetPatch gsl-1.16.build.vc14.zip gsl-1.16
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gsl-$gsl_version.7z
+GetPatch gsl-$gsl_version.build.vc14.zip gsl-$gsl_version
 
 # openssl
-$openssl_version = $Config.VersionInfo.openssl
 GetPackage ftp://ftp.openssl.org/source/openssl-$openssl_version.tar.gz openssl
 GetPatch openssl-vs14.zip openssl
 mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug -Force >> $Log 
@@ -145,88 +144,87 @@ mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL-AV
 GetPackage http://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz Qt4
 
 # Boost
-GetPackage http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.zip boost
+GetPackage http://downloads.sourceforge.net/project/boost/boost/$boost_version/boost_$boost_version_.zip boost
 
 # Qwt
-$url = "http://downloads.sourceforge.net/project/qwt/qwt/" + $Config.VersionInfo.qwt + "/qwt-" + $Config.VersionInfo.qwt + ".zip"
-GetPackage $url 
-$dest = "qwt-" + $Config.VersionInfo.qwt
-GetPatch qwtconfig.7z $dest
+GetPackage http://downloads.sourceforge.net/project/qwt/qwt/$qwt_version/qwt-$qwt_version.zip
+GetPatch qwtconfig.7z qwt-$qwt_version
 
 # sip
-GetPackage http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
+GetPackage http://sourceforge.net/projects/pyqt/files/sip/sip-$sip_version/sip-$sip_version.zip
 
 # PyQt
-GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-win-gpl-4.11.4.zip PyQt4
+GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-$PyQt_version/PyQt-win-gpl-$PyQt_version.zip PyQt4
 
 # PyQwt
 GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
 
 # Cython
-GetPackage http://cython.org/release/Cython-0.23.4.zip
+GetPackage http://cython.org/release/Cython-$cython_version.zip
 
-# numpy 1.10.4
-GetPackage https://github.com/numpy/numpy/archive/v1.10.4.zip
+# numpy
+GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.zip
 
-# scipy 0.17.0
-GetPackage https://github.com/scipy/scipy/releases/download/v0.17.0/scipy-0.17.0.tar.xz scipy
+# scipy 
+GetPackage https://github.com/scipy/scipy/releases/download/v$scipy_version/scipy-$scipy_version.tar.xz scipy
 
-# pyopengl 3.1.0
-GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-3.1.0.tar.gz
+# pyopengl 
+GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-$pyopengl_version.tar.gz
 
-# pyopengl-accelerate 3.1.0
-GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-3.1.0.tar.gz
+# pyopengl-accelerate 
+GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-$pyopengl_version.tar.gz
 
 # pygobject
-GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.28/pygobject-2.28.6.tar.xz
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.28/pygobject-$pygobject_version.tar.xz
 GetPatch gtk-pkgconfig.7z x64/lib
-GetPatch runtests-windows.7z pygobject-2.28.6\tests
+GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
 
 # PyGTK
-GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-2.24.0.tar.gz
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-$pygtk_version.tar.gz
 GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_2_22_0_WINDOWS.tar.xz
 
 # py2cairo
-GetPackage http://cairographics.org/releases/py2cairo-1.10.0.tar.bz2
-GetPatch py2cairo-1.10.0.7z py2cairo-1.10.0
+GetPackage http://cairographics.org/releases/py2cairo-$py2cairo_version.tar.bz2
+GetPatch py2cairo-$py2cairo_version.7z py2cairo-$py2cairo_version
 
 # pkgconfig
-GetPackage https://pypi.python.org/packages/source/p/pkgconfig/pkgconfig-1.1.0.tar.gz
+GetPackage https://pypi.python.org/packages/source/p/pkgconfig/pkgconfig-$pkgconfig_version.tar.gz
 GetPackage http://downloads.sourceforge.net/project/pkgconfiglite/0.28-1/pkg-config-lite-0.28-1_bin-win32.zip
 
 # wxpython
-GetPackage http://downloads.sourceforge.net/wxpython/wxPython-src-3.0.2.0.tar.bz2 wxpython
+GetPackage http://downloads.sourceforge.net/wxpython/wxPython-src-$wxpython_version.tar.bz2 wxpython
 GetPatch wxpython_vs2015_patch.7z wxpython
 
 # cheetah 2.4.4
-GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-2.4.4.tar.gz
+GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$cheetah_version.tar.gz
 
 # libusb 1.0.20
-GetPackage https://github.com/libusb/libusb/releases/download/v1.0.20/libusb-1.0.20.tar.bz2 libusb
+GetPackage https://github.com/libusb/libusb/releases/download/v$libusb_version/libusb-$libusb_version.tar.bz2 libusb
 GetPatch libusb_VS2015.7z libusb
 
 # UHD
-GetPackage git://github.com/EttusResearch/uhd.git
+GetPackage https://github.com/EttusResearch/uhd/archive/release_$UHD_Version.tar.gz uhd
 
 # libxslt
 GetPackage https://git.gnome.org/browse/libxslt/snapshot/CVE-2015-7995.tar.xz libxslt
 
 # lxml
-GetPackage git://github.com/lxml/lxml.git 
+GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
+
 
 # pthreads
-GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-2-9-1-release.7z pthreads
+GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-$pthreads_version-release.7z pthreads
 GetPatch pthreads.2.7z pthreads/pthreads.2
 
 # openblas
-if (!$Config.BuildNumpyWithMKL) {
-	GetPackage https://github.com/xianyi/OpenBLAS.git 
+if (!$BuildNumpyWithMKL) {
+	GetPackage https://github.com/xianyi/OpenBLAS/archive/v$openBLAS_version.tar.gz OpenBLAS
 }
 
 # lapack reference build
-if (!$Config.BuildNumpyWithMKL) {
-	GetPackage http://www.netlib.org/lapack/lapack-3.6.0.tgz lapack
-	GetPatch lapack_3.6.0.7z lapack/SRC
+if (!$BuildNumpyWithMKL) {
+	GetPackage http://www.netlib.org/lapack/lapack-$lapack_version.tgz lapack
+	GetPatch lapack_$lapack_version.7z lapack/SRC
 }
 
 # cleanup

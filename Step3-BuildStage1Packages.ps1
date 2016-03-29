@@ -183,7 +183,7 @@ if ($Config.BuildGTKFromSource) {
 # SDL
 SetLog "SDL"
 Write-Host -NoNewline "building SDL..."
-cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
+cd $root\src-stage1-dependencies\sdl-$sdl_version\VisualC
 msbuild .\sdl.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild .\sdl.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild .\sdl.sln /m /p:"configuration=Release;platform=x64" >> $Log
@@ -207,7 +207,7 @@ Validate "x64/Debug/portaudio_x64.dll" "x64/Release/portaudio_x64.dll" "x64/Rele
 # cppunit
 SetLog "cppunit"
 Write-Host -NoNewline "building cppunit..."
-cd $root\src-stage1-dependencies\cppunit-1.12.1\src >> $Log
+cd $root\src-stage1-dependencies\cppunit-$cppunit_version\src >> $Log
 msbuild .\CppUnitLibraries.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild .\CppUnitLibraries.sln /m /p:"configuration=Release;platform=x64" >> $Log
 Validate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/lib/cppunit.lib" "x64/Release/lib/cppunit.lib"
@@ -216,7 +216,7 @@ Validate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/li
 # fftw3
 SetLog "fftw3"
 Write-Host -NoNewline "building fftw3..."
-cd $root\src-stage1-dependencies\fftw-3.3.5\msvc
+cd $root\src-stage1-dependencies\fftw-$fftw_version\msvc
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug DLL;platform=x64" >> $Log
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release;platform=x64" >> $Log
@@ -397,7 +397,7 @@ Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Rel
 # gsl
 SetLog "gsl"
 Write-Host -NoNewline "building gsl..."
-cd $root/src-stage1-dependencies/gsl-1.16/build.vc14
+cd $root/src-stage1-dependencies/gsl-$gsl_version/build.vc14
 #prep headers
 msbuild gsl.lib.sln /t:gslhdrs >> $Log
 #static
@@ -669,7 +669,7 @@ Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AV
 # TODO upgrade openblas asm format
 # openblas lapack and lapacke have a ton of external errors during build
 # TODO build patch for modified CMAKE
-if (!$Config.BuildNumpyWithMKL) {
+if (!$BuildNumpyWithMKL) {
 	SetLog "openblas"
 	Write-Host "starting openblas..."
 	function MakeOpenBLAS {
@@ -711,7 +711,7 @@ if (!$Config.BuildNumpyWithMKL) {
 # so there isn't a free option, we look for Intel Fortran Compiler during setup.
 # Don't despair though, if not fort then we'll just download binary wheels later.
 # There is a bug in 3.6.0 where a library is misspelled and will give an error (zerbla vs xerbla in zgetrf2.f @ line 147, it is fixed in the SVN
-if (!$Config.BuildNumpyWithMKL -and $hasIFORT) {
+if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	SetLog "lapack"
 	Write-Host -NoNewline "starting lapack..."
 	function MakeLapack {

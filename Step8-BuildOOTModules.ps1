@@ -54,7 +54,7 @@ function BuildDrivers
 		-DLIBUSB_LIBRARY_PATH_SUFFIX="lib" `
 		-DLIBUSB_LIBRARIES="$root/build/$configuration/lib/libusb-1.0.lib" `
 		-DLIBUSB_HEADER_FILE="$root/build/$configuration/include/libusb.h" `
-		-DLIBUSB_VERSION="1.0.20" `
+		-DLIBUSB_VERSION="$libusb_version" `
 		-DLIBUSB_SKIP_VERSION_CHECK=TRUE `
 		-DENABLE_BACKEND_LIBUSB=TRUE `
 		-DLIBPTHREADSWIN32_PATH="$root/build/$configuration" `

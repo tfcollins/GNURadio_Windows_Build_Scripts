@@ -1,6 +1,7 @@
+# GNURadio Windows Build System
+# Geof Nieboer
 #
-# Functions.psm1
-#
+
 function getPackage
 {
 	[CmdletBinding()]
@@ -206,8 +207,35 @@ function Validate
 	}
 	"validated complete"
 }
-
+#load configuration variables
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
+$sdl_version = $Config.VersionInfo.SDL
+$cppunit_version = $Config.Version.cppunit
+$openssl_version = $Config.VersionInfo.openssl
+$qwt_version = $Config.VersionInfo.qwt
+$sip_version = $Config.VersionInfo.sip
+$PyQt_version = $Config.VersionInfo.PyQt
+$cython_version = $Config.VersionInfo.Cython
+$numpy_version = $Config.VersionInfo.numpy
+$scipy_version = $Config.VersionInfo.scipy
+$pyopengl_version = $Config.VersionInfo.pyopengl
+$fftw_version = $Config.VersionInfo.fftw
+$libusb_version = $Config.VersionInfo.libusb
+$cheetah_version = $Config.VersionInfo.cheetah 
+$wxpython_version = $Config.VersionInfo.wxpython
+$py2cairo_version = $Config.VersionInfo.py2cairo
+$pygobject_version = $Config.VersionInfo.pygobject 
+$pygtk_version = $Config.VersionInfo.pygtk
+$gsl_version = $Config.VersionInfo.gsl
+$boost_version = $Config.VersionInfo.boost 
+$boost_version_ = $Config.VersionInfo.boost_ 
+$pthreads_version = $Config.VersionInfo.pthreads
+$lapack_version = $Config.VersionInfo.lapack
+$openBLAS_version = $Config.VersionInfo.OpenBLAS 
+$UHD_version = $Config.VersionInfo.UHD
+$pyzmq_version = $Config.VersionInfo.pyzmq
+$lxml_version = $Config.VersionInfo.lxml
+$pkgconfig_version = $Config.VersionInfo.pkgconfig 
 
 # setup paths
 $Global:root = $env:grwinbuildroot 
@@ -251,10 +279,10 @@ if (!(Test-Path variable:global:oldpath))
 	write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
 	# set Intel Fortran environment (if exists)
 	if (Test-Path env:IFORT_COMPILER16) {
-		& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015
-		$hasIFORT = $true
+		& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
+		$Global:hasIFORT = $true
 	} else {
-		$hasIFORT = $false
+		$Global:hasIFORT = $false
 	}
 	# Now set a persistent variable holding the original path. vcvarsall will continue to add to the path until it explodes
 	Set-Variable -Name oldpath -Value "$env:Path" -Description “original %Path%” -Option readonly -Scope "Global"
@@ -269,6 +297,7 @@ Add-Type -assembly "system.io.compression.filesystem"
 # set initial state
 set-alias sz "$root\bin\7za.exe"  
 cd $root
+
 
 
 

@@ -69,30 +69,30 @@ Function Consolidate {
 	# move SDL
 	Write-Host -NoNewline "Consolidating SDL..."
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/sdl 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/SDL-1.2.15/VisualC/x64/$configuration/SDL.dll $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/SDL-1.2.15/VisualC/x64/$configuration/SDL.lib $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/SDL-1.2.15/VisualC/x64/$configuration/SDL.exp $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/SDL-1.2.15/VisualC/x64/$configuration/SDL.pdb $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/SDL-1.2.15/include/*.h $root/build/$configuration/include/sdl/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/SDL-$sdl_version/VisualC/x64/$configuration/SDL.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/SDL-$sdl_version/VisualC/x64/$configuration/SDL.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/SDL-$sdl_version/VisualC/x64/$configuration/SDL.exp $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/SDL-$sdl_version/VisualC/x64/$configuration/SDL.pdb $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/SDL-$sdl_version/include/*.h $root/build/$configuration/include/sdl/ 2>&1 >> $log
 	"complete"
 
 	# cppunit
 	Write-Host -NoNewline "Consolidating cppunit..."
-	cp -Recurse -Force $root/src-stage1-dependencies/cppunit-1.12.1/src/x64/$baseconfig/lib/cppunit.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/cppunit-1.12.1/include/cppunit $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/cppunit-$cppunit_version/src/x64/$baseconfig/lib/cppunit.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/cppunit-$cppunit_version/include/cppunit $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# gsl
 	Write-Host -NoNewline "Consolidating gsl..."
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/gsl 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/gsl-1.16/build.vc14/x64/$configuration/dll/* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/gsl-1.16/gsl/*.h $root/build/$configuration/include/gsl/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/gsl-$gsl_version/build.vc14/x64/$configuration/dll/* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/gsl-$gsl_version/gsl/*.h $root/build/$configuration/include/gsl/ 2>&1 >> $log
 	"complete"
 
 	# fftw3f
 	Write-Host -NoNewline "Consolidating fftw3..."
-	cp -Recurse -Force $root/src-stage1-dependencies/fftw-3.3.5/msvc/x64/$configuration/libfftwf-3.3.lib $root/build/$configuration/lib/libfftw3f.lib 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/fftw-3.3.5/api/fftw3.h $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/fftw-$fftw_version/msvc/x64/$configuration/libfftwf-3.3.lib $root/build/$configuration/lib/libfftw3f.lib 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/fftw-$fftw_version/api/fftw3.h $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# libsodium
