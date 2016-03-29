@@ -33,7 +33,8 @@ msbuild vstudio.sln /m /p:"configuration=Release;platform=x64" >> $Log
 msbuild vstudio.sln /m /p:"configuration=Release Library;platform=x64" >> $Log
 msbuild vstudio.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild vstudio.sln /m /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
-"complete"
+Validate "x64/Debug/libpng16.dll" "x64/Debug Library/libpng16.lib" "x64/Release/libpng16.dll" "x64/Release Library/libpng16.lib" "x64/Release-AVX2/libpng16.dll" "x64/Release Library-AVX2/libpng16.lib"
+
 
 # ____________________________________________________________________________________________________________
 # zlib
@@ -48,7 +49,9 @@ msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=Win32" >> $Lo
 msbuild zlibvc.sln /m /p:"configuration=Release;platform=Win32" >> $Log
 msbuild zlibvc.sln /m /p:"configuration=Debug;platform=Win32" >> $Log
 msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=Win32" >> $Log
-"complete"
+Validate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/ZlibDllRelease-AVX2/zlibwapi.dll" "x64/ZlibDllReleaseWithoutAsm/zlibwapi.dll" `
+	"x64/ZlibStatDebug/zlib.dll" "x64/ZlibStatRelease/zlib.lib" "x64/ZlibStatRelease-AVX2/zlib.lib" "x64/ZlibStatReleaseWithoutAsm/zlib.lib"
+
 
 if ($Config.BuildGTKFromSource) {
 
@@ -184,7 +187,7 @@ cd $root\src-stage1-dependencies\sdl-1.2.15\VisualC
 msbuild .\sdl.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild .\sdl.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild .\sdl.sln /m /p:"configuration=Release;platform=x64" >> $Log
-"complete"
+Validate "x64/Debug/SDL.dll" "x64/Release/SDL.dll" "x64/Release-AVX2/SDL.dll"
 
 # ____________________________________________________________________________________________________________
 # portaudio
@@ -197,7 +200,8 @@ msbuild .\portaudio.vcxproj /m /p:"configuration=Release;platform=x64" >> $Log
 msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static;platform=x64" >> $Log
 msbuild .\portaudio.vcxproj /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static-AVX2;platform=x64" >> $Log
-"complete"
+Validate "x64/Debug/portaudio_x64.dll" "x64/Release/portaudio_x64.dll" "x64/Release-AVX2/portaudio_x64.dll" `
+	"x64/Debug-Static/portaudio.lib" "x64/Release-Static/portaudio.lib" "x64/Release-Static-AVX2/portaudio.lib"
 
 # ____________________________________________________________________________________________________________
 # cppunit
@@ -206,7 +210,7 @@ Write-Host -NoNewline "building cppunit..."
 cd $root\src-stage1-dependencies\cppunit-1.12.1\src >> $Log
 msbuild .\CppUnitLibraries.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild .\CppUnitLibraries.sln /m /p:"configuration=Release;platform=x64" >> $Log
-"complete"
+Validate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/lib/cppunit.lib" "x64/Release/lib/cppunit.lib"
 
 # ____________________________________________________________________________________________________________
 # fftw3
@@ -219,7 +223,8 @@ msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release;platform=x64" >> $Log
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL;platform=x64" >> $Log
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
-"complete"
+Validate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
+	"x64/ReleaseDLL/libfftwf-3.3.DLL" "x64/ReleaseDLL-AVX2/libfftwf-3.3.DLL" "x64/DebugDLL/libfftwf-3.3.DLL" 
 
 # ____________________________________________________________________________________________________________
 # openssl (python depends on this)
@@ -235,8 +240,10 @@ msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release;platform=x64" >>
 msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL;platform=x64" >> $Log
 msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
-"complete"
-
+Validate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" "build/x64/Debug/ssleay32.lib" `
+	"build/x64/ReleaseDLL/libeay32.DLL" "build/x64/ReleaseDLL-AVX2/libeay32.DLL" "build/x64/DebugDLL/libeay32.DLL" `
+	"build/x64/Release/libeay32.lib" "build/x64/Release-AVX2/libeay32.lib" "build/x64/Debug/libeay32.lib" `
+	"build/x64/ReleaseDLL/ssleay32.DLL" "build/x64/ReleaseDLL-AVX2/ssleay32.DLL" "build/x64/DebugDLL/ssleay32.DLL" 
 
 # ____________________________________________________________________________________________________________
 # python (boost depends on this)
@@ -247,7 +254,9 @@ cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
 msbuild pcbuild.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild pcbuild.sln /m /p:"configuration=Release;platform=x64" >> $Log
 msbuild pcbuild.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-"complete"
+Validate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
+	"amd64-avx2/_ssl.pyd" "amd64-avx2/_ctypes.pyd" "amd64-avx2/_tkinter.pyd" "amd64-avx2/python.exe" "amd64-avx2/python27.dll" `
+	"amd64/_ssl_d.pyd" "amd64/_ctypes_d.pyd" "amd64/_tkinter_d.pyd" "amd64/python_d.exe" "amd64/python27_d.dll" 
 
 # now place the binaries where we need them
 # install the main python and minimal dependencies
@@ -355,7 +364,9 @@ cmd /c 'b2.exe -a --build-type=minimal --prefix=build\avx2\Release --libdir=buil
 cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Release --libdir=build\x64\Release\lib --includedir=build\x64\Release\include --stagedir=build\x64\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags="-Zi" cflags="-Zi" install' >> $Log
 # Regular  static+shared debug libraries
 cmd /c 'b2.exe -a --build-type=minimal --prefix=build\x64\Debug --libdir=build\x64\Debug\lib --includedir=build\x64\Debug\include --stagedir=build\x64\Debug --layout=versioned address-model=64 threading=multi link=static,shared variant=debug cxxflags="-Zi" cflags="-Zi" install' >> $Log
-"complete"
+Validate "build/x64/Debug/lib/boost_python-vc140-mt-gd-1_60.dll" "build/x64/Debug/lib/boost_system-vc140-mt-gd-1_60.dll" `
+	"build/x64/Release/lib/boost_python-vc140-mt-1_60.dll" "build/x64/Release/lib/boost_system-vc140-mt-1_60.dll" `
+	"build/avx2/Release/lib/boost_python-vc140-mt-1_60.dll" "build/avx2/Release/lib/boost_system-vc140-mt-1_60.dll"
 
 # ____________________________________________________________________________________________________________
 # libsodium
@@ -365,7 +376,9 @@ Write-Host -NoNewline "building libsodium..."
 cd $root/src-stage1-dependencies/libsodium
 cd builds\msvc\build
 & .\buildbase.bat ..\vs2015\libsodium.sln 14 >> $Log
-"complete"
+cd ../../../bin/x64
+Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib" "Release/v140/ltcg/libsodium.lib" `
+	"Debug/v140/dynamic/libsodium.dll" "Debug/v140/static/libsodium.lib" "Debug/v140/ltcg/libsodium.lib"
 
 # ____________________________________________________________________________________________________________
 # libzmq
@@ -376,7 +389,9 @@ cd $root/src-stage1-dependencies/libzmq/builds/msvc
 & .\configure.bat
 cd build
 & .\buildbase.bat ..\vs2015\libzmq.sln 14 >> $Log
-"complete"
+cd ../../../bin/x64
+Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Release/v140/ltcg/libzmq.lib" `
+	"Debug/v140/dynamic/libzmq.dll" "Debug/v140/static/libzmq.lib" "Debug/v140/ltcg/libzmq.lib"
 
 # ____________________________________________________________________________________________________________
 # gsl
@@ -400,8 +415,10 @@ msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Rele
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
-"complete"
-}
+Validate "x64/Debug/dll/gsl.dll" "x64/Debug/dll/cblas.dll" "x64/Debug/lib/gsl.lib" "x64/Debug/lib/cblas.lib" `
+	"x64/Release/dll/gsl.dll" "x64/Release/dll/cblas.dll" "x64/Release/lib/gsl.lib" "x64/Release/lib/cblas.lib" `
+	"x64/Release-AVX2/dll/gsl.dll" "x64/Release-AVX2/dll/cblas.dll" "x64/Release-AVX2/lib/gsl.lib" "x64/Release-AVX2/lib/cblas.lib" 
+
 # ____________________________________________________________________________________________________________
 # qt4
 # must be after openssl
@@ -465,7 +482,9 @@ MakeQT "Release"
 #clean up enormous amount of temp files
 nmake clean  2>&1>> $Log
 nmake distclean 2>&1 >> $Log
-"complete"
+Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored.dll" "build/DebugDLL/lib/QtOpenGLd.dll" "build/DebugDLL/lib/QtSvgd.dll" "build/DebugDLL/lib/QtGuid.dll" `
+	"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore.dll" "build/Releasedll/lib/QtOpenGL.dll" "build/Releasedll/lib/QtSvg.dll" "build/Releasedll/lib/QtGui.dll" `
+	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore.dll" "build/Releasedll-AVX2/lib/QtOpenGL.dll" "build/Releasedll-AVX2/lib/QtSvg.dll" "build/Releasedll-AVX2/lib/QtGui.dll" 
 
 # ____________________________________________________________________________________________________________
 # QWT 5.2.3
@@ -505,7 +524,8 @@ MakeQwt
 
 $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
-"complete"
+Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
+	"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
 
 # ____________________________________________________________________________________________________________
 # Mako
@@ -538,7 +558,9 @@ Write-Host -NoNewline "Release..."
 msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
 Write-Host -NoNewline "Release-AVX2..."
 msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-"complete"
+Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
+	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
+	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
 
 # ____________________________________________________________________________________________________________
 # UHD 3.9.2
@@ -572,7 +594,7 @@ Function makeUHD {
 	& cmake -DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/uhd\dist\$configuration" -DBUILD_TYPE="$boostconfig" -P cmake_install.cmake 2>&1 >> $Log
 	New-Item -ItemType Directory -Path $root/src-stage1-dependencies/uhd\dist\$configuration\share\uhd\examples\ -Force
 	cp -Recurse -Force $root/src-stage1-dependencies/uhd/host/build/examples/$configuration/* $root/src-stage1-dependencies/uhd\dist\$configuration\share\uhd\examples\
-	"complete"
+	Validate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h"
 }
 
 # AVX2 build
@@ -609,7 +631,7 @@ function MakeXSLT {
 	& nmake /NOLOGO install 2>&1 >> $Log 
 	Move-Item -Path ..\build\$configuration\bin\libexslt.pdb ..\build\$configuration\lib
 	Move-Item -Path ..\build\$configuration\bin\libxslt.pdb ..\build\$configuration\lib
-	"done"
+	Validate "..\build\$configuration\lib\libxslt.dll" "..\build\$configuration\lib\libxslt_a.lib"
 }
 MakeXSLT "Release"
 MakeXSLT "Release-AVX2"
@@ -635,7 +657,8 @@ Write-Host -NoNewline "Release-AVX2..."
 msbuild .\pthread.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
 Write-Host -NoNewline "DLL..."
 msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
-"complete"
+Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
+	"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll"
 
 # ____________________________________________________________________________________________________________
 # openblas
@@ -648,7 +671,7 @@ msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
 # TODO build patch for modified CMAKE
 if (!$Config.BuildNumpyWithMKL) {
 	SetLog "openblas"
-	Write-Host -NoNewline "starting openblas..."
+	Write-Host "starting openblas..."
 	function MakeOpenBLAS {
 		$ErrorActionPreference = "Continue"
 		$configuration = $args[0]
@@ -673,13 +696,12 @@ if (!$Config.BuildNumpyWithMKL) {
 		cp $root\src-stage1-dependencies\OpenBLAS\build\$configuration\lib\$cmakebuildtype\libopenblas.lib $root\src-stage1-dependencies\OpenBLAS\build\$configuration\lib\libopenblas_static.lib 2>&1 >> $Log 
 		$env:_CL_ = ""
 		$env:__INTEL_POST_FFLAGS = ""
-		"done"
+		Validate "lib\libopenblas.lib" "lib\libopenblas.dll" "lib\libopenblas_static.lib"
 		$ErrorActionPreference = "Stop"
 	}
 	MakeOpenBlas "Debug"
 	MakeOpenBlas "Release"
 	MakeOpenBlas "Release-AVX2"
-	"complete"
 }
 
 # ____________________________________________________________________________________________________________
@@ -717,7 +739,7 @@ if (!$Config.BuildNumpyWithMKL -and $hasIFORT) {
 		cmake -DBUILD_TYPE="$cmakebuildtype" -P cmake_install.cmake 2>&1 >> $Log 
 		$env:_CL_ = ""
 		$env:__INTEL_POST_FFLAGS = ""
-		"complete"
+		Validate "../../dist/$configuration/lib/blas.lib" "../../dist/$configuration/lib/lapack.lib"
 	}
 	MakeLapack "Debug"
 	MakeLapack "Release"

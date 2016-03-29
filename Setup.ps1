@@ -204,6 +204,7 @@ function Validate
 			throw "Validation Failed, $i was not found and is required"
 		}
 	}
+	"validated complete"
 }
 
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
