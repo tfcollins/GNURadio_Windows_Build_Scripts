@@ -28,8 +28,8 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Compile Include="BUILD_GNURADIO.ps1" />
     <Compile Include="ConfigInfo.psd1" />
-    <Compile Include="Functions.psm1" />
     <Compile Include="Setup.ps1" />
     <Compile Include="Step1-BuildStructure.ps1" />
     <Compile Include="Step5-ConsolidateLibs.ps1" />
