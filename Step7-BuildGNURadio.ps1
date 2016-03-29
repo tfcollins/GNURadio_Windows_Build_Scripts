@@ -17,7 +17,7 @@ if (!(Test-Path $root/src-stage3/build)) {
 
 function BuildGNURadio {
 	$configuration = $args[0]
-	if ($configuration -match "Release") {$buildtype = "RELEASE"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
+	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
 	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
 	# prep for cmake
 	SetLog "Build GNURadio $configuration"
@@ -65,8 +65,8 @@ function BuildGNURadio {
 	Write-Host -NoNewline "Build GNURadio $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
+	$env:_LINK_ = " /DEBUG /opt:ref,icf"
 	Write-Host -NoNewline "building..."
-	# TODO relwithDebInfo isn't working at the moment
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
@@ -74,11 +74,16 @@ function BuildGNURadio {
 	cp $root/build/$configuration/lib/*.dll $root\src-stage3\staged_install\$configuration\bin\
 	Write-Host -NoNewline "moving python..."
 	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration
+	if ((Test-Path $root/src-stage3/staged_install/$configuration/gr-python27) -and (($pythonroot -match "avx2") -or ($pythonroot -match "debug"))) 
+	{
+		del -Recurse -Force $root/src-stage3/staged_install/$configuration/gr-python27
+	}
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
 	# TODO this files are not in an archived patch yet
 	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
+	$env:_LINK_ = ""
 	"complete"
 }
 
