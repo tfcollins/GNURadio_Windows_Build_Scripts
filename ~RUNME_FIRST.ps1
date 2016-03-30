@@ -3,6 +3,7 @@
 #
 # RUNME_FIRST.ps1
 #
+$ErrorActionPreference = "Stop"
 $Global:root = Read-Host "Please choose an absolute root directory for this build <c:\gr-build>"
 if (!$root) {$root = "C:\gr-build"}
 if (!(Test-Path -isValid -LiteralPath $root)) {
@@ -15,7 +16,7 @@ if (![System.IO.Path]::IsPathRooted($root)) {
 }
 # setup
 "Performing initial setup"
-Write-Host -NoNewline "Setting up directories..." 
+Write-Host -NoNewline "Setting up directories and checking dependencies..." 
 
 # set up enough to import setup.ps1 and start logging
 New-Item -ItemType Directory -Force -Path $root > $null
@@ -24,7 +25,7 @@ New-Item -ItemType Directory -Force -Path "$root\logs" > $null
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 ResetLog
-SetupLog "Initial Configuration"
+SetLog "Initial Configuration"
 
 # build basic directories
 
@@ -37,10 +38,10 @@ New-Item -ItemType Directory -Force -Path "$root\src-stage2-python" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage3" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage4-installer" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\scripts" >> $Log
-Copy-Item ./bin $root/bin -Recurse -Force >> $Log
-Copy-Item ./wix $root/src-stage4-installer -Recurse -Force >> $Log
-Copy-Item ./*.ps1 $root/scripts -Force >> $Log
+Copy-Item $mypath/bin/*.* $root/bin -Recurse -Force >> $Log
+Copy-Item $mypath/wix/*.* $root/src-stage4-installer -Recurse -Force >> $Log
+Copy-Item $mypath/*.ps1 $root/scripts -Force >> $Log
 Remove-Item $root/scripts/~RUNME_FIRST.ps1 >> $Log  # Don't need this file in the build tree after everything is there
 cd $root/scripts
 
-& Step1-UserPreferences.ps1
+& .\Step1-UserPreferences.ps1
