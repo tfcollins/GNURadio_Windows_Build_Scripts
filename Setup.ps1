@@ -246,24 +246,24 @@ if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32
 $myprog = "${Env:ProgramFiles(x86)}"
 
 # Check for binary dependencies
-if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder"} 
+if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder.  Aborting script"} 
 
 # check for git/tar
-if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed"} 
+if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed.  Aborting script"} 
 set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"  
 
 # CMake (to build gnuradio)
-if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed"} 
+if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed.  Aborting script"} 
 Set-Alias cmake "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe"
 	
 # ActivePerl (to build OpenSSL)
-if (-not (test-path "$env:ProgramFiles\perl64\bin\perl.exe")) {throw "ActiveState Perl must be installed"} 
+if (-not (test-path "$env:ProgramFiles\perl64\bin\perl.exe")) {throw "ActiveState Perl must be installed.  Aborting script"} 
 	
 # MSVC 2015
-if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed"} 
+if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed.  Aborting script"} 
 
 # WIX
-# TODO check for WIX
+if (-not (test-patch $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
 	
 # set VS 2015 environment
 if (!(Test-Path variable:global:oldpath))
