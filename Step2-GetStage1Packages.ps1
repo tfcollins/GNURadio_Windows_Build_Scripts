@@ -76,30 +76,13 @@ if ($Config.BuildGTKFromSource) {
 }
 # SDL
 getPackage  https://libsdl.org/release/SDL-$sdl_version.zip
-getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC
+getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC 2>&1 >> $Log 
 
 # portaudio v19
-GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz
+GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz portaudio
 GetPatch portaudio_vs2015.7z portaudio/build/msvc
 # asio SDK for portaudio
 GetPatch asiosdk2.3.7z portaudio/src/hostapi/asio
-# folder will already exist
-if (!(Test-Path $root/packages/portaudio/asiosdk2.3.zip)) {
-	Write-Host -NoNewLine "Retrieving ASIO SDK..."
-	cd $root/packages/portaudio
-	wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip -OutFile asiosdk2.3.zip >> $Log 
-	Write-Host -NoNewLine "download complete..."
-} else {
-	Write-Host -NoNewLine "ASIO SDK already present..."
-}
-if (!(Test-Path $root/src-stage1-dependencies/portaudio/src/hostapi/asio/asiosdk)) {
-	$archive = "$root/packages/portaudio/asiosdk2.3.zip"
-	$destination = "$root/src-stage1-dependencies/portaudio/src/hostapi/asio"
-	[io.compression.zipfile]::ExtractToDirectory($archive, $destination) >> $Log 
-	cd $destination
-	ren asiosdk2.3 asiosdk
-	"extracted"
-}
 
 # cppunit 
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-$cppunit_version.7z
@@ -108,7 +91,7 @@ GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-$cpp
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/fftw-$fftw_version.7z
 
 # python
-GetPackage http://www.gcndevelopment.com/gnuradio/downloads/libraries/python27/python2710-x64-Source.7z
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/python2710-x64-Source.7z
 GetPatch python-pcbuild.vc14.zip python27/Python-2.7.10
 # patch distutils because it doesn't correctly detect MSVC 14.0 / 2015
 GetPatch python27_msvccompiler.7z python27\Python-2.7.10\Lib\distutils
@@ -130,7 +113,7 @@ GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gsl-$gsl_ver
 GetPatch gsl-$gsl_version.build.vc14.zip gsl-$gsl_version
 
 # openssl
-GetPackage ftp://ftp.openssl.org/source/openssl-$openssl_version.tar.gz openssl
+GetPackage ftp://ftp.openssl.org/source/old/1.0.2/openssl-$openssl_version.tar.gz openssl
 GetPatch openssl-vs14.zip openssl
 mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug -Force >> $Log 
 mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release -Force >> $Log 
@@ -162,7 +145,7 @@ GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
 GetPackage http://cython.org/release/Cython-$cython_version.zip
 
 # numpy
-GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.zip
+GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.tar.gz
 
 # scipy 
 GetPackage https://github.com/scipy/scipy/releases/download/v$scipy_version/scipy-$scipy_version.tar.xz scipy
@@ -180,7 +163,7 @@ GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
 
 # PyGTK
 GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-$pygtk_version.tar.gz
-GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_2_22_0_WINDOWS.tar.xz
+#GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_2_22_0_WINDOWS.tar.xz
 
 # py2cairo
 GetPackage http://cairographics.org/releases/py2cairo-$py2cairo_version.tar.bz2

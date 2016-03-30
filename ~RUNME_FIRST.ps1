@@ -36,11 +36,13 @@ New-Item -ItemType Directory -Force -Path "$root\packages" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage1-dependencies" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage2-python" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage3" >> $Log
+New-Item -ItemType Directory -Force -Path "$root\src-stage3\oot_code" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage4-installer" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\scripts" >> $Log
 Copy-Item $mypath/bin/*.* $root/bin -Recurse -Force >> $Log
 Copy-Item $mypath/wix/*.* $root/src-stage4-installer -Recurse -Force >> $Log
 Copy-Item $mypath/*.ps1 $root/scripts -Force >> $Log
+Copy-Item $mypath/AVX2.props $root/src-stage1-dependencies -Force >> $Log
 Remove-Item $root/scripts/~RUNME_FIRST.ps1 >> $Log  # Don't need this file in the build tree after everything is there
 cd $root/scripts
 

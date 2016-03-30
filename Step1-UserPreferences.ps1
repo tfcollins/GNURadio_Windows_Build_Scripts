@@ -94,15 +94,15 @@ Write-Host ""
 
 if ($buildoption -eq "1") 
 {
-	& .\Step2-GetStage1Packages.ps1
-	& .\Step3-BuildStage1Packages.ps1 $configmode
+	& $root\scripts\Step2-GetStage1Packages.ps1
+	& $root\scripts\Step3-BuildStage1Packages.ps1 $configmode
 } 
 if ($buildoption -eq "1" -or $buildoption -eq "2")
 {
-	& .\Step4-BuildPythonPackages.ps1 $configmode
-	& .\Step5-ConsolidateLibs.ps1 $configmode
+	& $root\scripts\Step4-BuildPythonPackages.ps1 $configmode
+	& $root\scripts\Step5-ConsolidateLibs.ps1 $configmode
 } 
-& .\Step6-GetStage3Packages.ps1
-& .\Step7-BuildGNURadio.ps1 $configmode
-& .\Step8-BuildOOTModules.ps1 $configmode
-& .\Step9-BuildMSI.ps1 $configmode 
+& $root\scripts\Step6-GetStage3Packages.ps1
+& $root\scripts\Step7-BuildGNURadio.ps1 $configmode
+& $root\scripts\Step8-BuildOOTModules.ps1 $configmode
+& $root\scripts\Step9-BuildMSI.ps1 $configmode 
