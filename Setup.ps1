@@ -208,7 +208,8 @@ function Validate
 	"validated complete"
 }
 #load configuration variables
-$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
+$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 -L
 $sdl_version = $Config.VersionInfo.SDL
 $cppunit_version = $Config.Version.cppunit
 $openssl_version = $Config.VersionInfo.openssl

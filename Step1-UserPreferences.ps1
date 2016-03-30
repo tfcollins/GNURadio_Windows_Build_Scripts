@@ -45,7 +45,7 @@ if ($buildoption -ne "1" -and $buildoption -ne "2" -and $buildoption -ne "3")
 }
 
 Write-Host ""
-$defaultroot = Split-Path $script:MyInvocation.MyCommand.Path -Parent
+$defaultroot = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)
 $Global:root = Read-Host "Please choose an absolute root directory for this build <$defaultroot>"
 if (!$root) {$root = $defaultroot}
 if (!(Test-Path -isValid -LiteralPath $root)) {
