@@ -4,7 +4,7 @@
 # RUNME_FIRST.ps1
 #
 $Global:root = Read-Host "Please choose an absolute root directory for this build <c:\gr-build>"
-if (!$root) {$root = "C:/gr-build"}
+if (!$root) {$root = "C:\gr-build"}
 if (!(Test-Path -isValid -LiteralPath $root)) {
     Write-Host "'$root' is not a valid path.  Exiting script."
     return
@@ -15,15 +15,19 @@ if (![System.IO.Path]::IsPathRooted($root)) {
 }
 # setup
 "Performing initial setup"
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
-. $mypath\Setup.ps1 -Force
-
-ResetLog
 Write-Host -NoNewline "Setting up directories..." 
-# build basic directories
+
+# set up enough to import setup.ps1 and start logging
 New-Item -ItemType Directory -Force -Path $root > $null
 New-Item -ItemType Directory -Force -Path "$root\logs" > $null
+
+$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+. $mypath\Setup.ps1 -Force
+ResetLog
 SetupLog "Initial Configuration"
+
+# build basic directories
+
 New-Item -ItemType Directory -Force -Path "$root\bin" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\build" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\include" >> $Log
