@@ -14,10 +14,6 @@ $ErrorActionPreference = "Stop"
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
-# EVERYTHING ABOVE THIS LINE NEEDS TO BE RUN ONCE BEFORE BUILDING ANY PACKAGES
-
-$debug = {
-
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
 
@@ -247,7 +243,7 @@ Validate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" 
 
 # ____________________________________________________________________________________________________________
 # python (boost depends on this)
-# FIXME need to handle the detection in msvc9compiler.py since MS skipped a MSVC version
+# 
 SetLog "python"
 Write-Host -NoNewline "building core python..."
 cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
@@ -327,7 +323,9 @@ Function gatherPython {
 	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
 	cd $root\src-stage1-dependencies/wheel-0.29.0
 	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
-	# TODO do we really need virtualenv since this will be a standalone distro?  Probably not
+	# TODO do we really need virtualenv since this will be a standalone distro?  Probably not.  This is windows so the user might not even have python installed
+	# which means this install WOULD be the system python which is a really bad idea.  Probably a better move would be to check if a system python is installed
+	# and then react accordingly.
 	# cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
 	# & $pythonroot\python.exe setup.py install
 	$ErrorActionPreference = "Stop"

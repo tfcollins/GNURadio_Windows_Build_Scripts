@@ -12,7 +12,6 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 cd $root/src-stage1-dependencies
 SetLog "GetPackages"
 
-break
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
 

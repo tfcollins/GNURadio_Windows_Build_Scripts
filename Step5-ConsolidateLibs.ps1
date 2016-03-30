@@ -19,8 +19,6 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
 
-break
-
 cd $root
 
 SetLog "Consolidate Libraries"

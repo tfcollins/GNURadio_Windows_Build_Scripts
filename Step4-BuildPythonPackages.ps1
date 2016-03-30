@@ -22,8 +22,6 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
 
-#break
-
 #__________________________________________________________________________________________
 # sip
 $ErrorActionPreference = "Continue"
@@ -374,10 +372,17 @@ Function SetupPython
 		$ErrorActionPreference = "Stop"
 		Validate "dist/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy/sparse/_sparsetools.pyd"
 	} else {
-		# TODO can't compile scipy without a fortran compiler, and gfortran won't work here
+		# Can't compile scipy without a fortran compiler, and gfortran won't work here
 		# because we can't mix MSVC and gfortran libraries
 		# So if we get here, we need to use the binary .whl instead
-		"ERROR - FORTRAN NOT FOUND, INSTALL SCIPY FROM WHEEL"
+		# Note that these are specifically built VS 2015 x64 versions for python 2.7.
+		if ($BuildNumpyWithMKL) {
+			Write-Host -NoNewline "Compatible Fortran compiler not available, installing scipy from custom binary wheel..."
+			& $pythonroot/Scripts/pip.exe install http://www.gcndevelopment.com/gnuradio/downloads/libraries/numpy/mkl/scipy-0.17.0-cp27-cp27${d}m-win_amd64.$configuration.whl  2>&1 >> $log
+		} else {
+			& $pythonroot/Scripts/pip.exe install http://www.gcndevelopment.com/gnuradio/downloads/libraries/numpy/openBLAS/scipy-0.17.0-cp27-cp27${d}m-win_amd64.$configuration.whl  2>&1 >> $log
+		}
+		Validate "$pythonroot/lib/site-packages/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy/sparse/_sparsetools.pyd"
 	}
 	
 
@@ -477,7 +482,6 @@ Function SetupPython
 	# uses wierd setup python script called WAF which has an archive embedded in it which
 	# creates files that then fail to work.  So we need to extract them and then patch them
 	# and run again.
-	# TODO ensure pkgconfig-light is downloaded to the gr-build/bin directory
 	Write-Host -NoNewline "configuring py2cairo..."
 	cd $root\src-stage1-dependencies\py2cairo-$py2cairo_version
 	$env:path = "$root\bin;$root\src-stage1-dependencies\x64\bin;" + $oldPath

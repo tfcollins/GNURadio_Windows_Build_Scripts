@@ -29,9 +29,9 @@ Function BuildMSI {
 	Write-Host -NoNewline "Building MSI"
 	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64" 
 
-	Validate "XXX"
+	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7_win64.msi"
 }
 
 BuildMSI "Release"
-#BuildMSI "Release-AVX2"
-#BuildMSI "Debug"
+BuildMSI "Release-AVX2"
+BuildMSI "Debug"
