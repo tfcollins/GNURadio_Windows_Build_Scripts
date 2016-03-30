@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="CAD51E8A-3E3C-48B2-ABC3-DCB0D9F643C8"
+           Name="GNURadio-3.7"
+           Language="1033"
+           Version="1.0.0.0"
+           Manufacturer="GCN Development"
+           UpgradeCode="DAAD3429-A564-45FE-9A06-E1FE30A7E907">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Feature Id="ProductFeature" Title="GNURadio-3.7" Level="1">
+      <ComponentGroupRef Id="GRGroup"/>
+      <ComponentRef Id="AppShortCuts"/>
+      <ComponentRef Id="ApplicationUHDSubDir"/>
+      <ComponentRef Id="ApplicationOtherSubDir"/>
+      <ComponentRef Id="MODTOOLCONF"/>
+      <ComponentRef Id="CONFIGCONF"/>
+      <ComponentRef Id="AppShortCutsUHD"/>
+      <ComponentRef Id="AppShortCutsOther"/>
+    </Feature>
+    <Feature Id="VCRedist" Title="Visual C++ 14.0 Runtime" AllowAdvertise="no" Display="hidden" Level="1">
+      <MergeRef Id="VCRedist"/>
+    </Feature>
+    <UIRef Id="WixUI_InstallDir" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <WixVariable Id="WixUIBannerBmp" Value="wix_top_banner.bmp"/>
+    <WixVariable Id="WixUIDialogBmp" Value="wix_welcome_banner.bmp"/>
+    <Icon Id="gr_icon.ico" SourceFile="grc-icon-64.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="gr_icon.ico"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+    <DirectoryRef Id="TARGETDIR">
+      <Merge Id="VCRedist" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC140_CRT_x64.msm" DiskId="1" Language="0"/>
+    </DirectoryRef>
+  </Product>
+
+  <!--
+  <Fragment>
+    <CustomAction Id="CompilePyFiles"
+              Directory="INSTALLFOLDER"
+              ExeCommand="[PYTHONFOLDER]python.exe -c &quot;import compileall; compileall.compile_dir('../');&quot; "
+              Execute="commit"
+              Return="ignore"/>
+    <InstallExecuteSequence>
+      <Custom Action="CompilePyFiles" Before="InstallFinalize" />
+    </InstallExecuteSequence>
+  </Fragment>
+  -->
+  
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="GNURadio-3.7" >
+          <Directory Id="PYTHONFOLDER" Name="gr-python27" />
+          <Directory Id="BINARYFILES" Name="bin" />
+          <Directory Id="ETCFOLDER" Name ="etc">
+            <Directory Id="GRETC" Name ="gnuradio">
+              <Directory Id="CONFD" Name="conf.d" />
+            </Directory>
+          </Directory>
+          <Directory Id="SHAREFOLDER" Name ="share">
+            <Directory Id="GRSHARE" Name ="gnuradio">
+              <Directory Id="GRC" Name="grc" >
+                <Directory Id="GRCBLOCKS" Name="blocks" />
+              </Directory>
+              <Directory Id="MODTOOL" Name="modtool">
+                <Directory Id="GRNEWMOD" Name="gr-newmod" />
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="GNURadio 3.7">
+          <Directory Id="ApplicationUHDSubFolder" Name="USRP Applications">
+            <Component Id="ApplicationUHDSubDir" Guid="F20EF51E-E33F-4A07-9ACC-992B7277B235">
+              <RemoveFolder Id="ApplicationUHDSubDir" On="uninstall"/>
+              <RegistryValue Root="HKCU" Key="Software\GNU Radio"
+                             Type="integer" Value="1" Name="installed" KeyPath="yes" />
+            </Component>
+          </Directory>
+          <Directory Id="ApplicationOtherSubFolder" Name="Other Applications" >
+            <Component Id="ApplicationOtherSubDir" Guid="60569236-5A15-4025-80B9-1E79D296CC40">
+              <RemoveFolder Id="ApplicationOtherSubDir" On="uninstall"/>
+              <RegistryValue Root="HKCU" Key="Software\GNU Radio"
+                             Type="integer" Value="1" Name="installed" KeyPath="yes" />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="AppShortCuts" Guid="33AEB3D4-1A0F-4D0F-A817-69D1D847C79D">
+        <CreateFolder />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\GNU Radio"
+                       Type="integer" Value="1" Name="installed" KeyPath="yes" />
+        <Shortcut Id="ApplicationStartMenuShortcutCommandPrompt"
+          Name="GNURadio Command Prompt"
+          Description="Runs a command prompt configured for GNURadio scripts"
+          Target="[BINARYFILES]run_gr.bat"
+          Icon="gr_icon.ico"
+          WorkingDirectory="BINARYFILES"/>
+        <Shortcut Id="ApplicationStartMenuShortcutGRC"
+          Name="GNURadio Companion"
+          Description="Runs GNURadio Companion"
+          Arguments="gnuradio-companion.py"
+          Target="[BINARYFILES]run_gr.bat"
+          Icon="gr_icon.ico"
+          WorkingDirectory="BINARYFILES"/>
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="ApplicationUHDSubFolder" >
+      <Component Id="AppShortCutsUHD" Guid="2AE587EF-EDCB-4B51-984D-7FBFCAD8D7D8">
+        <CreateFolder />
+        <RemoveFolder Id="ApplicationUHDSubFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\GNU Radio"
+                       Type="integer" Value="1" Name="installed" KeyPath="yes" />
+        <Shortcut Id="UHD_FFT"
+                  Name="USRP Spectrum Scanner (FFT)"
+                  Description="Runs a UHD Spectrum Scanner"
+                  Target="[BINARYFILES]run_gr.bat"
+                  Arguments="uhd_fft.py"
+                  WorkingDirectory="BINARYFILES"
+                  Icon="gr_icon.ico"
+                  Directory="ApplicationUHDSubFolder"/>
+        <Shortcut Id="UHD_FM"
+                  Name="USRP FM Receiver"
+                  Description="Runs a wideband FM Receiver on USRP hardware"
+                  Arguments="../share/gnuradio/examples/uhd/usrp_wfm_rcv.py"
+                  Target="[BINARYFILES]run_gr.bat"
+                  WorkingDirectory="BINARYFILES"
+                  Icon="gr_icon.ico"
+                  Directory="ApplicationUHDSubFolder"/>
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="ApplicationOtherSubFolder" >
+      <Component Id="AppShortCutsOther" Guid="E2AD9B37-0730-4FFC-995E-A7FBD2F26C1A">
+        <CreateFolder />
+        <RemoveFolder Id="ApplicationOtherSubFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\GNU Radio"
+                       Type="integer" Value="1" Name="installed" KeyPath="yes" />
+        <Shortcut Id="Osmocom_FFT"
+                  Name="Spectrum Scanner (FFT)"
+                  Description="Runs an Osmocom-based Spectrum Scanner"
+                  Target="[BINARYFILES]run_gr.bat"
+                  Arguments="osmocom_fft.py"
+                  WorkingDirectory="BINARYFILES"
+                  Icon="gr_icon.ico"
+                  Directory="ApplicationOtherSubFolder"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="CONFD">
+      <Component Id="CONFIGCONF" Guid="3D71A1B8-C472-4179-BE9D-E010F532F135">
+        <CreateFolder />
+        <IniFile Id="CONFIGCONFFILE"
+                 Action="addLine"
+                 Directory="CONFD"
+                 Section="grc"
+                 Name="grc.conf"
+                 Key="global_blocks_path"
+                 Value="[GRCBLOCKS]" />
+      </Component>
+      <Component Id="MODTOOLCONF" Guid="1D442F19-A7C6-4B3B-B65F-AD0BD223A4D2">
+        <CreateFolder />
+        <IniFile Id="MODTOOLCONFFILE"
+                 Action="addLine"
+                 Directory="CONFD"
+                 Section="modtool"
+                 Name="modtool.conf"
+                 Key="newmod_path"
+                 Value="[GRNEWMOD]" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

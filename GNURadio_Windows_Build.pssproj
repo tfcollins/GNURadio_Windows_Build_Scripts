@@ -28,10 +28,11 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
-    <Compile Include="BUILD_GNURADIO.ps1" />
+    <Compile Include="Step1-UserPreferences.ps1" />
     <Compile Include="ConfigInfo.psd1" />
+    <Compile Include="~RUNME_FIRST.ps1" />
+    <Compile Include="Step9-BuildMSI.ps1" />
     <Compile Include="Setup.ps1" />
-    <Compile Include="Step1-BuildStructure.ps1" />
     <Compile Include="Step5-ConsolidateLibs.ps1" />
     <Compile Include="Step7-BuildGNURadio.ps1" />
     <Compile Include="Step6-GetStage3Packages.ps1" />

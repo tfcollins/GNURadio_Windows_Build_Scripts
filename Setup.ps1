@@ -257,13 +257,13 @@ if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMa
 Set-Alias cmake "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe"
 	
 # ActivePerl (to build OpenSSL)
-if (-not (test-path "$env:ProgramFiles\perl64\bin\perl.exe")) {throw "ActiveState Perl must be installed.  Aborting script"} 
+if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed.  Aborting script"} 
 	
 # MSVC 2015
 if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed.  Aborting script"} 
 
 # WIX
-if (-not (test-patch $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
+if (-not (test-path $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
 	
 # set VS 2015 environment
 if (!(Test-Path variable:global:oldpath))

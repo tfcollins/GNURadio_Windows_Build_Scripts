@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "gnuradio-winstaller", "gnuradio-winstaller.wixproj", "{459CC365-D278-4369-A744-D800B2ECE050}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		Release-AVX2|x64 = Release-AVX2|x64
+		Release-AVX2|x86 = Release-AVX2|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{459CC365-D278-4369-A744-D800B2ECE050}.Debug|x64.ActiveCfg = Debug|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Debug|x64.Build.0 = Debug|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Debug|x86.ActiveCfg = Debug|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release|x64.ActiveCfg = Release|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release|x64.Build.0 = Release|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release|x86.ActiveCfg = Release|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release-AVX2|x64.ActiveCfg = Release-AVX2|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release-AVX2|x64.Build.0 = Release-AVX2|x64
+		{459CC365-D278-4369-A744-D800B2ECE050}.Release-AVX2|x86.ActiveCfg = Release-AVX2|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
