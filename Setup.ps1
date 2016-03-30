@@ -246,7 +246,6 @@ if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32
 $myprog = "${Env:ProgramFiles(x86)}"
 
 # Check for binary dependencies
-if (-not (test-path "$root\bin\7za.exe")) {throw "7-zip (7za.exe) needed in bin folder.  Aborting script"} 
 
 # check for git/tar
 if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed.  Aborting script"} 
