@@ -235,6 +235,7 @@ $wxpython_version = $Config.VersionInfo.wxpython
 $py2cairo_version = $Config.VersionInfo.py2cairo
 $pygobject_version = $Config.VersionInfo.pygobject 
 $pygtk_version = $Config.VersionInfo.pygtk
+$pygtk_gitversion = $Config.VersionInfo.pygtk_git
 $gsl_version = $Config.VersionInfo.gsl
 $boost_version = $Config.VersionInfo.boost 
 $boost_version_ = $Config.VersionInfo.boost_ 

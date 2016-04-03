@@ -169,7 +169,7 @@ GetPatch gtk-pkgconfig.7z x64/lib
 GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
 
 # PyGTK
-GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_$pygtkgit.tar.gz pygtk-$pygtk_version
+GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_$pygtk_gitversion.tar.gz pygtk-$pygtk_version
 
 # py2cairo
 GetPackage http://cairographics.org/releases/py2cairo-$py2cairo_version.tar.bz2
