@@ -99,6 +99,10 @@ BuildGNURadio "Release"
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 BuildGNURadio "Debug"
 
+""
+"COMPLETED STEP 7: Core GNURadio has been built from source"
+""
+
 break
 
 #these are just here for quicker debugging

@@ -20,6 +20,7 @@
 		py2cairo = '1.10.0'
 		pygobject = '2.28.6'# Changing to 2.29+ will require other code changes (but don't because 2.29 doesn't have the same setup.py)
 		pygtk = '2.24.0'    # Changing to 2.25+ will require other code changes
+		pygtk_git = '2_24_0_WINDOWS'    # Changing to 2.25+ will require other code changes
 		qt = '4.8.7'        # This isn't actually used.  4.8.7 is hardcoded but 4.8.7 is the last 4.x version to the change to Qt5 will change much more
 		python = '2.7.10'   # This isn't actually used.  2.7.10 is hardcoded 
 		gsl = '1.16'
@@ -32,9 +33,9 @@
 		pyzmq = '14.7.0'
 		lxml = '3.6.0'
 		pkgconfig = '1.1.0'
-		# The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
+		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)
-		# zlib
+		# zlib (1.2.8 but should rarely change)
 		# libsodium (but is forked on github.com/gnieboer/libsodium)
 		# libzmq (repo doesn't use tags to mark releases)
 	}

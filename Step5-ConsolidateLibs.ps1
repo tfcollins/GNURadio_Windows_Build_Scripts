@@ -170,7 +170,16 @@ Consolidate "Release"
 Consolidate "Release-AVX2"
 Consolidate "Debug"
 
+""
+"COMPLETED STEP 4: Libraries have been consolidated for easy CMake referencing to build GNURadio and OOT modules"
+""
+
+
 break
+
+# these are just here for quick debugging
+
+ResetLog
 
 $configuration = "Release"
 $configuration = "Release-AVX2"

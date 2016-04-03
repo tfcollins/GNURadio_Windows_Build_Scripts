@@ -383,6 +383,10 @@ BuildDrivers "Release"
 BuildDrivers "Release-AVX2"
 BuildDrivers "Debug"
 
+""
+"COMPLETED STEP 8: Selected OOT modules have been built from source and installed on top of the GNURadio installation(s)"
+""
+
 # debug shortcuts below
 break
 

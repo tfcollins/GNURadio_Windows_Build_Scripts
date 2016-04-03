@@ -18,11 +18,23 @@ getPackage https://github.com/zeromq/libzmq.git
 # pyzmq
 getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
 
-if ($Config.BuildGTKFromSource) {
+# libpng
+getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
+getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
 
-	# libpng
-	getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
-	getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
+# gettext
+GetPackage https://github.com/gnieboer/gettext-msvc.git
+GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
+GetPackage http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
+cp gettext-0.19.4\* .\gettext-msvc\gettext-0.19.4 -Force -Recurse
+cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
+del .\libiconv-1.14 -Force -Recurse
+del .\gettext-0.19.4 -Force -Recurse
+
+# libxml2 
+GetPackage https://github.com/GNOME/libxml2.git
+
+if ($Config.BuildGTKFromSource) {
 
 	# libepoxy
 	GetPackage https://github.com/anholt/libepoxy/archive/v1.3.1.tar.gz libepoxy
@@ -42,21 +54,12 @@ if ($Config.BuildGTKFromSource) {
 	# libffi
 	GetPackage https://github.com/winlibs/libffi.git
 
-	# libxml2 
-	GetPackage https://git.gnome.org/browse/libxml2.git
+
 
 	# JasPer 1900
 	GetPackage http://www.ece.uvic.ca/~frodo/jasper/software/jasper-1.900.1.zip
 	GetPatch jasper_vs2015.7z .\jasper-1.900.1\src
 
-	# gettext
-	GetPackage https://github.com/gnieboer/gettext-msvc.git
-	GetPackage http://ftp.gnu.org/gnu/gettext/gettext-0.19.4.tar.gz
-	GetPackage http://ftp.gnu.org/gnu/libiconv/libiconv-1.14.tar.gz
-	cp gettext-0.19.4\* .\gettext-msvc\gettext-0.19.4 -Force -Recurse
-	cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
-	del .\libiconv-1.14 -Force -Recurse
-	del .\gettext-0.19.4 -Force -Recurse
 
 	# glib
 	GetPackage http://ftp.gnome.org/pub/GNOME/sources/glib/2.47/glib-2.47.6.tar.xz glib
@@ -73,10 +76,12 @@ if ($Config.BuildGTKFromSource) {
 } else {
 	"NOT building GTK from source, retrieving GTK VS2015 binaries"
 	GetPackage https://dl.hexchat.net/gtk-win32/vc14/x64/gtk-x64.7z
+	# need to add a bunch of pkgconfig files so we can build pyGTK later
+	GetPatch pkgconfig.7z x64/lib/pkgconfig
 }
 # SDL
 getPackage  https://libsdl.org/release/SDL-$sdl_version.zip
-getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC 2>&1 >> $Log 
+getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC
 
 # portaudio v19
 GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz portaudio
@@ -140,6 +145,7 @@ GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-$PyQt_versio
 
 # PyQwt
 GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
+GetPatch pyqwt5_patch.7z PyQwt5-master/configure
 
 # Cython
 GetPackage http://cython.org/release/Cython-$cython_version.zip
@@ -157,13 +163,13 @@ GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-$pyopengl
 GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-$pyopengl_version.tar.gz
 
 # pygobject
-GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/2.28/pygobject-$pygobject_version.tar.xz
+$mm = GetMajorMinor($pygobject_version)
+GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/$mm/pygobject-$pygobject_version.tar.xz
 GetPatch gtk-pkgconfig.7z x64/lib
 GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
 
 # PyGTK
-GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygtk/2.24/pygtk-$pygtk_version.tar.gz
-#GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_2_22_0_WINDOWS.tar.xz
+GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_$pygtk_git.tar.xz pygtk-$pygtk_version
 
 # py2cairo
 GetPackage http://cairographics.org/releases/py2cairo-$py2cairo_version.tar.bz2
@@ -188,11 +194,12 @@ GetPatch libusb_VS2015.7z libusb
 GetPackage https://github.com/EttusResearch/uhd/archive/release_$UHD_Version.tar.gz uhd
 
 # libxslt
-GetPackage https://git.gnome.org/browse/libxslt/snapshot/CVE-2015-7995.tar.xz libxslt
+# the version of libxslt with the patches we need is not yet released so need to go off the raw git.
+# TODO could specify a particular commit but that will require a change to GetPackage
+GetPackage https://github.com/GNOME/libxslt.git
 
 # lxml
 GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
-
 
 # pthreads
 GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-$pthreads_version-release.7z pthreads
@@ -200,7 +207,8 @@ GetPatch pthreads.2.7z pthreads/pthreads.2
 
 # openblas
 if (!$BuildNumpyWithMKL) {
-	GetPackage https://github.com/xianyi/OpenBLAS/archive/v$openBLAS_version.tar.gz OpenBLAS
+	GetPackage https://github.com/xianyi/OpenBLAS/archive/v$openBLAS_version.tar.gz 
+	GetPatch openblas_patch.7z  openblas-$openblas_version
 }
 
 # lapack reference build
@@ -210,6 +218,8 @@ if (!$BuildNumpyWithMKL) {
 }
 
 # cleanup
-
+""
+"COMPLETED STEP 2: Source code needed to build core win32 dependencies and python dependencies have been downloaded"
+""
 # return to original directory
 cd $root/scripts

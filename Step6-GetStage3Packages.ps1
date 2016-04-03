@@ -95,3 +95,6 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
 	"gnuradio already present";
 }
 
+""
+"COMPLETED STEP 6: GNURadio and OOT package source code has been downloaded"
+""

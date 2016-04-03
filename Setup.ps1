@@ -195,6 +195,13 @@ function ResetLog
 	del $root/logs/*.*
 }
 
+function GetMajorMinor($versionstring)
+{
+	$version = [Version]$versionstring
+	$result = '{0}.{1}' -f $version.major,$version.minor
+	return $result
+}
+
 # Used to check each build step to see if the critical files have been built as an indicator of success
 # We need this because powershell doesn't seem to handle exit codes well, particular when they are nested in calls, so it's hard to tell if a build call succeeded.
 function Validate
@@ -202,6 +209,7 @@ function Validate
 	foreach ($i in $args)
 	{
 		if (!(Test-Path $i)) {
+			cd $root/scripts
 			throw "Validation Failed, $i was not found and is required"
 		}
 	}
@@ -209,9 +217,9 @@ function Validate
 }
 #load configuration variables
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
-$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 -L
+$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
 $sdl_version = $Config.VersionInfo.SDL
-$cppunit_version = $Config.Version.cppunit
+$cppunit_version = $Config.VersionInfo.cppunit
 $openssl_version = $Config.VersionInfo.openssl
 $qwt_version = $Config.VersionInfo.qwt
 $sip_version = $Config.VersionInfo.sip
@@ -290,6 +298,8 @@ if (!(Test-Path variable:global:oldpath))
 if (!(Test-Path variable:global:oldlib)) {Set-Variable -Name oldlib -Value "$env:Lib" -Description “original %LIB%” -Option readonly -Scope "Global"}
 if (!(Test-Path variable:global:oldcl)) {Set-Variable -Name oldcl -Value "$env:CL" -Description “original %CL%” -Option readonly -Scope "Global"}
 if (!(Test-Path variable:global:oldlink)) {Set-Variable -Name oldlink -Value "$env:LINK" -Description “original %CL%” -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldinclude)) {Set-Variable -Name oldinclude -Value "$env:INCLUDE" -Description “original %INCLUDE%” -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldlibrary)) {Set-Variable -Name oldlibrary -Value "$env:LIBRARY" -Description “original %LIBRARY%” -Option readonly -Scope "Global"}
 
 # import .NET modules
 Add-Type -assembly "system.io.compression.filesystem"
