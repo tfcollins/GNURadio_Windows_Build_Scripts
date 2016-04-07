@@ -16,7 +16,11 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
 . $mypath\Setup.ps1 -Force
 
 $pythonexe = "python.exe"
@@ -28,6 +32,9 @@ $ErrorActionPreference = "Continue"
 SetLog "sip"
 Write-Host -NoNewline "building sip..."
 cd $root\src-stage1-dependencies\sip-$sip_version
+# reset these in case previous run was stopped in mid-build
+$env:_LINK_ = ""
+$env:_CL_ = ""
 
 Function MakeSip
 {
@@ -37,7 +44,8 @@ Function MakeSip
 	$flags += if ($type -match "Dll") {""} else {" -k"}
 	$debugext = if ($type -match "Debug") {"_d"} else {""}
 	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
-	if (Test-Path sipconfig.py) del sipconfig.py
+	if (Test-Path sipconfig.py) {del sipconfig.py}
+    "FLAGS: $flags" >> $Log 
 	& $pythonroot\python$debugext.exe configure.py $flags -p win32-msvc2015 2>&1 >> $Log
 	nmake 2>&1 >> $Log
 	New-Item -ItemType Directory -Force -Path ./build/x64/$type 2>&1 >> $Log
@@ -55,10 +63,10 @@ Function MakeSip
 	cd ../sipgen
 	copy sip.exe ../build/x64/$type/sip.exe
 	cd ..
-	copy sipconfig.py ./build/x64/$type/sipconfig.py
 	copy sipdistutils.py ./build/x64/$type/sipdistutils.py
 	if ($type -match "Dll") {
-		nmake install 2>&1 >> $Log
+	    copy sipconfig.py ./build/x64/$type/sipconfig.py
+    	nmake install 2>&1 >> $Log
 		Validate "$pythonroot/sip.exe" "$pythonroot/include/sip.h" "$pythonroot/lib/site-packages/sip$debugext.pyd" 
 	}
 	nmake clean 2>&1 >> $Log
@@ -188,7 +196,7 @@ Function SetupPython
 	$env:_LINK_ = ""
 	move dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.whl dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
 	$ErrorActionPreference = "Stop"
-	Validate "dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/cython.py" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Compiler/Code.pyd" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Distutils/build_ext.py"
+	Validate "dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/cython.py" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Compiler/Code$debugext.pyd" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Distutils/build_ext.py"
 
 	#__________________________________________________________________________________________
 	# Nose
@@ -397,6 +405,7 @@ Function SetupPython
 		# because we can't mix MSVC and gfortran libraries
 		# So if we get here, we need to use the binary .whl instead
 		# Note that these are specifically built VS 2015 x64 versions for python 2.7.
+        $ErrorActionPreference = "Continue"
 		if ($BuildNumpyWithMKL) {
 			Write-Host -NoNewline "installing MKL scipy from wheel..."
 			Write-Host -NoNewline "Compatible Fortran compiler not available, installing scipy from custom binary wheel..."
@@ -405,6 +414,7 @@ Function SetupPython
 			Write-Host -NoNewline "installing OpenBLAS scipy from wheel..."
 			& $pythonroot/Scripts/pip.exe install http://www.gcndevelopment.com/gnuradio/downloads/libraries/scipy/openBLAS/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl  2>&1 >> $log
 		}
+        $ErrorActionPreference = "Stop"
 		Validate "$pythonroot/lib/site-packages/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy/sparse/_sparsetools.pyd"
 	}
 	
@@ -425,7 +435,7 @@ Function SetupPython
 	cd configure
 	# CALL "../../%1/Release/Python27/python.exe" configure.py %DEBUG% --extra-cflags=%FLAGS% %DEBUG% -I %~dp0..\qwt-5.2.3\build\include -L %~dp0..\Qt-4.8.7\lib -L %~dp0..\qwt-5.2.3\build\lib -l%QWT_LIB%
 	if ($configuration -eq "DebugDLL") {
-		$env:_LINK_ = " /FORCE /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/ReleaseDLL/lib"" /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/Release-AVX2/lib"" /DEFAULTLIB:user32  /DEFAULTLIB:advapi32  /DEFAULTLIB:ole32  /DEFAULTLIB:ws2_32  /DEFAULTLIB:qtcore4d " 
+		$env:_LINK_ = " /FORCE /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/ReleaseDLL/lib"" /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/Release-AVX2/lib"" /DEFAULTLIB:user32  /DEFAULTLIB:advapi32  /DEFAULTLIB:ole32  /DEFAULTLIB:ws2_32  /DEFAULTLIB:qtcored4 " 
 		& $pythonroot/$pythonexe configure.py --debug --extra-cflags="-Zi -wd4577"                -I $root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\include -L $root\src-stage1-dependencies\Qt4\build\$QtVersion\lib   -l qtcored4     -L $root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\lib -l"$root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\lib\qwtd" -j4 --sip-include-dirs ..\..\sip-$sip_version\build\x64\Debug --sip-include-dirs ..\..\PyQt4\sip 2>&1 >> $log
 	} elseif ($configuration -eq "ReleaseDLL") {
 		& $pythonroot/$pythonexe configure.py         --extra-cflags="-Zi -wd4577"                -I $root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\include -L $root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib -l qtcore4       -L $root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\lib -l"$root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\lib\qwt"  -j4 --sip-include-dirs ..\..\sip-$sip_version\build\x64\Release 2>&1 >> $log
@@ -450,6 +460,7 @@ Function SetupPython
 	# & $pythonroot/Scripts/wheel.exe convert PyQwt-5.2.1.win-amd64.DebugDLL.exe
 	$env:Path = $oldpath
 	$env:CL = $oldCL
+    $env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 	Validate "dist/PyQwt-5.2.1.win-amd64.$configuration.exe" "$pythonroot/lib/site-packages/PyQt4/Qwt5/Qwt$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/Qwt5/_iqt.pyd" "$pythonroot/lib/site-packages/PyQt4/Qwt5/qplt.py"
 
@@ -632,6 +643,9 @@ Function SetupPython
 	if (Test-Path .\build) {del -recurse .\build\*.* 2>&1 >> $Log}
 	& $pythonroot\$pythonexe build-wxpython.py --clean 2>&1 >> $Log
 	& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config --install $wxdebugstring 2>&1 >> $Log
+    # the above assumes the core WX dll's will be installed to the system someplace on the PATH.
+    # That's not what we want to do, so since these are gr-python-only DLLs, we'll put then in the DLLs dir for that python build
+    cp "$root/src-stage1-dependencies/wxpython/lib/vc140_dll/wx*.dll" "$pythonroot/DLLs"
 	#Write-Host -NoNewline "configing..."
 	#& $pythonroot\$pythonexe setup.py clean 2>&1 >> $Log
 	#& $pythonroot\$pythonexe setup.py config MONOLITHIC=1 2>&1 >> $Log
@@ -691,13 +705,14 @@ Function SetupPython
 	$ErrorActionPreference = "Continue"
 	$xsltconfig = ($configuration -replace "DLL", "")
 	cd $root\src-stage1-dependencies\lxml-lxml-$lxml_version
-	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
+	New-Item -ItemType Directory -Force $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig 2>&1 >> $Log
+    if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
 	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include "
 	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
 	$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
 	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
-	cp -Force $root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib $root/src-stage1-dependencies/lxml/libs/$xsltconfig/xml2.lib
-	cp -Force $root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig/libiconv.lib $root/src-stage1-dependencies/lxml/libs/$xsltconfig/iconv_a.lib
+	cp -Force $root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib/libxml2_a.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/libxml2_a.lib
+	cp -Force $root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig/libiconv.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/iconv_a.lib
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
 	if (Test-Path build) {del -Recurse -Force build}
 	Write-Host -NoNewline "building..."
@@ -719,6 +734,7 @@ Function SetupPython
 	#
 	SetLog "$configuration pyzmq"
 	Write-Host -NoNewline "configuring pyzmq..."
+	if ($configuration -match "Debug") {$baseconfig="Debug"} else {$baseconfig="Release"}
 	$ErrorActionPreference = "Continue"
 	cd C:\gr-build\src-stage1-dependencies\pyzmq-$pyzmq_version
 	# this stdint.h file prevents the import of the real stdint file and causes the build to fail
@@ -730,12 +746,12 @@ Function SetupPython
 		Rename-Item -Force buildutils/include_win32/stdint.h stdint.old.h
 	}
 	New-Item -ItemType Directory -Force libzmq 2>&1 >> $log
-	New-Item -ItemType Directory -Force libzmq/lib 2>&1 >> $log
-	New-Item -ItemType Directory -Force libzmq/include 2>&1 >> $log
-	Copy-Item ..\libzmq\include/*.h libzmq/include/ 2>&1 >> $log
-	Copy-Item ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.dll libzmq/lib 2>&1 >> $log
-	Copy-Item ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.lib libzmq/lib 2>&1 >> $log
-	if ($configuration -match "Debug") {$baseconfig="Debug"} else {$baseconfig="Release"}
+    New-Item -ItemType Directory -Force libzmq/$configuration 2>&1 >> $log
+	New-Item -ItemType Directory -Force libzmq/$configuration/lib 2>&1 >> $log
+	New-Item -ItemType Directory -Force libzmq/$configuration/include 2>&1 >> $log
+	Copy-Item ..\libzmq\include/*.h libzmq/$configuration/include/ 2>&1 >> $log
+	Copy-Item ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.dll libzmq/$configuration/lib 2>&1 >> $log
+	Copy-Item ..\libzmq\bin\x64\$baseconfig\v140\dynamic\libzmq.lib libzmq/$configuration/lib 2>&1 >> $log
 	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
 	$env:_LINK_ = " /MANIFEST "
 	$env:INCLUDE = $oldinclude + ";$root/libzmq/include"
@@ -769,14 +785,16 @@ Function SetupPython
 $pythonexe = "python.exe"
 SetLog("Setting up Python")
 $pythonroot = "$root\src-stage2-python\gr-python27"
-#SetupPython "ReleaseDLL"
+SetupPython "ReleaseDLL"
 SetLog("Setting up AVX2 Python")
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-#SetupPython "ReleaseDLL-AVX2"
+SetupPython "ReleaseDLL-AVX2"
 SetLog("Setting up debug Python")
 $pythonexe = "python_d.exe"
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 SetupPython "DebugDLL"
+
+cd $root/scripts 
 
 ""
 "COMPLETED STEP 4: Python dependencies / packages have been built and installed"

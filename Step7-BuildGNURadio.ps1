@@ -6,13 +6,22 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
 . $mypath\Setup.ps1 -Force
 
 # prep for cmake
 if (!(Test-Path $root/src-stage3/build)) {
 	cd $root/src-stage3
-	mkdir build
+	mkdir build >> $null
+} 
+
+if (!(Test-Path $root/src-stage3/staged_install)) {
+	cd $root/src-stage3
+	mkdir staged_install >> $null
 } 
 
 function BuildGNURadio {
@@ -42,7 +51,7 @@ function BuildGNURadio {
 		-DPYTHON_LIBRARY="$pythonroot\Libs\python27.lib" `
 		-DPYTHON_INCLUDE_DIR="$pythonroot\include"  `
 		-DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe" `
-		-DSWIG_DIR="$root\bin" `
+		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
 		-DENABLE_MSVC_AVX2_ONLY_MODE="OFF" `
@@ -80,7 +89,6 @@ function BuildGNURadio {
 	}
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
-	# TODO this files are not in an archived patch yet
 	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
 	$env:_LINK_ = ""
@@ -89,15 +97,17 @@ function BuildGNURadio {
 
 # AVX2 build
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-BuildGNURadio "Release-AVX2"
+#BuildGNURadio "Release-AVX2"
 
 # Release build
 $pythonroot = "$root\src-stage2-python\gr-python27"
-BuildGNURadio "Release"
+#BuildGNURadio "Release"
 
 # Debug build
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
 BuildGNURadio "Debug"
+
+cd $root/scripts 
 
 ""
 "COMPLETED STEP 7: Core GNURadio has been built from source"

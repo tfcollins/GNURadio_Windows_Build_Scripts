@@ -13,7 +13,11 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
 . $mypath\Setup.ps1 -Force
 
 $pythonexe = "python.exe"
@@ -27,7 +31,8 @@ New-Item -ItemType Directory -Force -Path $root/build 2>&1 >> $log
 Function Consolidate {
 	$configuration = $args[0]
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration 2>&1 >> $log
-	Write-Host "Starting Consolidation for $configuration"
+	Write-Host ""
+    Write-Host "Starting Consolidation for $configuration"
 	# set up various variables we'll need
 	if ($configuration -match "AVX2") {$platform = "avx2"} else {$platform = "x64"}
 	if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
@@ -46,10 +51,10 @@ Function Consolidate {
 
 	# move Qt
 	Write-Host -NoNewline "Consolidating Qt..."
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtCore4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtSvg4$d.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtCore$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtSvg$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtOpenGL* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtGui* $root/build/$configuration/include/ 2>&1 >> $log
@@ -60,7 +65,7 @@ Function Consolidate {
 	Write-Host -NoNewline "Consolidating Qwt..."
 	if ($configuration -match "AVX2") {$qwtdir = "Release-AVX2"} else {$qwtdir = "Debug-Release"}
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/qwt 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-5.2.3/build/x64/$qwtdir/lib/qwt5$d.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-5.2.3/build/x64/$qwtdir/lib/qwt$d5.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-5.2.3/build/x64/$qwtdir/include/* $root/build/$configuration/include/qwt/ 2>&1 >> $log
 	"complete"
 
@@ -103,13 +108,15 @@ Function Consolidate {
 	Write-Host -NoNewline "Consolidating libzmq..."
 	cp -Recurse -Force $root/src-stage1-dependencies/libzmq/bin/x64/$baseconfig/v140/dynamic/libzmq.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/libzmq/include/*.h $root/build/$configuration/include/ 2>&1 >> $log
+    #TODO submit patch for FindZeroMQ.cmake to look for zmq.h instead of zmq.hpp
+    cp -Force $root/build/$configuration/include/zmq.h $root/build/$configuration/include/zmq.hpp
 	"complete"
 
 	# uhd
 	Write-Host -NoNewline "Consolidating UHD..."
-	cp -Recurse -Force $root/src-stage1-dependencies/uhd/dist/$configuration/bin/uhd.dll $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/uhd/dist/$configuration/lib/uhd.lib $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/uhd/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/bin/uhd.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/lib/uhd.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# portaudio
@@ -163,6 +170,7 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/libxml2.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/libpng16.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/iconv.dll $root/build/$configuration/lib/ 2>&1 >> $log
+    cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/zlib1.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	"complete"
 }
 
@@ -170,8 +178,10 @@ Consolidate "Release"
 Consolidate "Release-AVX2"
 Consolidate "Debug"
 
+cd $root/scripts 
+
 ""
-"COMPLETED STEP 4: Libraries have been consolidated for easy CMake referencing to build GNURadio and OOT modules"
+"COMPLETED STEP : Libraries have been consolidated for easy CMake referencing to build GNURadio and OOT modules"
 ""
 
 

@@ -11,7 +11,11 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions and variables
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
 . $mypath\Setup.ps1 -Force
 
 # Build packages needed for Stage 1
@@ -74,7 +78,7 @@ cp ..\..\gettext-msvc\x64\Debug\libiconv.lib ..\..\gettext-msvc\x64\Debug\iconv.
 cp ..\..\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStatDebug\zlib.lib ..\..\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStatDebug\zlibstat.lib
 cp ..\..\gettext-msvc\x64\Release\libiconv.lib ..\..\gettext-msvc\x64\Release\iconv.lib
 cp ..\..\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStatRelease\zlib.lib ..\..\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStatRelease\zlibstat.lib
-cp ..\..\gettext-msvc\x64\Release-AVX2\libiconv.lib ..\..\gettext-msvc\x64\Release\iconv.lib
+cp ..\..\gettext-msvc\x64\Release-AVX2\libiconv.lib ..\..\gettext-msvc\x64\Release-AVX2\iconv.lib
 
 $ErrorActionPreference = "Continue"
 # the "static" option builds the test programs statically link, not relevant to the libraries
@@ -252,7 +256,7 @@ msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL;platform=x64" >> $L
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
 msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
 Validate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
-	"x64/ReleaseDLL/libfftwf-3.3.DLL" "x64/ReleaseDLL-AVX2/libfftwf-3.3.DLL" "x64/DebugDLL/libfftwf-3.3.DLL" 
+	"x64/Release DLL/libfftwf-3.3.DLL" "x64/Release DLL-AVX2/libfftwf-3.3.DLL" "x64/Debug DLL/libfftwf-3.3.DLL" 
 
 # ____________________________________________________________________________________________________________
 # openssl (python depends on this)
@@ -416,9 +420,9 @@ Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib
 SetLog "libzmq"
 Write-Host -NoNewline "building libzmq..."
 cd $root/src-stage1-dependencies/libzmq/builds/msvc
-& .\configure.bat
+& .\configure.bat 2>&1 >> $log
 cd build
-& .\buildbase.bat ..\vs2015\libzmq.sln 14 >> $Log
+& .\buildbase.bat ..\vs2015\libzmq.sln 14 2>&1 >> $Log
 cd ../../../bin/x64
 Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Release/v140/ltcg/libzmq.lib" `
 	"Debug/v140/dynamic/libzmq.dll" "Debug/v140/static/libzmq.lib" "Debug/v140/ltcg/libzmq.lib"
@@ -464,7 +468,7 @@ Function MakeQt
 	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
 	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt4/build/$type/bin >> $Log
 	cp -Force $root\src-stage1-dependencies/Qt4/bin/qmake.exe $root/src-stage1-dependencies/Qt4/build/$type/bin
-	.\configure.exe $flags $staticflag -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\Debug" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
+	.\configure.exe $flags $staticflag -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\$ssltype" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
 	Write-Host -NoNewline "building..."
 	nmake 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -491,7 +495,7 @@ if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile)
 }
 # The below configure builds the base qmake.exe in the "root" directory and will point the environment to the main source tree.  Then the following build commands will convince Qt to build in a different directory
 # while still using the original as the source base.  THIS IS A HACK.  Qt4 does not like there to be more than one build on the same machine and is very troublesome in that regard.
-# if there are build fails, wipe the whole Qt4 directory and start over.  confclean doesn't do everything it promises.
+# If there are build fails, wipe the whole Qt4 directory and start over.  confclean doesn't do everything it promises.
 .\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix .  -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp 2>&1 >> $Log
 nmake confclean 2>&1 >> $Log
 # debugDLL build
@@ -511,13 +515,14 @@ MakeQT "Release"
 
 #clean up enormous amount of temp files
 nmake clean  2>&1>> $Log
-nmake distclean 2>&1 >> $Log
+#nmake distclean 2>&1 >> $Log
+
 Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
 	"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore4.dll" "build/Releasedll/lib/QtOpenGL4.dll" "build/Releasedll/lib/QtSvg4.dll" "build/Releasedll/lib/QtGui4.dll" `
 	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" `
-	"build/Release-AVX2/bin/qmake.exe" "build/Release-AVX2/lib/QtCore.lib" "build/Releasedll-AVX2/lib/QtOpenGL.lib" "build/Releasedll-AVX2/lib/QtSvg.lib" "build/Releasedll-AVX2/lib/QtGui.lib" `
+	"build/Release-AVX2/bin/qmake.exe" "build/Release-AVX2/lib/QtCore.lib" "build/Release-AVX2/lib/QtOpenGL.lib" "build/Release-AVX2/lib/QtSvg.lib" "build/Release-AVX2/lib/QtGui.lib" `
 	"build/Release/bin/qmake.exe" "build/Release/lib/QtCore.lib" "build/Release/lib/QtOpenGL.lib" "build/Release/lib/QtSvg.lib" "build/Release/lib/QtGui.lib" `
-	"build/Debug/bin/qmake.exe" "build/Debug/lib/QtCore.lib" "build/Debug/lib/QtOpenGL.lib" "build/Debug/lib/QtSvg.lib" "build/Debug/lib/QtGui.lib" 
+	"build/Debug/bin/qmake.exe" "build/Debug/lib/QtCored.lib" "build/Debug/lib/QtOpenGLd.lib" "build/Debug/lib/QtSvgd.lib" "build/Debug/lib/QtGuid.lib" 
 
 # ____________________________________________________________________________________________________________
 # QWT 5.2.3
@@ -612,7 +617,7 @@ Function makeUHD {
 	$configuration = $args[0]
 	Write-Host -NoNewline "Configuring $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug" $pythonexe = "python_d.exe"}
+	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
 
 	& cmake .. `
 		-G "Visual Studio 14 2015 Win64" `

@@ -5,7 +5,11 @@
 $ErrorActionPreference = "Stop"
 
 # setup helper functions
-$mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
 . $mypath\Setup.ps1 -Force
 
 # Retrieve packages needed for Stage 1
@@ -84,7 +88,7 @@ getPackage  https://libsdl.org/release/SDL-$sdl_version.zip
 getPatch sdl-$sdl_version-vs2015.7z SDL-$sdl_version\VisualC
 
 # portaudio v19
-GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz portaudio
+GetPackage http://portaudio.com/archives/pa_stable_v19_20140130.tgz
 GetPatch portaudio_vs2015.7z portaudio/build/msvc
 # asio SDK for portaudio
 GetPatch asiosdk2.3.7z portaudio/src/hostapi/asio

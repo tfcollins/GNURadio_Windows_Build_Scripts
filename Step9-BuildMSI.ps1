@@ -37,5 +37,5 @@ BuildMSI "Release-AVX2"
 BuildMSI "Debug"
 
 ""
-"COMPLETED STEP 9: .msi files have been created and can be found in $root/src-stage4-installer/dist/$configuration/gnuradio_3.7_win64.msi"
+"COMPLETED STEP 9: .msi files have been created and can be found in $root/src-stage4-installer/dist/(configuration)/gnuradio_3.7_win64.msi"
 ""
