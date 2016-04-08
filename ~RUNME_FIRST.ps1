@@ -44,7 +44,7 @@ New-Item -ItemType Directory -Force -Path "$root\src-stage3\src" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage3\oot_code" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\src-stage4-installer" >> $Log
 New-Item -ItemType Directory -Force -Path "$root\scripts" >> $Log
-robocopy $mypath/bin $root/bin /e
+robocopy $mypath/bin $root/bin /e >> $Log
 Copy-Item $mypath/wix/*.* $root/src-stage4-installer -Recurse -Force >> $Log
 Copy-Item $mypath/run/*.bat $root\src-stage3\src -Force
 Copy-Item $mypath/*.ps1 $root/scripts -Force >> $Log

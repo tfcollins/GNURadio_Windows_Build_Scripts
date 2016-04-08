@@ -62,7 +62,24 @@ function getPackage
 		if (!(Test-Path $root/packages/$archiveName/$archiveName$archiveExt)) {
 			cd $root/packages/$archiveName
 			# user-agent is for sourceforge downloads
-			wget $toGet -OutFile "$archiveName$archiveExt" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+            $count = 0
+            do {
+                Try 
+			    {
+				    wget $toGet -OutFile "$archiveName$archiveExt" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
+                    $count = 999
+			    }
+			    Catch [System.IO.IOException]
+			    {
+				    Write-Host -NoNewline "failed, retrying..."
+				    $count ++
+			    }
+            } while ($count -lt 5)
+            if ($count -ne 999) {
+                Write-Host ""
+                Write-Host -BackgroundColor Black -ForegroundColor Red "Error Downloading File, retries exceeded, aborting..."
+                Exit
+            }
 		} else {
 			Write-Host -NoNewLine "already downloaded..."
 		}
@@ -210,7 +227,9 @@ function Validate
 	{
 		if (!(Test-Path $i)) {
 			cd $root/scripts
-			throw "Validation Failed, $i was not found and is required"
+			Write-Host ""
+			Write-Host -BackgroundColor Black -ForegroundColor Red "Validation Failed, $i was not found and is required"
+			Exit
 		}
 	}
 	"validated complete"
@@ -274,6 +293,9 @@ if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC"))
 
 # WIX
 if (-not (test-path $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
+
+# doxygen
+if (-not (test-path "${env:ProgramFiles)}\doxygen")) {throw "Doxygen must be installed.  Aborting script"} 
 	
 # set VS 2015 environment
 if (!(Test-Path variable:global:oldpath))
