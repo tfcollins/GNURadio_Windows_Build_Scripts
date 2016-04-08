@@ -48,6 +48,7 @@ robocopy $mypath/bin $root/bin /e
 Copy-Item $mypath/wix/*.* $root/src-stage4-installer -Recurse -Force >> $Log
 Copy-Item $mypath/run/*.bat $root\src-stage3\src -Force
 Copy-Item $mypath/*.ps1 $root/scripts -Force >> $Log
+Copy-Item $mypath/*.psd1 $root/scripts -Force >> $Log
 Copy-Item $mypath/AVX2.props $root/src-stage1-dependencies -Force >> $Log
 Remove-Item $root/scripts/~RUNME_FIRST.ps1 >> $Log  # Don't need this file in the build tree after everything is there
 cd $root/scripts

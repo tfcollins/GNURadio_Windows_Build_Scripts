@@ -6,7 +6,7 @@
            Version="1.0.0.0"
            Manufacturer="GCN Development"
            UpgradeCode="DAAD3429-A564-45FE-9A06-E1FE30A7E907">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
     <Feature Id="ProductFeature" Title="GNURadio-3.7" Level="1">
