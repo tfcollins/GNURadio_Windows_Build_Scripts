@@ -33,6 +33,7 @@
 		pyzmq = '14.7.0'
 		lxml = '3.6.0'
 		pkgconfig = '1.1.0'
+		dp = '1.0'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)
 		# zlib (1.2.8 but should rarely change)

@@ -246,6 +246,7 @@ $UHD_version = $Config.VersionInfo.UHD
 $pyzmq_version = $Config.VersionInfo.pyzmq
 $lxml_version = $Config.VersionInfo.lxml
 $pkgconfig_version = $Config.VersionInfo.pkgconfig 
+$dp_version = $Config.VersionInfo.dp
 
 # setup paths
 $Global:root = $env:grwinbuildroot 
