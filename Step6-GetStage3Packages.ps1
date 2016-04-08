@@ -20,7 +20,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 # airspy
 #
 GetPackage https://github.com/airspy/host.git airspy -Stage3
-# GetPatch airspy_vs2015.7z airspy/libairspy/vc -Stage3
+GetPatch airspy_vs2015.7z airspy/libairspy/vc -Stage3
 
 # ____________________________________________________________________________________________________________
 #
@@ -94,9 +94,11 @@ if (!(Test-Path $root/src-stage3/src)) {
 		mkdir src 2>&1 >> $log 
 	} 
 if (!(Test-Path $root/src-stage3/src/gnuradio)) {
-	cd src
+	cd $root/src-stage3/src
     $ErrorActionPreference = "Continue"
-	git clone --recursive https://github.com/gnieboer/gnuradio.git 2>&1 >> $log 
+    # most packages we just get the most recent commit when coming from git
+    # however, since this is the one most users might want to modify, we'll get more.
+	git clone --depth=100 --recursive https://github.com/gnieboer/gnuradio.git 2>&1 >> $log 
 
     $ErrorActionPreference = "Stop"
 } else {

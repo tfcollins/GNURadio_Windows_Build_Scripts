@@ -23,11 +23,7 @@ Function BuildMSI {
 
 	New-Item -ItemType Directory -Force build\$configuration 2>&1 >> $Log 
 
-	# First harvest all the files in the staged install directory
-	Write-Host -NoNewline "Scanning Files..."
-	
-	Write-Host -NoNewline "Building MSI"
-	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64" 
+	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64"  2>&1 >> $Log 
 
 	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7_win64.msi"
 }

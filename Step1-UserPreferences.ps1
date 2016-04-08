@@ -30,15 +30,15 @@ Write-Host ""
 Write-Host "You must be connected to the internet to run this script."
 Write-Host "Downloaded packages will be cached in the packages subdir."
 Write-Host ""
-Write-Host "This script can build GNURadio in three different ways:"
+Write-Host "This script can build GNURadio in two different ways:"
 Write-Host "1- Compile every dependency from source right now [LONGEST]"
-Write-Host "2- For non-python dependencies, download a pre-built package, then build the rest"
-Write-Host "3- Download all dependencies, including custom python, and build GNURadio"
+Write-Host "2- Download all dependencies, including custom python, as binaries and build GNURadio"
+Write-Host "   only from source"
 Write-Host ""
 
-$buildoption = Read-Host "Please choose an option (1,2,3)<3>"
-if (!$buildoption) {$buildoption = "3"}
-if ($buildoption -ne "1" -and $buildoption -ne "2" -and $buildoption -ne "3") 
+$buildoption = Read-Host "Please choose an option (1,2)<2>"
+if (!$buildoption) {$buildoption = "2"}
+if ($buildoption -ne "1" -and $buildoption -ne "2" ) 
 {
     Write-Host "'$buildoption' was not a valid choice.  Exiting script."
     return
@@ -65,23 +65,22 @@ Write-Host ""
 $useMKLstr = Read-Host "Use MKL libraries if available? <N>"
 if ($useMKLstr -match "y") {$Global:BuildNumpyWithMKL = $true} else {$Global:BuildNumpyWithMKL = $false}
 
-Write-Host ""
-Write-Host "This script can build 3 different configurations of GNURadio:"
-Write-Host "1- Release"
-Write-Host "2- Release, optimized for AVX2 cpu's only.  Fastest, but will crash on non-AVX2 processors!"
-Write-Host "3- Debug"
-Write-Host "Or, the script can build all three versions so all the dependencies are available to you."
-Write-Host ""
-$Global:configmode = Read-Host "What configuration do you want to build? (1,2,3,all)<1>"
-if (!$configmode) {$configmode = "1"}
+#Write-Host ""
+#Write-Host "This script can build 3 different configurations of GNURadio:"
+#Write-Host "1- Release"
+#Write-Host "2- Release, optimized for AVX2 cpu's only.  Fastest, but will crash on non-AVX2 processors!"
+#Write-Host "3- Debug"
+#Write-Host "Or, the script can build all three versions so all the dependencies are available to you."
+#Write-Host ""
+#$Global:configmode = Read-Host "What configuration do you want to build? (1,2,3,all)<1>"
+if (!$configmode) {$configmode = "all"}
 if (($configmode -ne "1" -and $configmode -ne "2" -and $configmode -ne "3" -and $configmode -ne "all")) {
     Write-Host "That was not a valid choice.  Exiting script"
     return
 }
 
-if ($buildoption -eq "1") {$numberof = 4}
-if ($buildoption -eq "2") {$numberof = 1}
-if ($buildoption -eq "3") {$numberof = .5}
+if ($buildoption -eq "1") {$numberof = 2}
+if ($buildoption -eq "2") {$numberof = .25}
 if ($configmode -eq "all") {$numberof = $numberof * 3}
 
 Write-Host ""
@@ -96,12 +95,11 @@ if ($buildoption -eq "1")
 {
 	& $root\scripts\Step2-GetStage1Packages.ps1
 	& $root\scripts\Step3-BuildStage1Packages.ps1 $configmode
-} 
-if ($buildoption -eq "1" -or $buildoption -eq "2")
-{
 	& $root\scripts\Step4-BuildPythonPackages.ps1 $configmode
 	& $root\scripts\Step5-ConsolidateLibs.ps1 $configmode
-} 
+} else {
+    & $root\scripts\Step5a-DownloadDependencies.ps1 $configmode
+}
 & $root\scripts\Step6-GetStage3Packages.ps1
 & $root\scripts\Step7-BuildGNURadio.ps1 $configmode
 & $root\scripts\Step8-BuildOOTModules.ps1 $configmode

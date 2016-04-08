@@ -28,6 +28,9 @@ $pythondebugexe = "python_d.exe"
 
 #__________________________________________________________________________________________
 # sip
+#
+# TODO static builds are not working, not vital as not truly needed to continue.
+#
 $ErrorActionPreference = "Continue"
 SetLog "sip"
 Write-Host -NoNewline "building sip..."
@@ -40,13 +43,14 @@ Function MakeSip
 {
 	$type = $args[0]
 	Write-Host -NoNewline "$type..."
-	$flags = if ($type -match "Debug") {"-u"} else {""}
-	$flags += if ($type -match "Dll") {""} else {" -k"}
+	$dflag = if ($type -match "Debug") {"--debug"} else {""}
+	$kflag = if ($type -match "Dll") {""} else {" --static"}
 	$debugext = if ($type -match "Debug") {"_d"} else {""}
 	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
 	if (Test-Path sipconfig.py) {del sipconfig.py}
-    "FLAGS: $flags" >> $Log 
-	& $pythonroot\python$debugext.exe configure.py $flags -p win32-msvc2015 2>&1 >> $Log
+    "FLAGS: $kflag $dflag" >> $Log 
+    "command line : configure.py $dflag $kflag -p win32-msvc2015" >> $Log
+	& $pythonroot\python$debugext.exe configure.py $dflag $kflag -p win32-msvc2015 2>&1 >> $Log
 	nmake 2>&1 >> $Log
 	New-Item -ItemType Directory -Force -Path ./build/x64/$type 2>&1 >> $Log
 	cd siplib
@@ -73,13 +77,13 @@ Function MakeSip
 }
 
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
-MakeSip "Debug"
+#MakeSip "Debug"
 MakeSip "DebugDLL"
 $pythonroot = "$root\src-stage2-python\gr-python27"
-MakeSip "Release"
+#MakeSip "Release"
 MakeSip "ReleaseDLL"
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-MakeSip "Release-AVX2"
+#MakeSip "Release-AVX2"
 MakeSip "ReleaseDLL-AVX2"
 $ErrorActionPreference = "Stop"
 "complete"

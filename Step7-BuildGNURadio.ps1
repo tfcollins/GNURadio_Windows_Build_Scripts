@@ -97,11 +97,11 @@ function BuildGNURadio {
 
 # AVX2 build
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-#BuildGNURadio "Release-AVX2"
+BuildGNURadio "Release-AVX2"
 
 # Release build
 $pythonroot = "$root\src-stage2-python\gr-python27"
-#BuildGNURadio "Release"
+BuildGNURadio "Release"
 
 # Debug build
 $pythonroot = "$root\src-stage2-python\gr-python27-debug"
