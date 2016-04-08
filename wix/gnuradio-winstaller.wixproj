@@ -10,7 +10,7 @@
     <OutputType>Package</OutputType>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
-		<OutputPath>dist\$(Configuration)\</OutputPath>
+    <OutputPath>dist\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(ProjectDir)obj\$(Configuration)\gnuradio_output.wxs" />
@@ -22,10 +22,14 @@
       <Name>WixUIExtension</Name>
     </WixExtension>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="obj\" />
+    <Folder Include="obj\Release\" />
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>Debug;InstallFolderSource=$(root)\src-stage3\staged_install\$(Configuration)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
@@ -42,7 +46,7 @@
     <SuppressPdbOutput>False</SuppressPdbOutput>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WixVariables />
-    <DefineConstants>InstallFolderSource=C:\Program Files\gnuradio;PythonFolderSource=C:\Users\gnieboer\Documents\Projects-RF_SDR\gnuradio\x64\Release\Python27</DefineConstants>
+    <DefineConstants>InstallFolderSource=$(root)\src-stage3\staged_install\$(Configuration)</DefineConstants>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
