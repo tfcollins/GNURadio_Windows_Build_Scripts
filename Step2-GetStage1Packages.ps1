@@ -206,7 +206,7 @@ GetPackage https://github.com/GNOME/libxslt.git
 GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
 
 # pthreads
-GetPackage http://www.gcndevelopment.com/gnuradio/sources/pthreads-w32-$pthreads_version-release.7z pthreads
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/pthreads-w32-$pthreads_version-release.7z pthreads
 GetPatch pthreads.2.7z pthreads/pthreads.2
 
 # openblas
