@@ -53,40 +53,81 @@ GetPackage git://git.osmocom.org/osmo-sdr -Stage3
 #
 GetPackage https://github.com/osmocom/gr-iqbal.git -Stage3 
 
-
 # ____________________________________________________________________________________________________________
 #
 # gr-benchmark
 #
 GetPackage https://github.com/osh/gr-benchmark.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gr-acars2
+#
+# use this version instead of the original repo at antoinet unlike the fix gets merged
+#
+GetPackage https://github.com/gnieboer/gr-acars2.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# gr-adsb
+#
+GetPackage https://github.com/wnagele/gr-adsb.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
 # gr-fosphor
 #
-GetPackage https://github.com/osmocom/gr-fosphor.git -Stage3 
+# awaiting merge requests to go back to upstream repo instead of my fork
+#
+GetPackage https://github.com/gnieboer/gr-fosphor.git -Stage3 
 GetPackage https://github.com/glfw/glfw.git -Stage3
 
+
+# The below are all packages that will not currently build but are 'in work' for inclusion at a later date
+# please feel free to give them a shot.
+if ($false) 
+{
+
+	# ____________________________________________________________________________________________________________
+	#
+	# libosmocore
+	#
+	GetPackage https://github.com/osmocom/libosmocore.git -Stage3
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gqrx (windows port)
+	#
+	GetPackage https://github.com/pothosware/gqrx.git -Stage3
+
+	# ____________________________________________________________________________________________________________
+	#
+	# GNUTLS (binaries!)
+	#
+	GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.4.9-w32.zip -Stage3
+
+	# ____________________________________________________________________________________________________________
+	#
+	# GNSS-SDR
+	#
+	GetPackage https://github.com/gnss-sdr/gnss-sdr.git -Stage3
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-lte
+	#
+	GetPackage https://github.com/gnieboer/gr-lte.git -Stage3
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-gsm
+	#
+	GetPackage https://github.com/ptrkrysik/gr-gsm.git -Stage3
+}
 # ____________________________________________________________________________________________________________
 #
-# gqrx (windows port)
-#
-GetPackage https://github.com/pothosware/gqrx.git -Stage3
-
-# ____________________________________________________________________________________________________________
-#
-# GNUTLS (binaries!)
-#
-GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.4.9-w32.zip -Stage3
-
-# ____________________________________________________________________________________________________________
-#
-# GNSS-SDR
-#
-GetPackage https://github.com/gnss-sdr/gnss-sdr.git -Stage3
-
 # gnuradio
+#
 SetLog "Retrieve GNURadio"
 Write-Host -NoNewline "cloning GNURadio..."
 if (!(Test-Path $root/src-stage3/src)) {
