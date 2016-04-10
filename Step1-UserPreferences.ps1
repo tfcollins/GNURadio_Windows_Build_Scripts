@@ -100,6 +100,7 @@ if ($buildoption -eq "1")
 } else {
     & $root\scripts\Step5a-DownloadDependencies.ps1 $configmode
 }
+
 & $root\scripts\Step6-GetStage3Packages.ps1
 & $root\scripts\Step7-BuildGNURadio.ps1 $configmode
 & $root\scripts\Step8-BuildOOTModules.ps1 $configmode

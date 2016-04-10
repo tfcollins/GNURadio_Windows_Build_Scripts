@@ -46,6 +46,8 @@ Function Consolidate {
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/boost/build/$platform/$baseconfig/lib/boost*.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/boost/build/$platform/$baseconfig/lib/boost*.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	# GNURadio uses shared libraries, but some OOT modules use static linking so we need both
+	cp -Recurse -Force $root/src-stage1-dependencies/boost/build/$platform/$baseconfig/lib/libboost*.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	robocopy "$root/src-stage1-dependencies/boost/build/$platform/$baseconfig/include/boost-1_60/" "$root/build/$configuration/include/" /e 2>&1 >> $log
 	"complete"
 
@@ -181,7 +183,7 @@ Consolidate "Debug"
 cd $root/scripts 
 
 ""
-"COMPLETED STEP : Libraries have been consolidated for easy CMake referencing to build GNURadio and OOT modules"
+"COMPLETED STEP 5: Libraries have been consolidated for easy CMake referencing to build GNURadio and OOT modules"
 ""
 
 

@@ -229,7 +229,7 @@ function Validate
 			cd $root/scripts
 			Write-Host ""
 			Write-Host -BackgroundColor Black -ForegroundColor Red "Validation Failed, $i was not found and is required"
-			Exit
+			throw ""  2>&1 >> $null
 		}
 	}
 	"validated complete"
