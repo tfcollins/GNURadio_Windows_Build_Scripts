@@ -61,6 +61,10 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtGui* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/Qt $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/bin $root/build/$configuration/ 2>&1 >> $log
+	# this will override the hardcoded install paths in qmake.exe and allow CMake to find it all when not building all deps from source
+	"[Paths]\n" > $root/build/$configuration/bin/qt.conf
+	"Prefix = $root/build/$configuration" >> $root/build/$configuration/bin/qt.conf
 	"complete"
 
 	# move Qwt
@@ -119,6 +123,7 @@ Function Consolidate {
 	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/bin/uhd.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/lib/uhd.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root\src-stage1-dependencies\uhd-release_$UHD_version/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
+	robocopy "$root/src-stage1-dependencies/uhd-release_$uhd_version/dist/$configuration" "$root/build/$configuration/uhd" /e 2>&1 >> $log
 	"complete"
 
 	# portaudio
@@ -173,6 +178,8 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/libpng16.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/iconv.dll $root/build/$configuration/lib/ 2>&1 >> $log
     cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/zlib1.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/x64/lib/freetype.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/x64/include/freetype $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 }
 

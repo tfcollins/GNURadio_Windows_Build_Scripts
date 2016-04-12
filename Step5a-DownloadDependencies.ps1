@@ -31,4 +31,16 @@ SetLog "Download dependencies"
 
 GetPatch gnuradio_dependency_pack_v$dp_version.7z ../
 
+Function buildQtConf
+{
+	$configuration = $args[0]
+	"[Paths]\n" > $root/build/$configuration/bin/qt.conf
+	"Prefix = $root/build/$configuration" >> $root/build/$configuration/bin/qt.conf
+	"complete"
+}
+
+buildQtConf "Release"
+buildQtConf "Debug"
+buildQtConf "Release-AVX2"
+
 cd $root/scripts

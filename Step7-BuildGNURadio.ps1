@@ -44,13 +44,14 @@ function BuildGNURadio {
 
 	$ErrorActionPreference = "Continue"
 	# Always use the DLL version of Qt to avoid errors about parent being on a different thread.
+	# ENABLE_MSVC_AVX2_ONLY_MODE is a switch to use in the future if we want to mod the GNURadio cmake files, not currently used (and generates a warning as a result)
 	cmake ../../src/gnuradio `
 		-G "Visual Studio 14 2015 Win64" `
 		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
 		-DQA_PYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
 		-DPYTHON_LIBRARY="$pythonroot\Libs\python27.lib" `
 		-DPYTHON_INCLUDE_DIR="$pythonroot\include"  `
-		-DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe" `
+		-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
 		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `

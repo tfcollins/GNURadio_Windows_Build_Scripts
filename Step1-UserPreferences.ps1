@@ -56,6 +56,9 @@ if (![System.IO.Path]::IsPathRooted($root)) {
     Write-Host "'$root' is not an absolute path.  Exiting script."
     return
 }
+# need this fixed for the qt.conf file in Step5/5a
+$root = $root -replace "\\", "\/"
+
 Write-Host ""
 Write-Host "By default, GNURadio uses only open source libraries.  However, if you have Intel MKL installed"
 Write-Host "the script can find it and use it to build numpy and scipy, which are significantly faster than"

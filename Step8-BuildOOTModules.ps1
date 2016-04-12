@@ -154,7 +154,7 @@ function BuildDrivers
 	# This was previously built, but now we want to install it properly over top of the GNURadio install
 	#
 	Write-Host -NoNewline "configuring $configuration UHD..."
-	robocopy "$root/src-stage1-dependencies/uhd-release_$uhd_version/dist/$configuration" "$root/src-stage3/staged_install/$configuration" /e 2>&1 >> $log 
+	robocopy "$root/build/$configuration/uhd" "$root/src-stage3/staged_install/$configuration" /e 2>&1 >> $log 
 	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/uhd/images -Force 2>&1 >> $log 
 	"complete"
 
@@ -180,7 +180,7 @@ function BuildDrivers
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib/" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch " `
@@ -278,7 +278,7 @@ function BuildDrivers
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-		-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
@@ -382,19 +382,19 @@ function BuildDrivers
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-			-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+			-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
 			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 			-DBOOST_ROOT="$root/build/$configuration/" `
 			-DOpenCL_LIBRARY="$env:AMDAPPSDKROOT/lib/x86_64/OpenCL.lib" `
 			-DOpenCL_INCLUDE_DIR="$env:AMDAPPSDKROOT/include" `
-			-DFREETYPE2_PKG_INCLUDE_DIRS="$root/src-stage1-dependencies/freetype" `
-			-DFREETYPE2_PKG_LIBRARY_DIRS="$root\src-stage1-dependencies\freetype\objs\vc2010\x64" `
+			-DFREETYPE2_PKG_INCLUDE_DIRS="$root/build/$configuration/include" `
+			-DFREETYPE2_PKG_LIBRARY_DIRS="$root/build/$configuration/lib" `
 			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
 			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-			-DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe" `
+			-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
 			-DGLFW3_PKG_INCLUDE_DIRS="$root\src-stage3\oot_code\glfw\include\" `
 			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$baseconfig" `
 			-Wno-dev 2>&1 >> $Log
@@ -453,7 +453,7 @@ function BuildDrivers
 			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-			-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+			-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
 			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 			-DBOOST_ROOT="$root/build/$configuration/" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
@@ -501,7 +501,7 @@ function BuildDrivers
 			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-			-DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+			-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
 			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 			-DBOOST_ROOT="$root/build/$configuration/" `
 			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
@@ -542,7 +542,7 @@ function BuildDrivers
 		    -DGNUTLS_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
 		    -DGNUTLS_INCLUDE_DIR="../../../gnutls/include" `
 		    -DGNUTLS_OPENSSL_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
-		    -DBOOST_LIBRARYDIR="$root\src-stage1-dependencies\boost\build\$platform\$boostconfig\lib" `
+		    -DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
 		    -DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		    -DBOOST_ROOT="$root/build/$configuration/" `
 		    -DENABLE_OSMOSDR="ON" `
@@ -571,7 +571,7 @@ function BuildDrivers
 		    -G "Visual Studio 14 2015 Win64" `
 		    -DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		    -DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		    -DQT_QMAKE_EXECUTABLE="$root\src-stage1-dependencies\Qt4\build\$DLLconfig\bin\qmake.exe"
+		    -DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe"
 	
 	    Write-Host -NoNewline "building..."
 	    msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
