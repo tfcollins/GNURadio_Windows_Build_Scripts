@@ -42,6 +42,7 @@ function BuildGNURadio {
 		mkdir $configuration
 	} 
 	cd $root/src-stage3/build/$configuration
+	Remove=Item CMakeCache.txt -Force # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 
 	$env:PATH = "$root/build/$configuration/lib;$pythonroot/Dlls;" + $oldPath
 
