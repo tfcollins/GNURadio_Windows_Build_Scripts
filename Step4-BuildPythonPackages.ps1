@@ -805,27 +805,27 @@ cd $root/scripts
 ""
 
 
+if ($false)
+{
+	# these are just here for quick debugging
 
-break
+	ResetLog
 
-# these are just here for quick debugging
+	$configuration = "ReleaseDLL"
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	$pythonexe = "python.exe"
+	$d = ""
+	$debug = ""
 
-ResetLog
+	$configuration = "ReleaseDLL-AVX2"
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	$pythonexe = "python.exe"
+	$d = ""
+	$debug = ""
 
-$configuration = "ReleaseDLL"
-$pythonroot = "$root\src-stage2-python\gr-python27"
-$pythonexe = "python.exe"
-$d = ""
-$debug = ""
-
-$configuration = "ReleaseDLL-AVX2"
-$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-$pythonexe = "python.exe"
-$d = ""
-$debug = ""
-
-$configuration = "DebugDLL"
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-$pythonexe = "python_d.exe"
-$d = "d"
-$debug = "--debug"
+	$configuration = "DebugDLL"
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	$pythonexe = "python_d.exe"
+	$d = "d"
+	$debug = "--debug"
+}

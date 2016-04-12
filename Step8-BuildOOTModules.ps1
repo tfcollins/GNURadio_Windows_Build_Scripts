@@ -591,11 +591,13 @@ cd $root/scripts
 "COMPLETED STEP 8: Selected OOT modules have been built from source and installed on top of the GNURadio installation(s)"
 ""
 
-# debug shortcuts below
-break
+if ($false) 
+{
+	# debug shortcuts below
 
-$configuration = "Debug"
-$configuration = "Release"
-$configuration = "Release-AVX2"
+	$configuration = "Debug"
+	$configuration = "Release"
+	$configuration = "Release-AVX2"
 
-ResetLog
+	ResetLog
+}

@@ -187,12 +187,14 @@ cd $root/scripts
 ""
 
 
-break
+if ($false)
+{
 
-# these are just here for quick debugging
+	# these are just here for quick debugging
 
-ResetLog
+	ResetLog
 
-$configuration = "Release"
-$configuration = "Release-AVX2"
-$configuration = "Debug"
+	$configuration = "Release"
+	$configuration = "Release-AVX2"
+	$configuration = "Debug"
+}

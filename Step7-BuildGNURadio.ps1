@@ -113,17 +113,19 @@ cd $root/scripts
 "COMPLETED STEP 7: Core GNURadio has been built from source"
 ""
 
-break
+if ($false)
+{
 
-#these are just here for quicker debugging
+	#these are just here for quicker debugging
 
-ResetLog
+	ResetLog
 
-$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-$configuration = "Release-AVX2"
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	$configuration = "Release-AVX2"
 
-$pythonroot = "$root\src-stage2-python\gr-python27"
-$configuration = "Release"
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	$configuration = "Release"
 
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-$configuration = "Debug"
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	$configuration = "Debug"
+}
