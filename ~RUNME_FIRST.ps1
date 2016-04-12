@@ -16,7 +16,7 @@ if (![System.IO.Path]::IsPathRooted($root)) {
 }
 # setup
 "Performing initial setup"
-Write-Host -NoNewline "Setting up directories and checking dependencies..." 
+Write-Host "Setting up directories and checking dependencies..." 
 
 # set up enough to import setup.ps1 and start logging
 New-Item -ItemType Directory -Force -Path $root > $null

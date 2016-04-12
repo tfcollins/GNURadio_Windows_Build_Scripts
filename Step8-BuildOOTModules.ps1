@@ -14,6 +14,8 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 }
 . $mypath\Setup.ps1 -Force
 
+$configmode = $args[0]
+
 function BuildDrivers 
 {
 	$configuration = $args[0]
@@ -581,9 +583,10 @@ function BuildDrivers
     }
 }
 
-BuildDrivers "Release"
-BuildDrivers "Release-AVX2"
-BuildDrivers "Debug"
+# Release build
+if ($configmode -eq "1" -or $configmode -eq "all") {BuildDrivers "Release"}
+if ($configmode -eq "2" -or $configmode -eq "all") {BuildDrivers "Release-AVX2"}
+if ($configmode -eq "3" -or $configmode -eq "all") {BuildDrivers "Debug"}
 
 cd $root/scripts 
 

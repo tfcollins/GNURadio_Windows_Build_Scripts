@@ -13,6 +13,8 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 }
 . $mypath\Setup.ps1 -Force
 
+$configmode = $args[0]
+
 # prep for cmake
 if (!(Test-Path $root/src-stage3/build)) {
 	cd $root/src-stage3
@@ -96,17 +98,23 @@ function BuildGNURadio {
 	"complete"
 }
 
-# AVX2 build
-$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-BuildGNURadio "Release-AVX2"
-
 # Release build
-$pythonroot = "$root\src-stage2-python\gr-python27"
-BuildGNURadio "Release"
+if ($configmode -eq "1" -or $configmode -eq "all") {
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	BuildGNURadio "Release"
+}
+
+# AVX2 build
+if ($configmode -eq "2" -or $configmode -eq "all") {
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	BuildGNURadio "Release-AVX2"
+}
 
 # Debug build
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-BuildGNURadio "Debug"
+if ($configmode -eq "3" -or $configmode -eq "all") {
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	BuildGNURadio "Debug"
+}
 
 cd $root/scripts 
 

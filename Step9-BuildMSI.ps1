@@ -10,6 +10,8 @@ $ErrorActionPreference = "Stop"
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
+$configmode = $args[0]
+
 SetLog "MSI Creation"
 cd $root\src-stage4-installer
 New-Item -ItemType Directory -Force build 2>&1 >> $Log 
@@ -28,9 +30,9 @@ Function BuildMSI {
 	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7_win64.msi"
 }
 
-BuildMSI "Release"
-BuildMSI "Release-AVX2"
-BuildMSI "Debug"
+if ($configmode -eq "1" -or $configmode -eq "all") {BuildMSI "Release"}
+if ($configmode -eq "2" -or $configmode -eq "all") {BuildMSI "Release-AVX2"}
+if ($configmode -eq "3" -or $configmode -eq "all") {BuildMSI "Debug"}
 
 ""
 "COMPLETED STEP 9: .msi files have been created and can be found in $root/src-stage4-installer/dist/(configuration)/gnuradio_3.7_win64.msi"
