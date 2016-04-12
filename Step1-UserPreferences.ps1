@@ -43,7 +43,7 @@ Write-Host "Dependencies checked passed: VS 2015, git, perl, cmake, 7-zip, & dox
 if ($hasIFORT -and $buildoption -eq "1") 
 {
     Write-Host "Intel Fortran compiler has been detected.  Numpy/Scipy will be built from source"
-} else {
+} elseif ($buildoption -eq "1") {
     Write-Host "Intel Fortran compiler not installed.  Numpy/Scipy will be installed from wheels"
 }
 Write-Host ""
