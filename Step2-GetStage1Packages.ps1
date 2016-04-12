@@ -58,12 +58,9 @@ if ($Config.BuildGTKFromSource) {
 	# libffi
 	GetPackage https://github.com/winlibs/libffi.git
 
-
-
 	# JasPer 1900
 	GetPackage http://www.ece.uvic.ca/~frodo/jasper/software/jasper-1.900.1.zip
 	GetPatch jasper_vs2015.7z .\jasper-1.900.1\src
-
 
 	# glib
 	GetPackage http://ftp.gnome.org/pub/GNOME/sources/glib/2.47/glib-2.47.6.tar.xz glib
