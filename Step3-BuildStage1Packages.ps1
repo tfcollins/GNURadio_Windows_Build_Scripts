@@ -45,10 +45,6 @@ msbuild zlibvc.sln /m /p:"configuration=Release;platform=x64" >> $Log
 msbuild zlibvc.sln /m /p:"configuration=Debug;platform=x64" >> $Log
 msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=x64" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=Win32" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=Release;platform=Win32" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=Debug;platform=Win32" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=Win32" >> $Log
 Validate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/ZlibDllRelease-AVX2/zlibwapi.dll" "x64/ZlibDllReleaseWithoutAsm/zlibwapi.dll" `
 	"x64/ZlibStatDebug/zlib.lib" "x64/ZlibStatRelease/zlib.lib" "x64/ZlibStatRelease-AVX2/zlib.lib" "x64/ZlibStatReleaseWithoutAsm/zlib.lib"
 
@@ -440,17 +436,10 @@ msbuild gsl.lib.sln /t:gslhdrs >> $Log
 msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
 msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
 msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
 #dll
-msbuild gsl.dll.sln /m /t:gslhdrs /p:Configuration="Debug" /p:Platform="Win32" >> $Log
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
 msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=Win32"  >> $Log
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=Win32"  >> $Log
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=Win32"  >> $Log
 Validate "x64/Debug/dll/gsl.dll" "x64/Debug/dll/cblas.dll" "x64/Debug/lib/gsl.lib" "x64/Debug/lib/cblas.lib" `
 	"x64/Release/dll/gsl.dll" "x64/Release/dll/cblas.dll" "x64/Release/lib/gsl.lib" "x64/Release/lib/cblas.lib" `
 	"x64/Release-AVX2/dll/gsl.dll" "x64/Release-AVX2/dll/cblas.dll" "x64/Release-AVX2/lib/gsl.lib" "x64/Release-AVX2/lib/cblas.lib" 
