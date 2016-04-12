@@ -167,6 +167,8 @@ function BuildDrivers
 	#
 	# this doesn't add gnuradio-pmt.lib as a linker input, so we hack it manually
 	# TODO submit issue to source (add gnuradio-pmt.lib as a linker input to gr-iqbal)
+	# Also the upstream sources uses C99 complex constructs that MSVC doesn't support
+	# so we're using a custom version of the source.
 	#
 	SetLog "gr-iqbal $configuration"
 	$ErrorActionPreference = "Continue"

@@ -51,7 +51,8 @@ GetPackage git://git.osmocom.org/osmo-sdr -Stage3
 #
 # gr-iqbal
 #
-GetPackage https://github.com/osmocom/gr-iqbal.git -Stage3 
+# upstream: https://github.com/osmocom/gr-iqbal.git 
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gr-iqbal.7z -Stage3
 
 # ____________________________________________________________________________________________________________
 #
@@ -146,7 +147,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
 	"gnuradio already present";
 }
 if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
-	# volk submodule did not come across.  This is likely due to a problem with the main git repo getting
+	# volk submodule did not come across.  This is likely due to a problem with our git repo getting
 	# out of sync with the volk tree.  So we'll just download 1.2.2 release as a backup
 	cd $root/src-stage3/src/gnuradio
     $count = 0
