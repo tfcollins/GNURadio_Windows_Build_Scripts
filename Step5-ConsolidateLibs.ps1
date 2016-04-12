@@ -63,8 +63,8 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/Qt $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/bin $root/build/$configuration/ 2>&1 >> $log
 	# this will override the hardcoded install paths in qmake.exe and allow CMake to find it all when not building all deps from source
-	"[Paths]\n" > $root/build/$configuration/bin/qt.conf
-	"Prefix = $root/build/$configuration" >> $root/build/$configuration/bin/qt.conf
+	"[Paths]" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII
+	"Prefix = $root/build/$configuration" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
 	# move Qwt

@@ -34,8 +34,8 @@ GetPatch gnuradio_dependency_pack_v$dp_version.7z ../
 Function buildQtConf
 {
 	$configuration = $args[0]
-	"[Paths]\n" > $root/build/$configuration/bin/qt.conf
-	"Prefix = $root/build/$configuration" >> $root/build/$configuration/bin/qt.conf
+	"[Paths]" | out-file $root/build/$configuration/bin/qt.conf -encoding ASCII
+	"Prefix = $root/build/$configuration" | out-file $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 }
 
