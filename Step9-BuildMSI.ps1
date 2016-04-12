@@ -11,6 +11,7 @@ $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 . $mypath\Setup.ps1 -Force
 
 $configmode = $args[0]
+if ($configmode -eq $null) {$configmode = "all"}
 
 SetLog "MSI Creation"
 cd $root\src-stage4-installer

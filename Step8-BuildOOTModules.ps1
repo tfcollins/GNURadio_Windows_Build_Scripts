@@ -15,6 +15,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 . $mypath\Setup.ps1 -Force
 
 $configmode = $args[0]
+if ($configmode -eq $null) {$configmode = "all"}
 
 function BuildDrivers 
 {
