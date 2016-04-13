@@ -28,7 +28,7 @@ Function BuildMSI {
 
 	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64"  2>&1 >> $Log 
 
-	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7_win64.msi"
+	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi"
 }
 
 if ($configmode -eq "1" -or $configmode -eq "all") {BuildMSI "Release"}
