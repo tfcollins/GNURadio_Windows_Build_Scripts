@@ -18,6 +18,7 @@ SetLog "GetPackages"
 
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
+getPackage https://github.com/zeromq/cppzmq.git
 
 # pyzmq
 getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 

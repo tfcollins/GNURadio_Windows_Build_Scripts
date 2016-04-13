@@ -115,8 +115,7 @@ Function Consolidate {
 	Write-Host -NoNewline "Consolidating libzmq..."
 	cp -Recurse -Force $root/src-stage1-dependencies/libzmq/bin/x64/$baseconfig/v140/dynamic/libzmq.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/libzmq/include/*.h $root/build/$configuration/include/ 2>&1 >> $log
-    #TODO submit patch for FindZeroMQ.cmake to look for zmq.h instead of zmq.hpp
-    cp -Force $root/build/$configuration/include/zmq.h $root/build/$configuration/include/zmq.hpp
+	cp -Recurse -Force $root/src-stage1-dependencies/cppzmq/*.hpp $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 
 	# uhd
