@@ -253,6 +253,8 @@ function BuildDrivers
 	msbuild .\gr-osmosdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
+	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
 	"complete"
 
 	# ____________________________________________________________________________________________________________
@@ -309,7 +311,7 @@ function BuildDrivers
 	# gr-adsb
 	#
 	#
-	SetLog "gr-acars2 $configuration"
+	SetLog "gr-adsb $configuration"
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-adsb..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-adsb/build/$configuration  2>&1 >> $Log
@@ -362,6 +364,7 @@ function BuildDrivers
 	Write-Host -NoNewline "building for static..."
 	msbuild .\glfw.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	$env:_CL_ = ""
+	$ErrorActionPreference = "Stop"
 	"complete"
 	 
 
@@ -369,19 +372,18 @@ function BuildDrivers
 	#
 	# gr-fosphor
 	#
-	# needed to macro out __attribute__, include gnuradio-pmt, and include glew64.lib
-	# still not working though, gets an error and crashes, something in the way OpenGL is being initialized.  Tried to patch and failed, though I could get around
-	# the crash in a standalone program with some manual inits.
-	# also need to rename freetype263.lib to freetype.lib for cmake to find it
+	# needed to macro out __attribute__, include gnuradio-pmt, and include glew64.lib and a glewInit() call
+	# 
 	SetLog "gr-fosphor $configuration"
 	if ($env:AMDAPPSDKROOT) {
+		$ErrorActionPreference = "Continue"
 		Write-Host -NoNewline "configuring $configuration gr-fosphor..."
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-fosphor/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration 
 		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
-		$env:_CL_ = $env:_CL_ + " -D_WIN32 -Zi -I""$env:AMDAPPSDKROOT/include"" "
+		$env:_CL_ = $env:_CL_ + " -DUSING_GLEW -D_WIN32 -Zi -I""$env:AMDAPPSDKROOT/include"" "
 		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib ""$env:AMDAPPSDKROOT/lib/x86_64/glew64.lib"" /DEBUG /OPT:ref,icf "
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
@@ -410,6 +412,7 @@ function BuildDrivers
 		cp $env:AMDAPPSDKROOT/bin/x86_64/glew64.dll $root/src-stage3/staged_install/$configuration/bin
 		$env:_LINK_ = ""
 		$env:_CL_ = ""
+		$ErrorActionPreference = "Stop"
 		"complete"
 	} else {
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
