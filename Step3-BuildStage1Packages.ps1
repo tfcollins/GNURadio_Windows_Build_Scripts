@@ -516,8 +516,58 @@ Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build
 	"build/Debug/bin/qmake.exe" "build/Debug/lib/QtCored.lib" "build/Debug/lib/QtOpenGLd.lib" "build/Debug/lib/QtSvgd.lib" "build/Debug/lib/QtGuid.lib" 
 
 # ____________________________________________________________________________________________________________
+# Qt5
+#
+# not needed specifically by GNURadio (as of 3.7) but is used by gqrx
+# needs openssl and python
+#
+SetLog "Qt5"
+Write-Host "building Qt5..."
+Function MakeQt5 
+{
+	$type = $args[0] 
+	Write-Host -NoNewline "$type...configuring..."
+	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
+	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
+	$staticflag = if ($type -match "Dll") {""} else {"-static"}
+	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl; $archflags=@('-sse3','-ssse3','-sse4.1','-sse4.2','-avx','-avx2')} else {$env:CL = $oldCL; $archflags=""}
+	cd $root/src-stage1-dependencies/Qt5
+	if (Test-Path  $root/src-stage1-dependencies/Qt5/build/$type) {rm -r -Force $root/src-stage1-dependencies/Qt5/build/$type}
+	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt5/build/$type >> $Log
+	cd $root/src-stage1-dependencies/Qt5/build/$type
+	../../configure.bat $flags $staticflag -prefix $root/src-stage1-dependencies/Qt5/build/$type `
+		-skip qtdeclarative -skip qttools -skip qtconnectivity -skip qtscript -skip qtcanvas3d -skip qtdoc -skip qtserialbus -skip qtserialport `
+		-skip qtwebview -skip qtactiveqt -skip qtenginio -skip qtandroidextras -skip qtwebsockets -skip qtwebengine -skip qtwebchannel -skip qtxmlpatterns `
+		-nomake examples -nomake tools -nomake tests `
+		-platform win32-msvc2015 -opensource -confirm-license -qmake $archflags -sse2 -ltcg -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop `
+		-qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\$ssltype" `
+		-l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 `
+		OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include"  2>&1 >> $Log
+	Write-Host -NoNewline "building..."
+	nmake module-qtbase 2>&1 >> $Log
+	nmake module-qtsvg 2>&1 >> $Log
+	Write-Host "done" 
+}
+cd $root/src-stage1-dependencies/Qt5
+# Various things in Qt build are intepreted as errors so 
+$ErrorActionPreference = "Continue"
+$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt5/qtbase/mkspecs/win32-msvc2015"
+$env:QTDIR = "$root/src-stage1-dependencies/Qt5"
+$env:Path = "$root\src-stage1-dependencies\Qt5\qtbase\bin;" + $oldPath
+# debugDLL build
+MakeQT5 "DebugDLL"
+# releaseDLL build
+MakeQT5 "ReleaseDLL"
+# release AVX2 DLL build
+MakeQT5 "ReleaseDLL-AVX2"
+# Static builds (Disabled for speed since we aren't using them)
+#MakeQT5 "Debug"
+#MakeQT5 "Release-AVX2"
+#MakeQT5 "Release"
+
+# ____________________________________________________________________________________________________________
 # QWT 5.2.3
-# must be after Qt
+# must be after Qt4
 # all those cleans are important because like Qt, QMAKE does a terrible job of cleaning up makefiles and configs
 # when building in more than one configuration
 # Also note that 4 builds go into a single folder... because debug and release libraries have different names

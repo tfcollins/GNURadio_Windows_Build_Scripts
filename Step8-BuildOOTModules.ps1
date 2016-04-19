@@ -577,10 +577,11 @@ function BuildDrivers
 	    $ErrorActionPreference = "Continue"
 	    & cmake ../../ `
 		    -G "Visual Studio 14 2015 Win64" `
-		    -DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		    -DCMAKE_PREFIX_PATH="$root\build\$configuration\Qt5" `
 		    -DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		    -DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe"
-	
+		    -DQT_QMAKE_EXECUTABLE="$root/build/$configuration/Qt5/bin/qmake.exe" `
+			-DQt5_DIR="$root/build/$configuration/Qt5/lib/cmake/Qt5" `
+			-Wno-dev
 	    Write-Host -NoNewline "building..."
 	    msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	    Write-Host -NoNewline "installing..."

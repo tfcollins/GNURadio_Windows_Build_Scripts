@@ -53,7 +53,7 @@ Function Consolidate {
 	"complete"
 
 	# move Qt
-	Write-Host -NoNewline "Consolidating Qt..."
+	Write-Host -NoNewline "Consolidating Qt4..."
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtCore$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
@@ -67,6 +67,23 @@ Function Consolidate {
 	"[Paths]" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII
 	"Prefix = $root/build/$configuration" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
+
+	# move Qt
+	Write-Host -NoNewline "Consolidating Qt5..."
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5Core$d5.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5Gui$d5.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5OpenGL$d5.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtsvg/lib/Qt5Svg$d5.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5Core$d5.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5Gui$d5.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/lib/Qt5OpenGL$d5.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtsvg/lib/Qt5Svg$d5.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/include/QtOpenGL* $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/include/QtCore* $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/include/QtGui* $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/include/Qt $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qt5/build/$configDLL/qtbase/bin $root/build/$configuration/ 2>&1 >> $log
+	
 
 	# move Qwt
 	Write-Host -NoNewline "Consolidating Qwt..."
