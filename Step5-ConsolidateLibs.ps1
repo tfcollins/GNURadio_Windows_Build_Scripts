@@ -38,7 +38,7 @@ Function Consolidate {
 	if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
 	if ($configuration -match "Debug") {$d4 = "d4"} else {$d4 = "4"}
-	if ($configuration -match "Debug") {$d5 = "d5"} else {$d4 = "5"}
+	if ($configuration -match "Debug") {$d5 = "d"} else {$d5 = ""}
 
 	# move boost
 	Write-Host -NoNewline "Consolidating Boost..."
@@ -64,8 +64,8 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/Qt $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/bin $root/build/$configuration/ 2>&1 >> $log
 	# this will override the hardcoded install paths in qmake.exe and allow CMake to find it all when not building all deps from source
-	"[Paths]" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII
-	"Prefix = $root/build/$configuration" | out-file -path $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
+	"[Paths]" | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII
+	"Prefix = $root/build/$configuration" | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
 	# move Qt
