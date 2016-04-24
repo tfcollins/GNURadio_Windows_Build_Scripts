@@ -97,7 +97,7 @@ if ($configmode -eq "all") {$numberof = $numberof * 3}
 Write-Host ""
 Write-Host "Thank you.  Package download will occur first, then compilation and build will begin."
 Write-Host "Building will take about $numberof hours on a Intel i7-5930X machine"
-Write-Host "After downloads are complete.  Logs can be found in $root/Logs in the build fails."
+Write-Host "After downloads are complete.  Logs can be found in $root/Logs if the build fails."
 Write-Host ""
 
 # RUN
