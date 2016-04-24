@@ -25,6 +25,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
+$env:PYTHONPATH=""
 
 #__________________________________________________________________________________________
 # sip

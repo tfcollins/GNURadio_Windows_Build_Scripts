@@ -16,6 +16,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 
 $configmode = $args[0]
 if ($configmode -eq $null) {$configmode = "all"}
+$env:PYTHONPATH=""
 
 function BuildDrivers 
 {
