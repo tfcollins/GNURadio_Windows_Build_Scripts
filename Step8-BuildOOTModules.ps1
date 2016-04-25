@@ -384,8 +384,9 @@ function BuildDrivers
 		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
-		$env:_CL_ = $env:_CL_ + " -DUSING_GLEW -D_WIN32 -Zi -I""$env:AMDAPPSDKROOT/include"" "
-		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib ""$env:AMDAPPSDKROOT/lib/x86_64/glew64.lib"" /DEBUG /OPT:ref,icf "
+		$env:_CL_ = $env:_CL_ + " -D_WIN32 -Zi "
+		$env:_LINK_= " /DEBUG /OPT:ref,icf "
+		$env:Path = $env:AMDAPPSDKROOT + ";" + $oldPath 
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -413,6 +414,7 @@ function BuildDrivers
 		cp $env:AMDAPPSDKROOT/bin/x86_64/glew64.dll $root/src-stage3/staged_install/$configuration/bin
 		$env:_LINK_ = ""
 		$env:_CL_ = ""
+		$env:Path = $oldPath 
 		$ErrorActionPreference = "Stop"
 		"complete"
 	} else {
