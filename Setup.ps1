@@ -268,7 +268,6 @@ $pkgconfig_version = $Config.VersionInfo.pkgconfig
 $dp_version = $Config.VersionInfo.dp
 
 # setup paths
-$Global:root = $env:grwinbuildroot 
 if (!$Global:root) {$Global:root = "C:/gr-build"}
 
 # ensure on a 64-bit machine

@@ -15,6 +15,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 
 $configmode = $args[0]
 if ($configmode -eq $null) {$configmode = "all"}
+$env:PYTHONPATH=""
 
 # prep for cmake
 if (!(Test-Path $root/src-stage3/build)) {

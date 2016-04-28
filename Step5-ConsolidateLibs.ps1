@@ -38,7 +38,7 @@ Function Consolidate {
 	if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
 	if ($configuration -match "Debug") {$d4 = "d4"} else {$d4 = "4"}
-	if ($configuration -match "Debug") {$d5 = "d"} else {$d5 = ""}
+	if ($configuration -match "Debug") {$d5 = "d5"} else {$d5 = "5"}
 
 	# move boost
 	Write-Host -NoNewline "Consolidating Boost..."

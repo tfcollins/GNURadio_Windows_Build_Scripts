@@ -25,6 +25,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
+$env:PYTHONPATH=""
 
 #__________________________________________________________________________________________
 # sip
@@ -740,7 +741,7 @@ Function SetupPython
 	Write-Host -NoNewline "configuring pyzmq..."
 	if ($configuration -match "Debug") {$baseconfig="Debug"} else {$baseconfig="Release"}
 	$ErrorActionPreference = "Continue"
-	cd C:\gr-build\src-stage1-dependencies\pyzmq-$pyzmq_version
+	cd $root\src-stage1-dependencies\pyzmq-$pyzmq_version
 	# this stdint.h file prevents the import of the real stdint file and causes the build to fail
 	# TODO submit upstream patch
 	if (!(Test-Path wheels)) {mkdir wheels 2>&1 >> $log}

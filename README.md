@@ -1,5 +1,5 @@
-GNURadio_Windows_Build_Scripts
-==============================
+GNURadio_Windows_Build_Scripts v1.0.1
+=====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
 
@@ -47,15 +47,21 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 2- Right-click your powershell window, go to "Properties" and ensure QuickEdit and Insert Mode are NOT checked.  Otherwise when you click on the window, execution may pause without any indication as to why, leading you to believe the build has hung.
 
-3- This has been tested with a B200 UHD and an RTL-SDR.  Other device drivers have not been phyiscally verified to work.  If you own one, please let me know if you had success.
+3- This has been tested with a B200 UHD, a hackRF, and an RTL-SDR.  Other device drivers have not been phyiscally verified to work.  If you own one, please let me know if you had success.
 
 4- In the event of issues, I highly recommend [Dependency Walker](https://www.dependencywalker.com/) to troubleshoot what libraries are linked to what.
 
 5- If your connection is spotty, you may get partially downloaded packages which cause build failures.  To correct, DELETE the suspect package from the /packages directory so it will retry the download.
 
-6- The Debug build will currently fail to build PyGTK and Wx, so GRC will not be available.  The build process will continue but GNURadio will have these features enabled and the shortcuts provided during install will not function.
+6- The Debug build will currently fail to build PyGTK and Wx, so GRC will not be available.  The build process will continue but GNURadio will have these features enabled and the shortcuts provided during install will not function.  gr-acars will also fail for the debug build only
 
 7- The following devices are NOT currently supported: FCD Pro+, RFSPACE, MiriSDR, SoapySDR
+
+8- Installing MSVC to a non-standard path may cause the dependency checks to fail 
+
+9- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
+
+10- UHD firmware images files must be manually placed in the /share/uhd/images directory.  This will be fixed in the next release.
 
 <h2>LICENSE</h2>
 The scripts themselves are released under the GPLv3.  The resulting MSI's are also GPLv3 compatible, see www.gcndevelopment.com/gnuradio for details and access to all modifications to original source code.  All patches are released under the same license as the original package it applies to.
