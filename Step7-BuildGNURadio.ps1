@@ -98,6 +98,19 @@ function BuildGNURadio {
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
 	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
+
+
+	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
+	cd $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
+	cmake ../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+		-DQA_PYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
+		-Wno-dev
+	msbuild .\gr-howto.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log
+	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	"complete"
