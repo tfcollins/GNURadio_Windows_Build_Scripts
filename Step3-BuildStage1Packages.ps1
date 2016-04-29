@@ -546,6 +546,8 @@ Function MakeQt5
 	Write-Host -NoNewline "building..."
 	nmake module-qtbase 2>&1 >> $Log
 	nmake module-qtsvg 2>&1 >> $Log
+	nmake module-qtbase install 2>&1 >> $Log
+	nmake module-qtsvg install 2>&1 >> $Log
 	Write-Host "done" 
 }
 cd $root/src-stage1-dependencies/Qt5

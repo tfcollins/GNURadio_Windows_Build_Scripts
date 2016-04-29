@@ -83,6 +83,11 @@ GetPackage https://github.com/wnagele/gr-adsb.git -Stage3
 GetPackage https://github.com/gnieboer/gr-fosphor.git -Stage3 
 GetPackage https://github.com/glfw/glfw.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gqrx
+#
+GetPackage https://github.com/csete/gqrx/archive/v$gqrx_version.zip -Stage3
 
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
@@ -94,12 +99,6 @@ if ($false)
 	# libosmocore
 	#
 	GetPackage https://github.com/osmocom/libosmocore.git -Stage3
-
-	# ____________________________________________________________________________________________________________
-	#
-	# gqrx (windows port)
-	#
-	GetPackage https://github.com/pothosware/gqrx.git -Stage3
 
 	# ____________________________________________________________________________________________________________
 	#

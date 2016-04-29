@@ -21,7 +21,9 @@ $env:PYTHONPATH=""
 function BuildDrivers 
 {
 	$configuration = $args[0]
+	$buildsymbols=$true
 	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
+	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -421,6 +423,30 @@ function BuildDrivers
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
 	}
 
+	# ____________________________________________________________________________________________________________
+	#
+	# gqrx
+	#
+	# Requires Qt5, which is a pain because it conflicts with Qt4's headers.  
+	# TODO Doesn't currently seem to support UHD devices, even though the same gr-osmosdr block in GRC with the same device string will work.
+	#
+	SetLog "gqrx $configuration"
+	Write-Host -NoNewline "configuring $configuration gqrx..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration\gqrx" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DBOOST_LIBRARYDIR="$root\build\$configuration\lib" `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building..."
+	msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	"complete"
+
 	# the below are OOT modules that I would like to include but for various reasons are not able to run in windows
 	# There is hope for all of them though and they are at vary levels of maturity.
 	# Some will configure, some will build/install.  But none are currently working 100% so we'll exclude them from the .msi
@@ -561,32 +587,6 @@ function BuildDrivers
 		    -Wno-dev 2>&1 >> $Log
 	    Write-Host -NoNewline "building..."
 	    msbuild .\gnss-sdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-	    Write-Host -NoNewline "installing..."
-	    msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	    "complete"
-
-	    # ____________________________________________________________________________________________________________
-	    #
-	    # gqrx
-	    #
-	    # NOT WORKING
-	    #
-	    # Requires Qt5 apparently so we'd have to build that as well
-	    #
-	    SetLog "gqrx $configuration"
-	    Write-Host -NoNewline "configuring $configuration gqrx..."
-	    New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx/build/$configuration 2>&1 >> $Log
-	    cd $root/src-stage3/oot_code/gqrx/build/$configuration
-	    $ErrorActionPreference = "Continue"
-	    & cmake ../../ `
-		    -G "Visual Studio 14 2015 Win64" `
-		    -DCMAKE_PREFIX_PATH="$root\build\$configuration\Qt5" `
-		    -DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		    -DQT_QMAKE_EXECUTABLE="$root/build/$configuration/Qt5/bin/qmake.exe" `
-			-DQt5_DIR="$root/build/$configuration/Qt5/lib/cmake/Qt5" `
-			-Wno-dev
-	    Write-Host -NoNewline "building..."
-	    msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	    Write-Host -NoNewline "installing..."
 	    msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	    "complete"

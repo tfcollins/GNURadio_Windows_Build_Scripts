@@ -266,6 +266,7 @@ $pyzmq_version = $Config.VersionInfo.pyzmq
 $lxml_version = $Config.VersionInfo.lxml
 $pkgconfig_version = $Config.VersionInfo.pkgconfig 
 $dp_version = $Config.VersionInfo.dp
+$gqrx_version = $Config.VersionInfo.gqrx
 
 # setup paths
 if (!$Global:root) {$Global:root = "C:/gr-build"}
