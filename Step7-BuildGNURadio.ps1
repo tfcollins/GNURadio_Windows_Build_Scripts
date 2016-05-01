@@ -100,7 +100,7 @@ function BuildGNURadio {
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin
 
-	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
 	cd $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
 	cmake ../ `
 		-G "Visual Studio 14 2015 Win64" `
