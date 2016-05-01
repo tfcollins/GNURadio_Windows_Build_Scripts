@@ -27,6 +27,7 @@
     <WixVariable Id="WixUIBannerBmp" Value="wix_top_banner.bmp"/>
     <WixVariable Id="WixUIDialogBmp" Value="wix_welcome_banner.bmp"/>
     <Icon Id="gr_icon.ico" SourceFile="grc-icon-64.ico"/>
+		<Icon Id="gqrx.ico" SourceFile="gqrx.ico"/>
     <Property Id="ARPPRODUCTICON" Value="gr_icon.ico"/>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
     <Property Id="MSIFASTINSTALL" Value="7" />
@@ -99,7 +100,13 @@
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\GNU Radio"
                        Type="integer" Value="1" Name="installed" KeyPath="yes" />
-        <Shortcut Id="ApplicationStartMenuShortcutCommandPrompt"
+				<Shortcut Id="ApplicationStartMenuShortcutgqrx"
+          Name="gqrx"
+          Description="Run the gqrx radio receiver"
+          Target="[BINARYFILES]run_gqrx.bat"
+          Icon="gqrx.ico"
+          WorkingDirectory="BINARYFILES"/>
+				<Shortcut Id="ApplicationStartMenuShortcutCommandPrompt"
           Name="GNURadio Command Prompt"
           Description="Runs a command prompt configured for GNURadio scripts"
           Target="[BINARYFILES]run_gr.bat"
