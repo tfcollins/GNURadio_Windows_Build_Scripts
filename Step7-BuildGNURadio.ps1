@@ -80,6 +80,21 @@ function BuildGNURadio {
 	# portaudio not found							(fixed, moved portaudio libs to lib, TODO submit pull request to search for portaudio_x64 if dynamically linking)
 	# python wx not found							(fixed, move wx dlls to lib)
 
+	# before we build we need to trim from SWIG cmd.exe lines in the VS projects, as cmd.exe has a 8192 character limit, and some of the swig commands will likely be > 9000
+	# the good news is that the includes are very repetitive so we can use a swizzy regex to get rid to them
+	Write-Host -NoNewline "Fixing swig > 8192 char includes..."
+	Function FixSwigIncludes
+	{
+		$filename = $args[0]
+		(Get-Content -Path "$filename") `
+			-replace '(-I[^ \n]+)[ ](?=.+?[ ]\1[ ])(?<=.+swig\.exe.+)', '' | Out-File -Encoding utf8 "$filename.temp" 
+		Copy-Item -Force "$filename.temp" "$filename"
+		Remove-Item "$filename.temp"	
+	}
+	FixSwigIncludes "$root\src-stage3\build\$configuration\gr-blocks\swig\blocks_swig5_gr_blocks_swig_a6e57.vcxproj"
+	FixSwigIncludes "$root\src-stage3\build\$configuration\gr-blocks\swig\blocks_swig4_gr_blocks_swig_a6e57.vcxproj"
+	"complete"
+
 	Write-Host -NoNewline "Build GNURadio $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
