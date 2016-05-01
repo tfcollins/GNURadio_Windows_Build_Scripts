@@ -22,6 +22,8 @@ function BuildDrivers
 {
 	$configuration = $args[0]
 	$buildsymbols=$true
+	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
+	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
 	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
 
@@ -158,12 +160,19 @@ function BuildDrivers
 	# UHD
 	#
 	# This was previously built, but now we want to install it properly over top of the GNURadio install
+	# and also retrieve the UHD firmware images as the utility script has now been installed
 	#
+	# TODO download firmware once and copy into each location instead of downloading separately for each configuration
+	#
+	SetLog "UHD $configuration configuration"
 	Write-Host -NoNewline "configuring $configuration UHD..."
 	robocopy "$root/build/$configuration/uhd" "$root/src-stage3/staged_install/$configuration" /e 2>&1 >> $log 
 	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/uhd/images -Force 2>&1 >> $log 
 	"complete"
-
+	Write-Host -NoNewline "downloading $configuration UHD firmware images..."
+	& $pythonroot/$pythonexe $root/src-stage3/staged_install/$configuration/lib/uhd/utils/uhd_images_downloader.py -v -i "$root/src-stage3/staged_install/$configuration/share/uhd/images" 2>&1 >> $log 
+	"complete"
+	
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-iqbal

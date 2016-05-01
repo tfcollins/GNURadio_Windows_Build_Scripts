@@ -626,6 +626,21 @@ $ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
+# Requests
+# Requests is a python-only package can be installed automatically
+# used by UHD helper script that downloads the UHD firmware images in step 8
+#
+SetLog "Requests"
+Write-Host -NoNewline "installing Requests using pip..."
+$pythonroot = "$root\src-stage2-python\gr-python27"
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
+"complete"
+
+# ____________________________________________________________________________________________________________
 # libusb
 #
 # 
