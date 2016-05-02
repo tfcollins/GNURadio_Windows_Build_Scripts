@@ -615,13 +615,14 @@ Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwt
 #
 SetLog "Mako"
 Write-Host -NoNewline "installing Mako using pip..."
-$ErrorActionPreference = "Continue" # pip will "error" if there is a new version available
+
 $pythonroot = "$root\src-stage2-python\gr-python27"
-& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-& $pythonroot/Scripts/pip.exe install mako 2>&1 >> $log
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+$ErrorActionPreference = "Continue" # pip will "error" on debug
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
 $ErrorActionPreference = "Stop"
 "complete"
 
@@ -633,11 +634,13 @@ $ErrorActionPreference = "Stop"
 SetLog "Requests"
 Write-Host -NoNewline "installing Requests using pip..."
 $pythonroot = "$root\src-stage2-python\gr-python27"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
 $pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako 2>&1 >> $log
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+$ErrorActionPreference = "Continue" # pip will "error" on debug
+& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+$ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
