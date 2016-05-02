@@ -70,16 +70,9 @@ function BuildGNURadio {
 	$ErrorActionPreference = "Stop"
 	# current errors to investigate:
 	#
-	# xgetbv not detected, overruling avx			(fixed, sent patch to volk)
-	# cvtpi32_ps not detected, overruling avx		(fixed, sent patch to volk)
-	# only SSE2 and generic machines detected		(fixed, sent patch to volk)
-	# incorrectly detects compiler (vs 10.0)
-	# doesn't find MSVC-ASM ? (nasm)
-	# python lxml not found							(fixed, built lxml with all static dependencies)
-	# python pygtk not found						(fixed, loaded piles of dlls into build directory) 
-	# portaudio not found							(fixed, moved portaudio libs to lib, TODO submit pull request to search for portaudio_x64 if dynamically linking)
-	# python wx not found							(fixed, move wx dlls to lib)
-
+	# incorrectly detects compiler (vs 10.0) nuisance only?
+	# doesn't find MSVC-ASM ? (nasm) how would nasm be used?
+	
 	# before we build we need to trim from SWIG cmd.exe lines in the VS projects, as cmd.exe has a 8192 character limit, and some of the swig commands will likely be > 9000
 	# the good news is that the includes are very repetitive so we can use a swizzy regex to get rid to them
 	Write-Host -NoNewline "Fixing swig > 8192 char includes..."
@@ -95,6 +88,7 @@ function BuildGNURadio {
 	FixSwigIncludes "$root\src-stage3\build\$configuration\gr-blocks\swig\blocks_swig4_gr_blocks_swig_a6e57.vcxproj"
 	"complete"
 
+	# NOW we build gnuradio finally
 	Write-Host -NoNewline "Build GNURadio $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
@@ -104,6 +98,8 @@ function BuildGNURadio {
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
+
+	# Then combine it into a useable staged install with the dependencies it will need
 	Write-Host -NoNewline "moving add'l libraries..."
 	cp $root/build/$configuration/lib/*.dll $root\src-stage3\staged_install\$configuration\bin\
 	Write-Host -NoNewline "moving python..."
@@ -118,6 +114,8 @@ function BuildGNURadio {
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin
 
+	# ensure the GR build went well by checking for newmod package, and if found then build
+	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt
 	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
 	cd $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
 	cmake ../ `
@@ -131,6 +129,7 @@ function BuildGNURadio {
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	
 	"complete"
 }
 
@@ -147,11 +146,20 @@ if ($configmode -eq "2" -or $configmode -eq "all") {
 }
 
 # Debug build
-if ($configmode -eq "3" -or $configmode -eq "all") {
-	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-	BuildGNURadio "Debug"
+# This will probably fail... it is known.
+Try
+{
+	if ($configmode -eq "3" -or $configmode -eq "all") {
+		$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+		BuildGNURadio "Debug"
+	}
 }
-
+Catch
+{
+	""
+	"Debug GNURadio build FAILED... aborting but continuing with other builds"
+	""
+}
 cd $root/scripts 
 
 ""
