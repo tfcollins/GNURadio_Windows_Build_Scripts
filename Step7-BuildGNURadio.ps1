@@ -31,7 +31,8 @@ if (!(Test-Path $root/src-stage3/staged_install)) {
 function BuildGNURadio {
 	$configuration = $args[0]
 	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
+	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"; $archflag="/arch:AVX2 /Ox"} else {$DLLconfig = $configuration + "DLL"; $archflag=""}
+
 	# prep for cmake
 	SetLog "Build GNURadio $configuration"
 	if (!(Test-Path $root/src-stage3/staged_install/$configuration)) {
@@ -60,6 +61,8 @@ function BuildGNURadio {
 		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
+		-DCMAKE_CXX_FLAGS="$archflag" `
+		-DCMAKE_C_FLAGS="$archflag" `
 		-DENABLE_MSVC_AVX2_ONLY_MODE="OFF" `
 		-DSPHINX_EXECUTABLE="$pythonroot/Scripts/sphinx-build.exe" `
 		-DCMAKE_BUILD_TYPE="$buildtype" `
