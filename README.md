@@ -1,4 +1,4 @@
-GNURadio_Windows_Build_Scripts v1.0.1
+GNURadio Windows Build Scripts v1.1.0
 =====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
@@ -11,7 +11,9 @@ Device Support: UHD, RTL-SDR, hackrf, airspy, BladeRF, osmoSDR, FCD
 
 GNURadio modules: 3.7.9.2 with all but gr-comedi modules built and included
 
-OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb
+OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool
+
+Other Applications: gqrx
 
 <h2>PREREQUISITES</h2>
 
@@ -23,7 +25,7 @@ The following tools must be installed:
 - ActiveState Perl  
 - Wix toolset for VS 2015  
 
-Also, the complete build requires no less than **35 GB** of free disk space.
+Also, the complete build requires no less than **60 GB** of free disk space.
 
 <h2>INSTALLATION & BUILD</h2>
 
@@ -43,6 +45,8 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 <h2>ISSUES</h2>
 
+**- IMPORTANT: Currently the scripts will produce a Release MSI that will not run on non-AVX machines.  This is because of a bug in VOLK that is can be fixed by the patch here: https://github.com/gnuradio/volk/pull/78.  It's a single line of code to change in one file, so if the pull request has not been included when you want to run the script, make the change manually.
+
 1- Ensure your anti-virus is off during installation... even Windows Defender.  PyQt4 may fail to create manifest files as a result.
 
 2- Right-click your powershell window, go to "Properties" and ensure QuickEdit and Insert Mode are NOT checked.  Otherwise when you click on the window, execution may pause without any indication as to why, leading you to believe the build has hung.
@@ -61,7 +65,7 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 9- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
 
-10- UHD firmware images files must be manually placed in the /share/uhd/images directory.  This will be fixed in the next release.
+10- Zadig must be manually added to the /bin directory prior to MSI creation
 
 <h2>LICENSE</h2>
 The scripts themselves are released under the GPLv3.  The resulting MSI's are also GPLv3 compatible, see www.gcndevelopment.com/gnuradio for details and access to all modifications to original source code.  All patches are released under the same license as the original package it applies to.

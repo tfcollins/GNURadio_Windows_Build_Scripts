@@ -34,7 +34,7 @@
 		lxml = '3.6.0'
 		pkgconfig = '1.1.0'
 		gqrx = '2.5.3'
-		dp = '1.0'        # dependency pack version
+		dp = '1.1'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)
 		# zlib (1.2.8 but should rarely change)
