@@ -31,7 +31,7 @@ if (!(Test-Path $root/src-stage3/staged_install)) {
 function BuildGNURadio {
 	$configuration = $args[0]
 	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"; $archflag="/arch:AVX2 /Ox"} else {$DLLconfig = $configuration + "DLL"; $archflag=""}
+	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"; $archflag="/arch:AVX2 /Ox /GS- /EHsc"} else {$DLLconfig = $configuration + "DLL"; $archflag="/EHsc"}
 
 	# prep for cmake
 	SetLog "Build GNURadio $configuration"
