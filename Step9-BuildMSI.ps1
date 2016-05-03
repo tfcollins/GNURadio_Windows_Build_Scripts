@@ -31,7 +31,7 @@ Function BuildMSI {
 	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi"
 	
 	if ($configuration -match "AVX2") {
-		Rename-Item -Path $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi -NewName gnuradio_3.7.9.2_win64_avx2.msi
+		Move-Item -Force -Path $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64_avx2.msi
 	} 
 }
 
