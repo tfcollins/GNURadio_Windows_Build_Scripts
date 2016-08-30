@@ -205,6 +205,7 @@ function BuildDrivers
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch " `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
+		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
 		-DLINK_LIBRARIES="gnuradio-pmt.lib"  `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building gr-iqbal..."
