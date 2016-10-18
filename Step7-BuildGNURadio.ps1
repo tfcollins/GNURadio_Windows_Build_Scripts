@@ -113,6 +113,7 @@ function BuildGNURadio {
 	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
 	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin
+	Copy-Item -Force -Recurse -Path $root\src-stage3\src\icons $root/src-stage3/staged_install/$configuration/share
 
 	# ensure the GR build went well by checking for newmod package, and if found then build
 	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt
