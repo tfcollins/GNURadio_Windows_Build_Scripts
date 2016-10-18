@@ -170,6 +170,7 @@ $mm = GetMajorMinor($pygobject_version)
 GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/$mm/pygobject-$pygobject_version.tar.xz
 GetPatch gtk-pkgconfig.7z x64/lib
 GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
+GetPatch pygobject_gio-types.7z gio
 
 # PyGTK
 GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_$pygtk_gitversion.tar.gz pygtk-$pygtk_version

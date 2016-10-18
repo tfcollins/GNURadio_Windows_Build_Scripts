@@ -205,6 +205,7 @@ function BuildDrivers
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch " `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
+		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
 		-DLINK_LIBRARIES="gnuradio-pmt.lib"  `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building gr-iqbal..."
@@ -460,9 +461,12 @@ function BuildDrivers
 	cp $root/build/$configuration/gqrx/bin/Qt5Core*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Gui*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Widgets*.dll $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\bin\
+	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force
+	cp -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\plugins
+	cp -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\plugins
+	cp -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\plugins
+	"[Paths]" | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII
+	"Prefix = .." | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
 	# the below are OOT modules that I would like to include but for various reasons are not able to run in windows

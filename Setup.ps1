@@ -317,13 +317,13 @@ if (!(Test-Path variable:global:oldpath))
 		$Global:hasIFORT = $false
 	}
 	# Now set a persistent variable holding the original path. vcvarsall will continue to add to the path until it explodes
-	Set-Variable -Name oldpath -Value "$env:Path" -Description “original %Path%” -Option readonly -Scope "Global"
+	Set-Variable -Name oldpath -Value "$env:Path" -Description "original %Path%" -Option readonly -Scope "Global"
 }
-if (!(Test-Path variable:global:oldlib)) {Set-Variable -Name oldlib -Value "$env:Lib" -Description “original %LIB%” -Option readonly -Scope "Global"}
-if (!(Test-Path variable:global:oldcl)) {Set-Variable -Name oldcl -Value "$env:CL" -Description “original %CL%” -Option readonly -Scope "Global"}
-if (!(Test-Path variable:global:oldlink)) {Set-Variable -Name oldlink -Value "$env:LINK" -Description “original %CL%” -Option readonly -Scope "Global"}
-if (!(Test-Path variable:global:oldinclude)) {Set-Variable -Name oldinclude -Value "$env:INCLUDE" -Description “original %INCLUDE%” -Option readonly -Scope "Global"}
-if (!(Test-Path variable:global:oldlibrary)) {Set-Variable -Name oldlibrary -Value "$env:LIBRARY" -Description “original %LIBRARY%” -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldlib)) {Set-Variable -Name oldlib -Value "$env:Lib" -Description "original %LIB%" -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldcl)) {Set-Variable -Name oldcl -Value "$env:CL" -Description "original %CL%" -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldlink)) {Set-Variable -Name oldlink -Value "$env:LINK" -Description "original %CL%" -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldinclude)) {Set-Variable -Name oldinclude -Value "$env:INCLUDE" -Description "original %INCLUDE%" -Option readonly -Scope "Global"}
+if (!(Test-Path variable:global:oldlibrary)) {Set-Variable -Name oldlibrary -Value "$env:LIBRARY" -Description "original %LIBRARY%" -Option readonly -Scope "Global"}
 
 # import .NET modules
 Add-Type -assembly "system.io.compression.filesystem"

@@ -28,6 +28,7 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
+    <Compile Include="README.md" />
     <Compile Include="Step1-UserPreferences.ps1" />
     <Compile Include="ConfigInfo.psd1" />
     <Compile Include="Step5a-DownloadDependencies.ps1" />

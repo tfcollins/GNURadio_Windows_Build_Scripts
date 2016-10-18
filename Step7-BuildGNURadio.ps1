@@ -102,6 +102,8 @@ function BuildGNURadio {
 	# Then combine it into a useable staged install with the dependencies it will need
 	Write-Host -NoNewline "moving add'l libraries..."
 	cp $root/build/$configuration/lib/*.dll $root\src-stage3\staged_install\$configuration\bin\
+	"complete"
+
 	Write-Host -NoNewline "moving python..."
 	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration
 	if ((Test-Path $root/src-stage3/staged_install/$configuration/gr-python27) -and (($pythonroot -match "avx2") -or ($pythonroot -match "debug"))) 

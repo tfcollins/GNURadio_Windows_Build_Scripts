@@ -28,10 +28,10 @@ Function BuildMSI {
 
 	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64"  2>&1 >> $Log 
 
-	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi"
+	Validate "$root/src-stage4-installer/dist/$configuration/gnuradio_3.7.10.1_win64.msi"
 	
 	if ($configuration -match "AVX2") {
-		Move-Item -Force -Path $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64.msi $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.9.2_win64_avx2.msi
+		Move-Item -Force -Path $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.10.1.win64.msi $root/src-stage4-installer/dist/$configuration/gnuradio_3.7.10.1_win64_avx2.msi
 	} 
 }
 
