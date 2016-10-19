@@ -24,7 +24,7 @@ getPackage https://github.com/zeromq/cppzmq.git
 getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
 
 # libpng
-getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
+getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.25.tar.xz libpng
 getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
 
 # gettext
@@ -151,7 +151,7 @@ GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
 GetPatch pyqwt5_patch.7z PyQwt5-master/configure
 
 # Cython
-GetPackage http://cython.org/release/Cython-$cython_version.zip
+GetPackage https://github.com/cython/cython/archive/$cython_version.zip
 
 # numpy
 GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.tar.gz
