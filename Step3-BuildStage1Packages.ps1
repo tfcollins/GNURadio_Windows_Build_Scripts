@@ -418,7 +418,7 @@ Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib
 SetLog "libzmq"
 Write-Host -NoNewline "building libzmq..."
 cd $root/src-stage1-dependencies/libzmq/builds/msvc
-& .\configure.bat 2>&1 >> $log
+# & .\configure.bat 2>&1 >> $log
 cd build
 & .\buildbase.bat ..\vs2015\libzmq.sln 14 2>&1 >> $Log
 cd ../../../bin/x64
