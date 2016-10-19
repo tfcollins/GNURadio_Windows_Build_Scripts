@@ -215,6 +215,7 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/libpng16.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/iconv.dll $root/build/$configuration/lib/ 2>&1 >> $log
     cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/zlib1.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/x64/bin/libffi.dll $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/lib/freetype.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/include/freetype $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/include/ft2build.h $root/build/$configuration/include/  2>&1 >> $log
