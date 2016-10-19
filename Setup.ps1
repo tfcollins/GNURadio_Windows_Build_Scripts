@@ -269,7 +269,7 @@ $dp_version = $Config.VersionInfo.dp
 $gqrx_version = $Config.VersionInfo.gqrx
 
 # setup paths
-if (!$Global:root) {$Global:root = "C:/gr-build"}
+if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}
 
 # ensure on a 64-bit machine
 if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"} 
