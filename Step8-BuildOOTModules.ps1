@@ -462,7 +462,7 @@ function BuildDrivers
 	cp $root/build/$configuration/gqrx/bin/Qt5Core*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Gui*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Widgets*.dll $root\src-stage3\staged_install\$configuration\bin\
-	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force
+	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force 2>&1 >> $Log
 	cp -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\plugins
 	cp -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\plugins
 	cp -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\plugins
