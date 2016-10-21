@@ -397,7 +397,6 @@ function BuildDrivers
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-fosphor/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration 
 		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
 		$env:_CL_ = $env:_CL_ + " -D_WIN32 -Zi "
 		$env:_LINK_= " /DEBUG /OPT:ref,icf "
@@ -420,7 +419,8 @@ function BuildDrivers
 			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 			-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
 			-DGLFW3_PKG_INCLUDE_DIRS="$root\src-stage3\oot_code\glfw\include\" `
-			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$baseconfig" `
+			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$buildconfig" `
+			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 			-Wno-dev 2>&1 >> $Log
 		Write-Host -NoNewline "building gr-fosphor..."
 		msbuild .\gr-fosphor.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
