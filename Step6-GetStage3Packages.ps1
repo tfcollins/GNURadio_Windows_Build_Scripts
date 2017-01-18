@@ -179,6 +179,9 @@ if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 		Exit 
 	}
 }
+# apply patch to volk to handle GCC-specific builtin_prefetch macro 
+GetPatch volk_1_3_patch.diff gnuradio/volk -gnuradio
+
 $ErrorActionPreference = "Stop"
 
 "complete"

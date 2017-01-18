@@ -133,9 +133,14 @@ function getPatch
 		[string]$whereToPlace = "",
 
 		[Parameter(Mandatory=$False)]
-		[switch]$Stage3
+		[switch]$Stage3,
+		
+		[Parameter(Mandatory=$False)]
+		[switch]$gnuradio 
 	)
-	if ($Stage3) {$IntDir = "src-stage3/oot_code"} else {$IntDir = "src-stage1-dependencies"}
+	if ($Stage3) {$IntDir = "src-stage3/oot_code"} 
+	elseif ($gnuradio) {$IntDir = "src-stage3/src"}
+	else {$IntDir = "src-stage1-dependencies"}
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
 	$isTar = [io.path]::GetExtension($archiveName)
@@ -175,6 +180,11 @@ function getPatch
 		sz x -y $archive 2>&1 >> $Log
 		sz x -aoa -ttar "$archiveName.tar" 2>&1 >> $Log
 		del "$archiveName.tar"
+	} elseif ($archiveExt -eq ".diff") {
+		New-Item -path $destination -type directory -force >> $Log
+		cd $destination 
+		Copy-Item $archive $destination -Force >> $Log 
+		git apply $toGet >> $Log 
 	} else {
 		throw "Unknown file extension on $archiveName$archiveExt"
 	}
