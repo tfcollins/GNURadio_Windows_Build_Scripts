@@ -39,6 +39,7 @@
 		pkgconfig = '1.1.0'
 		log4cpp = '1.1.1'
 		gqrx = '2.5.3'
+		libxslt = '1.1.29'
 		dp = '1.1'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)

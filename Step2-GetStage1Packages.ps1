@@ -198,9 +198,7 @@ GetPatch libusb_VS2015.7z libusb
 GetPackage https://github.com/EttusResearch/uhd/archive/release_$UHD_Version.tar.gz uhd
 
 # libxslt
-# the version of libxslt with the patches we need is not yet released so need to go off the raw git.
-# TODO could specify a particular commit but that will require a change to GetPackage
-GetPackage https://github.com/GNOME/libxslt.git
+GetPackage https://github.com/GNOME/libxslt/archive/v$libxslt_version.tar.gz libxslt 
 
 # lxml
 GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
