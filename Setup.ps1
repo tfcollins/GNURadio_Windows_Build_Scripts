@@ -237,6 +237,8 @@ function Validate
 #load configuration variables
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
+$gnuradio_version = $Config.VersionInfo.gnuradio
+$png_version = $Config.VersionInfo.libpng
 $sdl_version = $Config.VersionInfo.SDL
 $cppunit_version = $Config.VersionInfo.cppunit
 $openssl_version = $Config.VersionInfo.openssl
@@ -266,6 +268,7 @@ $pyzmq_version = $Config.VersionInfo.pyzmq
 $lxml_version = $Config.VersionInfo.lxml
 $pkgconfig_version = $Config.VersionInfo.pkgconfig 
 $dp_version = $Config.VersionInfo.dp
+$log4cpp_version = $Config.VersionInfo.log4cpp
 $gqrx_version = $Config.VersionInfo.gqrx
 
 # setup paths

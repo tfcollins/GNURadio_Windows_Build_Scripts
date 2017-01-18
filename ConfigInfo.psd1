@@ -3,12 +3,15 @@
 #
 @{
 	VersionInfo = @{
+		gnuradio = '3.7.10.1' # Not yet directly used when building gr, but used when determining which dependencies to download
+		libpng = '1.6.28'
 		openssl = '1.0.2f'
 		qwt = '5.2.3'
 		SDL = '1.2.15'
 		cppunit = '1.12.1'
 		sip = '4.17'
 		PyQt = '4.11.4'
+		PyQt5 = '5.6'
 		Cython = '0.23.4'
 		numpy = '1.10.4'
 		scipy = '0.17.0'
@@ -33,6 +36,7 @@
 		pyzmq = '14.7.0'
 		lxml = '3.6.0'
 		pkgconfig = '1.1.0'
+		log4cpp = '1.1.1'
 		gqrx = '2.5.3'
 		dp = '1.1'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags

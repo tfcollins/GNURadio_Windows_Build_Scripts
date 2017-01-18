@@ -24,7 +24,7 @@ getPackage https://github.com/zeromq/cppzmq.git
 getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
 
 # libpng
-getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.25.tar.xz libpng
+getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-$png_version.tar.xz libpng
 getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
 
 # gettext
@@ -219,6 +219,17 @@ if (!$BuildNumpyWithMKL) {
 if (!$BuildNumpyWithMKL) {
 	GetPackage http://www.netlib.org/lapack/lapack-$lapack_version.tgz lapack
 	GetPatch lapack_$lapack_version.7z lapack/SRC
+}
+
+# get GNURadio 3.8+ dependencies
+if (GetMajorMinor($gnuradio_version) == "3.8") {
+	# log4cpp
+	$mm = GetMajorMinor($log4cpp_version)
+	GetPackage https://sourceforge.net/projects/log4cpp/files/log4cpp-1.1.x%20%28new%29/log4cpp-$mm/log4cpp-$log4cpp_version.tar.gz/download log4cpp
+	GetPatch log4cpp_msvc14.7z log4cpp
+
+	# PyQt5
+	GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-$PyQt5_version/PyQt5_gpl-$PyQt5_version.tar.gz PyQt5
 }
 
 # cleanup

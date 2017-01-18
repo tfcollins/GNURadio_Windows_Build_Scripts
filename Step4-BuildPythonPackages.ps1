@@ -138,6 +138,57 @@ MakePyQt "ReleaseDLL-AVX2"
 $ErrorActionPreference = "Stop"
 "complete"
 
+if (GetMajorMinor($gnuradio_version) == "3.8") {
+	#__________________________________________________________________________________________
+	# PyQt
+	#
+	# building libraries separate from the actual install into Python
+	#
+	$ErrorActionPreference = "Continue"
+	SetLog "PyQt5"
+	cd $root\src-stage1-dependencies\PyQt5
+	$env:QMAKESPEC = "win32-msvc2015"
+	Write-Host -NoNewline "building PyQT5..."
+
+	function MakePyQt5
+	{
+		$type = $args[0]
+		Write-Host -NoNewline "$type"
+		if ($type -match "Debug") {$thispython = $pythondebugexe} else {$thispython = $pythonexe}
+		$flags = if ($type -match "Debug") {"-u"} else {""}
+		$flags += if ($type -match "Dll") {""} else {" -k"}
+		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 /MP " + $oldcl} else {$env:CL = "/wd4577 /MP " + $oldCL}
+		$env:_LINK_= ""
+		$env:Path = "$root\src-stage1-dependencies\Qt5\build\$type\bin;" + $oldpath
+
+		& $pythonroot\$thispython configure.py $flags --destdir "build\x64\$type" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui --enable QtSvg -b build/x64/$type/bin -d build/x64/$type/package -p build/x64/$type/plugins --sipdir build/x64/$type/sip 2>&1 >> $log
+
+		# BUG FIX
+		"all: ;" > .\pylupdate\Makefile
+		"install : ;" >> .\pylupdate\Makefile
+		"clean : ;" >> .\pylupdate\Makefile
+
+		nmake 2>&1 >> $log
+		nmake install 2>&1 >> $log
+		nmake clean 2>&1 >> $log
+		$env:CL = $oldcl
+		$env:_LINK_ = ""
+		Write-Host -NoNewline "-done..."
+	}
+
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	MakePyQt5 "DebugDLL"
+	MakePyQt5 "Debug"
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	MakePyQt5 "Release"
+	MakePyQt5 "ReleaseDLL"
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	MakePyQt5 "Release-AVX2"
+	MakePyQt5 "ReleaseDLL-AVX2"
+	$ErrorActionPreference = "Stop"
+	"complete"
+}
+
 #__________________________________________________________________________________________
 # setup python
 

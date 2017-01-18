@@ -818,6 +818,27 @@ if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	MakeLapack "Release-AVX2"
 }
 
+# Build GNURadio 3.8+ dependencies only if applicable
+if (GetMajorMinor($gnuradio_version) == "3.8") {
+
+# ____________________________________________________________________________________________________________
+# log4cpp
+# log utility library used in GNURadio 3.8+
+
+	SetLog "log4cpp"
+	Write-Host -NoNewline "Building log4cpp..."
+	cd $root\src-stage1-dependencies\log4cpp\msvc14
+	msbuild msvc14.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild msvc14.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	Validate "x64/Release/log4cpp.dll" "x64/Release/log4cpp.pdb"  "x64/Release/log4cppLIB.lib" `
+		"x64/Debug/log4cpp.dll" "x64/Debug/log4cpp.pdb"  "x64/Debug/log4cppD.lib" 
+
+# ____________________________________________________________________________________________________________
+# PyQt5
+
+}
+
+
 cd $root/scripts
 
 ""
