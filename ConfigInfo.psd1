@@ -4,6 +4,7 @@
 @{
 	VersionInfo = @{
 		gnuradio = '3.7.10.1' # Not yet directly used when building gr, but used when determining which dependencies to download
+		volk = '1.3'
 		libpng = '1.6.28'
 		openssl = '1.0.2f'
 		qwt = '5.2.3'

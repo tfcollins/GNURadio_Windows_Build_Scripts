@@ -270,6 +270,7 @@ $pkgconfig_version = $Config.VersionInfo.pkgconfig
 $dp_version = $Config.VersionInfo.dp
 $log4cpp_version = $Config.VersionInfo.log4cpp
 $gqrx_version = $Config.VersionInfo.gqrx
+$volk_version = $Config.VersionInfo.volk 
 
 # setup paths
 if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}
