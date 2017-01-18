@@ -222,10 +222,11 @@ if (!$BuildNumpyWithMKL) {
 }
 
 # get GNURadio 3.8+ dependencies
-if (GetMajorMinor($gnuradio_version) == "3.8") {
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
 	# log4cpp
 	$mm = GetMajorMinor($log4cpp_version)
-	GetPackage https://sourceforge.net/projects/log4cpp/files/log4cpp-1.1.x%20%28new%29/log4cpp-$mm/log4cpp-$log4cpp_version.tar.gz/download log4cpp
+	GetPackage https://downloads.sourceforge.net/projects/log4cpp/files/log4cpp-1.1.x%20%28new%29/log4cpp-$mm/log4cpp-$log4cpp_version.tar.gz log4cpp
 	GetPatch log4cpp_msvc14.7z log4cpp
 
 	# PyQt5

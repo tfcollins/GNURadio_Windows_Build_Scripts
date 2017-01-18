@@ -138,7 +138,8 @@ MakePyQt "ReleaseDLL-AVX2"
 $ErrorActionPreference = "Stop"
 "complete"
 
-if (GetMajorMinor($gnuradio_version) == "3.8") {
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
 	#__________________________________________________________________________________________
 	# PyQt
 	#

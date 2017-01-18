@@ -819,7 +819,8 @@ if (!$BuildNumpyWithMKL -and $hasIFORT) {
 }
 
 # Build GNURadio 3.8+ dependencies only if applicable
-if (GetMajorMinor($gnuradio_version) == "3.8") {
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
 
 # ____________________________________________________________________________________________________________
 # log4cpp
