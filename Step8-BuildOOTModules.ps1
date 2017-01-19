@@ -418,6 +418,9 @@ function BuildDrivers
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 			-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
+			-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+			-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+			-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 			-DGLFW3_PKG_INCLUDE_DIRS="$root\src-stage3\oot_code\glfw\include\" `
 			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$buildconfig" `
 			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `

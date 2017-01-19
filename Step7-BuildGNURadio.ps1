@@ -58,6 +58,9 @@ function BuildGNURadio {
 		-DPYTHON_LIBRARY="$pythonroot\Libs\python27.lib" `
 		-DPYTHON_INCLUDE_DIR="$pythonroot\include"  `
 		-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
+		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `		
 		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
