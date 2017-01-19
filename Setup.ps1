@@ -184,7 +184,7 @@ function getPatch
 		New-Item -path $destination -type directory -force >> $Log
 		cd $destination 
 		Copy-Item $archive $destination -Force >> $Log 
-		git apply $toGet >> $Log 
+		git apply --verbose --whitespace=fix $toGet >> $Log 
 	} else {
 		throw "Unknown file extension on $archiveName$archiveExt"
 	}
