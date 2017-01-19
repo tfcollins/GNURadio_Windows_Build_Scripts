@@ -594,9 +594,9 @@ Function SetupPython
 	# now it will work
 	& $pythonroot/$pythonexe waf configure --nocache --out=build --prefix=build/x64/$configuration  2>&1 >> $log
 	Write-Host -NoNewline "building..."
-	$env:INCLUDE = "$root/src-stage1/dependencies/x64/include;" + $oldInclude 
+	$env:INCLUDE = "$root/src-stage1-dependencies/x64/include;$root/src-stage1-dependencies/x64/include/cairo;" + $oldInclude 
 	$env:LIB = "$root/src-stage1-dependencies/cairo/build/x64/Release;$root/src-stage1-dependencies/cairo/build/x64/ReleaseDLL;$pythonroot/libs;" + $oldlib 
-	$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
+	$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /I$root/src-stage1-dependencies/x64/include/cairo /DCAIRO_WIN32_STATIC_BUILD" 
 	$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
 	& $pythonroot/$pythonexe waf build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include 2>&1 >> $log
 	$env:_LINK_ = ""
