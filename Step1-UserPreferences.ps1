@@ -39,6 +39,15 @@ if ($buildoption -ne "1" -and $buildoption -ne "2" )
     return
 }
 Write-Host ""
+
+if ($script:MyInvocation.MyCommand.Path -eq $null) {
+    $mypath = "."
+} else {
+    $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
+}
+. $mypath\Setup.ps1 -Force
+SetLog "Initial Configuration"
+
 Write-Host "Dependencies checked passed: VS 2015, git, perl, cmake, 7-zip, & doxygen are installed."
 if ($hasIFORT -and $buildoption -eq "1") 
 {
