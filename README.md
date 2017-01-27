@@ -45,8 +45,6 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 <h2>ISSUES</h2>
 
-**- IMPORTANT: Currently the scripts will produce a Release MSI that will not run on non-AVX machines.  This is because of a bug in VOLK that is can be fixed by the patch here: https://github.com/gnuradio/volk/pull/78.  It's a single line of code to change in one file, so if the pull request has not been included when you want to run the script, make the change manually.
-
 1- Ensure your anti-virus is off during installation... even Windows Defender.  PyQt4 may fail to create manifest files as a result.
 
 2- Right-click your powershell window, go to "Properties" and ensure QuickEdit and Insert Mode are NOT checked.  Otherwise when you click on the window, execution may pause without any indication as to why, leading you to believe the build has hung.
