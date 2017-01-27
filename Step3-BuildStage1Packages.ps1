@@ -101,7 +101,7 @@ $ErrorActionPreference = "Continue"
 cd $root\src-stage1-dependencies\libxslt\win32
 function MakeXSLT {
 	$configuration = $args[0]
-	Write-Host -NoNewline "$configuration..."
+	Write-Host -NoNewline "  $configuration..."
 	if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
 	& nmake /NOLOGO clean 2>&1 >> $Log 
 	Write-Host -NoNewline "configuring..."
@@ -452,7 +452,7 @@ Write-Host "building Qt4..."
 Function MakeQt 
 {
 	$type = $args[0]
-	Write-Host -NoNewline "$type...configuring..."
+	Write-Host -NoNewline "  $type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
@@ -526,7 +526,7 @@ Write-Host "building Qt5..."
 Function MakeQt5 
 {
 	$type = $args[0] 
-	Write-Host -NoNewline "$type...configuring..."
+	Write-Host -NoNewline "  $type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
@@ -676,7 +676,7 @@ cd build
 
 Function makeUHD {
 	$configuration = $args[0]
-	Write-Host -NoNewline "Configuring $configuration..."
+	Write-Host -NoNewline "  configuring $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
 
@@ -743,13 +743,13 @@ Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AV
 # TODO build patch for modified CMAKE
 if (!$BuildNumpyWithMKL) {
 	SetLog "openblas"
-	Write-Host "starting openblas..."
+	Write-Host "building openblas..."
 	function MakeOpenBLAS {
 		$ErrorActionPreference = "Continue"
 		$configuration = $args[0]
 		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"; $debug="ON"} else {$cmakebuildtype = "Release"; $debug="OFF"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " -D__64BIT__ /arch:AVX2 "} else {$env:_CL_ = " -D__64BIT__ "}
-		Write-Host -NoNewline "configuring $configuration..."
+		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\openblas-$openblas_version\build\$configuration
 		cmake ..\..\ `
@@ -785,13 +785,13 @@ if (!$BuildNumpyWithMKL) {
 # There is a bug in 3.6.0 where a library is misspelled and will give an error (zerbla vs xerbla in zgetrf2.f @ line 147, it is fixed in the SVN
 if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	SetLog "lapack"
-	Write-Host -NoNewline "starting lapack..."
+	Write-Host -NoNewline "building lapack..."
 	function MakeLapack {
 		$ErrorActionPreference = "Continue"
 		$configuration = $args[0]
 		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"} else {$cmakebuildtype = "Release"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
-		Write-Host -NoNewline "configuring $configuration..."
+		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\lapack\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\lapack\build\$configuration
 		cmake ..\..\ `
