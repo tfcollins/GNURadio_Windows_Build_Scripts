@@ -324,12 +324,19 @@ if (!(Test-Path variable:global:oldpath))
 	}
 	popd
 	write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
-	# set Intel Fortran environment (if exists)
-	if (Test-Path env:IFORT_COMPILER16) {
-		& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
+	# set Intel Fortran environment (if exists)... will detect 2016/2017 compilers only 
+	if (Test-Path env:IFORT_COMPILER17) {
+		& $env:IFORT_COMPILER17\bin\ifortvars.bat -arch intel64 -platform vs2015 
+		$Global:MY_IFORT = $env:IFORT_COMPILER17
 		$Global:hasIFORT = $true
 	} else {
-		$Global:hasIFORT = $false
+		if (Test-Path env:IFORT_COMPILER16) {
+			& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
+			$Global:MY_IFORT = $env:IFORT_COMPILER16
+			$Global:hasIFORT = $true
+		} else {
+			$Global:hasIFORT = $false
+		}
 	}
 	# Now set a persistent variable holding the original path. vcvarsall will continue to add to the path until it explodes
 	Set-Variable -Name oldpath -Value "$env:Path" -Description "original %Path%" -Option readonly -Scope "Global"

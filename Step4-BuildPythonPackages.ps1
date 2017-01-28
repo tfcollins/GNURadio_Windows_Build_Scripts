@@ -371,8 +371,8 @@ Function SetupPython
 		Write-Host -NoNewline "configuring scipy..."
 		$ErrorActionPreference = "Continue"
 		cd $root\src-stage1-dependencies\scipy
-		$env:Path = "${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\bin\intel64;" + $oldPath 
-		$env:LIB = "${env:IFORT_COMPILER16}compiler\lib\intel64_win;" + $oldLib
+		$env:Path = "${MY_IFORT}bin\intel64;" + $oldPath 
+		$env:LIB = "${MY_IFORT}compiler\lib\intel64_win;" + $oldLib
 		# $static indicates if the MKL/OpenBLAS libraries will be linked statically into numpy/scipy or not.  numpy/scipy themselves will be built as DLLs/pyd's always
 		# openblas lapack is always static$static = $true
 		$staticconfig = ($configuration -replace "DLL", "") 
@@ -383,8 +383,8 @@ Function SetupPython
 			if ($static -eq $false) {
 				"[mkl]" | Out-File -filepath site.cfg -Encoding ascii
 				"search_static_first=false" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"include_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"library_dirs = $env:IFORT_COMPILER16\compiler\lib\intel64_win;$env:IFORT_COMPILER16\mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
+				"include_dirs = ${MY_IFORT}mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+				"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;${MY_IFORT}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_rt" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_rt, mkl_lapack95_lp64,mkl_blas95_lp64" | Out-File -filepath site.cfg -Encoding ascii -Append
 			if ($configuration -match "AVX2") {
@@ -397,8 +397,8 @@ Function SetupPython
 			} else {
 				"[mkl]" | Out-File -filepath site.cfg -Encoding ascii
 				"search_static_first=true" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"include_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"library_dirs = ${env:IFORT_COMPILER16}compiler\lib\intel64_win;${env:IFORT_COMPILER16}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
+				"include_dirs = ${MY_IFORT}mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+				"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;${MY_IFORT}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
 				if ($configuration -match "AVX2") {
@@ -414,7 +414,7 @@ Function SetupPython
 			Write-Host -NoNewline "OpenBLAS..."
 			"[default]" | Out-File -filepath site.cfg -Encoding ascii
 			"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
-			"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;$root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"include_dirs = $root/src-stage1-dependencies\OpenBLAS\lapack-netlib\CBLAS\include" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"lapack_libs = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
 			if ($configuration -match "AVX2") {
