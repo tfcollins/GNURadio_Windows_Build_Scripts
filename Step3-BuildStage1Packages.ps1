@@ -91,21 +91,21 @@ $ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
-# libxslt 1.1.28 w/ CVE-2015-7995 patch
+# libxslt 1.1.29
 #
 # uses libxml, zlib, and iconv
 # TODO PATCH REQUIRED, has option NOWIN98 l
 SetLog "libxslt"
 Write-Host "building libxslt..."
 $ErrorActionPreference = "Continue"
-cd $root\src-stage1-dependencies\libxslt\win32
+cd $root\src-stage1-dependencies\libxslt-$libxslt_version\win32
 function MakeXSLT {
 	$configuration = $args[0]
 	Write-Host -NoNewline "  $configuration..."
 	if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
 	& nmake /NOLOGO clean 2>&1 >> $Log 
 	Write-Host -NoNewline "configuring..."
-	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
+	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
 	Write-Host -NoNewline "building..." 
 	& nmake /NOLOGO 2>&1 >> $Log 
 	Write-Host -NoNewline "installing..."
@@ -662,7 +662,7 @@ Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
 	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
 
 # ____________________________________________________________________________________________________________
-# UHD 3.9.2
+# UHD 
 #
 # requires libsub, boost, python, mako
 # TODO copy over UHD.pdb in Release versions (cmake doesn't do it)

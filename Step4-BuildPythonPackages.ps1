@@ -456,7 +456,7 @@ Function SetupPython
 		$env:_LINK_=""
 		$env:__INTEL_POST_FFLAGS = ""
 		$ErrorActionPreference = "Stop"
-		Validate "dist/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy/sparse/_sparsetools.pyd"
+		Validate "dist/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/sparse/_sparsetools.pyd"
 	} else {
 		# Can't compile scipy without a fortran compiler, and gfortran won't work here
 		# because we can't mix MSVC and gfortran libraries
@@ -764,10 +764,10 @@ Function SetupPython
 	cd $root\src-stage1-dependencies\lxml-lxml-$lxml_version
 	New-Item -ItemType Directory -Force $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig 2>&1 >> $Log
     if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
-	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include "
-	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
-	$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
-	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
+	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include "
+	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
 	cp -Force $root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib/libxml2_a.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/libxml2_a.lib
 	cp -Force $root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig/libiconv.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/iconv_a.lib
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
