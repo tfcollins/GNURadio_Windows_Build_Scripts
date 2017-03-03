@@ -61,8 +61,8 @@ function BuildGNURadio {
 		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
 		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
 		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
-		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
-		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_PREFIX_PATH="$root/build/$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
 		-DCMAKE_CXX_FLAGS="$archflag" `
 		-DCMAKE_C_FLAGS="$archflag" `
@@ -97,7 +97,7 @@ function BuildGNURadio {
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
 	$env:_LINK_ = " /DEBUG /opt:ref,icf"
 	$env:_CL_ = " /W1 "
-	Write-Host -NoNewline "building..."
+	Write-Host -NoNewline "building..." 
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
