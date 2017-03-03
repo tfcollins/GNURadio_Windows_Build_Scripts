@@ -1,4 +1,4 @@
-GNURadio Windows Build Scripts v1.1.1
+GNURadio Windows Build Scripts v1.2
 =====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
@@ -9,7 +9,7 @@ The finished MSI includes:
 
 Device Support: UHD, RTL-SDR, hackrf, airspy, BladeRF, osmoSDR, FCD
 
-GNURadio modules: 3.7.9.2 with all but gr-comedi modules built and included
+GNURadio modules: 3.7.11 with all but gr-comedi modules built and included
 
 OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool
 
