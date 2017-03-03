@@ -131,7 +131,7 @@
                   Name="USRP Spectrum Scanner (FFT)"
                   Description="Runs a UHD Spectrum Scanner"
                   Target="[BINARYFILES]run_gr.bat"
-                  Arguments="uhd_fft.py"
+                  Arguments="uhd_fft.py -f 100000000"
                   WorkingDirectory="BINARYFILES"
                   Icon="gr_icon.ico"
                   Directory="ApplicationUHDSubFolder"/>
