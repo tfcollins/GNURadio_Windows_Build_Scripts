@@ -190,7 +190,8 @@ GetPatch wxpython_vs2015_patch.7z wxpython
 # cheetah 2.4.4
 GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$cheetah_version.tar.gz
 
-# libusb 1.0.20
+# libusb 1.0.21
+# patch enables AVX2 optimizations
 GetPackage https://github.com/libusb/libusb/releases/download/v$libusb_version/libusb-$libusb_version.tar.bz2 libusb
 GetPatch libusb_VS2015.7z libusb
 

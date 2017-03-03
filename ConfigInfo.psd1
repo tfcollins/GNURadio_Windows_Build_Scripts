@@ -32,15 +32,15 @@
 		pkgconfig = '1.1.0'
 		log4cpp = '1.1.1'
 		gqrx = '2.6'
+		libusb = '1.0.21'   
 		fftw = '3.3.5'      # Changing to 3.4+ will require other code changes
-		libusb = '1.0.20'   # Changing to 1.1+ will require other code changes
 		wxpython = '3.0.2.0'# Changing to 3.1+ will require other code changes
 		pygobject = '2.28.6'# Changing to 2.29+ will require other code changes (but don't because 2.29 doesn't have the same setup.py)
 		pygtk = '2.24.0'    # Changing to 2.25+ will require other code changes
 		pygtk_git = '2_24_0_WINDOWS'    # Changing to 2.25+ will require other code changes
 		qt = '4.8.7'        # This isn't actually used.  4.8.7 is hardcoded but 4.8.7 is the last 4.x version to the change to Qt5 will change much more
 		python = '2.7.10'   # This isn't actually used.  2.7.10 is hardcoded 
-		dp = '1.1'        # dependency pack version
+		dp = '1.2'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)
 		# zlib (1.2.8 but should rarely change)

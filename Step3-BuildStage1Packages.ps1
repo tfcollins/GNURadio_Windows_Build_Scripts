@@ -22,6 +22,24 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 cd src-stage1-dependencies
 
 # ____________________________________________________________________________________________________________
+# libusb
+#
+
+SetLog "libusb"
+Write-Host -NoNewline "building libusb..."
+cd $root\src-stage1-dependencies\libusb\msvc
+Write-Host -NoNewline "Debug..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+Write-Host -NoNewline "Release..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
+Write-Host -NoNewline "Release-AVX2..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
+	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
+	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
+
+
+# ____________________________________________________________________________________________________________
 # libpng 
 # uses zlib but incorporates the source directly so doesn't need to be built after zlib
 SetLog "libpng"
@@ -644,27 +662,9 @@ $ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
-# libusb
-#
-# 
-#
-SetLog "libusb"
-Write-Host -NoNewline "building libusb..."
-cd $root\src-stage1-dependencies\libusb\msvc
-Write-Host -NoNewline "Debug..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-Write-Host -NoNewline "Release..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Write-Host -NoNewline "Release-AVX2..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
-	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
-	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
-
-# ____________________________________________________________________________________________________________
 # UHD 
 #
-# requires libsub, boost, python, mako
+# requires libusb, boost, python, mako
 # TODO copy over UHD.pdb in Release versions (cmake doesn't do it)
 
 SetLog "UHD"
