@@ -1,4 +1,4 @@
-GNURadio Windows Build Scripts v1.1.2
+GNURadio Windows Build Scripts v1.2
 =====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
@@ -9,7 +9,7 @@ The finished MSI includes:
 
 Device Support: UHD, RTL-SDR, hackrf, airspy, BladeRF, osmoSDR, FCD
 
-GNURadio modules: 3.7.10.1 with all but gr-comedi modules built and included
+GNURadio modules: 3.7.11 with all but gr-comedi modules built and included
 
 OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool
 
@@ -44,8 +44,6 @@ Build logs can be found in the $root/logs directory.  The scripts will validate 
 Once complete, msi files can be found in the [root]/src-stage4-installer/dist subdirectories.  The build can be tested after Step 7 by running run_grc.bat in the src-stage3/staged_install/[config]/bin subdirectory to 
 
 <h2>ISSUES</h2>
-
-**- IMPORTANT: Currently the scripts will produce a Release MSI that will not run on non-AVX machines.  This is because of a bug in VOLK that is can be fixed by the patch here: https://github.com/gnuradio/volk/pull/78.  It's a single line of code to change in one file, so if the pull request has not been included when you want to run the script, make the change manually.
 
 1- Ensure your anti-virus is off during installation... even Windows Defender.  PyQt4 may fail to create manifest files as a result.
 

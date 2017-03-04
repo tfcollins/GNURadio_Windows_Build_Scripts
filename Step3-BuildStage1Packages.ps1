@@ -22,6 +22,24 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 cd src-stage1-dependencies
 
 # ____________________________________________________________________________________________________________
+# libusb
+#
+
+SetLog "libusb"
+Write-Host -NoNewline "building libusb..."
+cd $root\src-stage1-dependencies\libusb\msvc
+Write-Host -NoNewline "Debug..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+Write-Host -NoNewline "Release..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
+Write-Host -NoNewline "Release-AVX2..."
+msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
+	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
+	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
+
+
+# ____________________________________________________________________________________________________________
 # libpng 
 # uses zlib but incorporates the source directly so doesn't need to be built after zlib
 SetLog "libpng"
@@ -91,21 +109,21 @@ $ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
-# libxslt 1.1.28 w/ CVE-2015-7995 patch
+# libxslt 1.1.29
 #
 # uses libxml, zlib, and iconv
 # TODO PATCH REQUIRED, has option NOWIN98 l
 SetLog "libxslt"
 Write-Host "building libxslt..."
 $ErrorActionPreference = "Continue"
-cd $root\src-stage1-dependencies\libxslt\win32
+cd $root\src-stage1-dependencies\libxslt-$libxslt_version\win32
 function MakeXSLT {
 	$configuration = $args[0]
-	Write-Host -NoNewline "$configuration..."
+	Write-Host -NoNewline "  $configuration..."
 	if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
 	& nmake /NOLOGO clean 2>&1 >> $Log 
 	Write-Host -NoNewline "configuring..."
-	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
+	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
 	Write-Host -NoNewline "building..." 
 	& nmake /NOLOGO 2>&1 >> $Log 
 	Write-Host -NoNewline "installing..."
@@ -418,7 +436,7 @@ Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib
 SetLog "libzmq"
 Write-Host -NoNewline "building libzmq..."
 cd $root/src-stage1-dependencies/libzmq/builds/msvc
-& .\configure.bat 2>&1 >> $log
+# & .\configure.bat 2>&1 >> $log
 cd build
 & .\buildbase.bat ..\vs2015\libzmq.sln 14 2>&1 >> $Log
 cd ../../../bin/x64
@@ -452,7 +470,7 @@ Write-Host "building Qt4..."
 Function MakeQt 
 {
 	$type = $args[0]
-	Write-Host -NoNewline "$type...configuring..."
+	Write-Host -NoNewline "  $type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
@@ -526,7 +544,7 @@ Write-Host "building Qt5..."
 Function MakeQt5 
 {
 	$type = $args[0] 
-	Write-Host -NoNewline "$type...configuring..."
+	Write-Host -NoNewline "  $type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
@@ -644,27 +662,9 @@ $ErrorActionPreference = "Stop"
 "complete"
 
 # ____________________________________________________________________________________________________________
-# libusb
+# UHD 
 #
-# 
-#
-SetLog "libusb"
-Write-Host -NoNewline "building libusb..."
-cd $root\src-stage1-dependencies\libusb\msvc
-Write-Host -NoNewline "Debug..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-Write-Host -NoNewline "Release..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Write-Host -NoNewline "Release-AVX2..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
-	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
-	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
-
-# ____________________________________________________________________________________________________________
-# UHD 3.9.2
-#
-# requires libsub, boost, python, mako
+# requires libusb, boost, python, mako
 # TODO copy over UHD.pdb in Release versions (cmake doesn't do it)
 
 SetLog "UHD"
@@ -676,7 +676,7 @@ cd build
 
 Function makeUHD {
 	$configuration = $args[0]
-	Write-Host -NoNewline "Configuring $configuration..."
+	Write-Host -NoNewline "  configuring $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
 
@@ -743,13 +743,13 @@ Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AV
 # TODO build patch for modified CMAKE
 if (!$BuildNumpyWithMKL) {
 	SetLog "openblas"
-	Write-Host "starting openblas..."
+	Write-Host "building openblas..."
 	function MakeOpenBLAS {
 		$ErrorActionPreference = "Continue"
 		$configuration = $args[0]
 		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"; $debug="ON"} else {$cmakebuildtype = "Release"; $debug="OFF"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " -D__64BIT__ /arch:AVX2 "} else {$env:_CL_ = " -D__64BIT__ "}
-		Write-Host -NoNewline "configuring $configuration..."
+		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\openblas-$openblas_version\build\$configuration
 		cmake ..\..\ `
@@ -785,13 +785,13 @@ if (!$BuildNumpyWithMKL) {
 # There is a bug in 3.6.0 where a library is misspelled and will give an error (zerbla vs xerbla in zgetrf2.f @ line 147, it is fixed in the SVN
 if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	SetLog "lapack"
-	Write-Host -NoNewline "starting lapack..."
+	Write-Host -NoNewline "building lapack..."
 	function MakeLapack {
 		$ErrorActionPreference = "Continue"
 		$configuration = $args[0]
 		if ($configuration -match "Debug") {$cmakebuildtype = "Debug"} else {$cmakebuildtype = "Release"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
-		Write-Host -NoNewline "configuring $configuration..."
+		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\lapack\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\lapack\build\$configuration
 		cmake ..\..\ `
@@ -817,6 +817,28 @@ if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	MakeLapack "Release"
 	MakeLapack "Release-AVX2"
 }
+
+# Build GNURadio 3.8+ dependencies only if applicable
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
+
+# ____________________________________________________________________________________________________________
+# log4cpp
+# log utility library used in GNURadio 3.8+
+
+	SetLog "log4cpp"
+	Write-Host -NoNewline "Building log4cpp..."
+	cd $root\src-stage1-dependencies\log4cpp\msvc14
+	msbuild msvc14.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild msvc14.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	Validate "x64/Release/log4cpp.dll" "x64/Release/log4cpp.pdb"  "x64/Release/log4cppLIB.lib" `
+		"x64/Debug/log4cpp.dll" "x64/Debug/log4cpp.pdb"  "x64/Debug/log4cppD.lib" 
+
+# ____________________________________________________________________________________________________________
+# PyQt5
+
+}
+
 
 cd $root/scripts
 

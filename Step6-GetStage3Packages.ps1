@@ -139,7 +139,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
     $ErrorActionPreference = "Continue"
     # most packages we just get the most recent commit when coming from git
     # however, since this is the one most users might want to modify, we'll get more.
-	git clone --depth=100 --recursive https://github.com/gnieboer/gnuradio.git 2>&1 >> $log 
+	git clone --depth=100 --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log 
 	cd gnuradio
 	git pull --recurse-submodules=on
 	git submodule update
@@ -155,7 +155,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
     do {
         Try 
 		{
-			wget https://github.com/gnieboer/volk/archive/v1.2.2.zip -OutFile volk.zip
+			wget https://github.com/gnieboer/volk/archive/v$volk_version.zip -OutFile volk.zip
             $count = 999
 		}
 		Catch [System.IO.IOException]
@@ -172,13 +172,14 @@ if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 	$destination = "$root/$destdir"
 	[io.compression.zipfile]::ExtractToDirectory("$root/src-stage3/src/gnuradio/volk.zip", "$root/src-stage3/src/gnuradio") >> $Log
 	Remove-Item volk -Force -Recurse 
-	Rename-Item volk-1.2.2 volk -Force
+	Rename-Item volk-$volk_version volk -Force
 	Remove-Item volk.zip -Force
 	if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 		Write-Host -BackgroundColor Black -ForegroundColor Red "FATAL ERROR: Volk was not downloaded properly, GNURadio cannot build"
 		Exit 
 	}
 }
+
 $ErrorActionPreference = "Stop"
 
 "complete"

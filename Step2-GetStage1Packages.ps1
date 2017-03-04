@@ -24,7 +24,7 @@ getPackage https://github.com/zeromq/cppzmq.git
 getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
 
 # libpng
-getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz libpng
+getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-$png_version.tar.xz libpng
 getPatch libpng-1.6.21-vs2015.7z libpng\projects\vstudio-vs2015
 
 # gettext
@@ -151,7 +151,7 @@ GetPackage https://github.com/PyQwt/PyQwt5/archive/master.zip
 GetPatch pyqwt5_patch.7z PyQwt5-master/configure
 
 # Cython
-GetPackage http://cython.org/release/Cython-$cython_version.zip
+GetPackage https://github.com/cython/cython/archive/$cython_version.zip
 
 # numpy
 GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.tar.gz
@@ -170,7 +170,7 @@ $mm = GetMajorMinor($pygobject_version)
 GetPackage http://ftp.gnome.org/pub/GNOME/sources/pygobject/$mm/pygobject-$pygobject_version.tar.xz
 GetPatch gtk-pkgconfig.7z x64/lib
 GetPatch runtests-windows.7z pygobject-$pygobject_version\tests
-GetPatch pygobject_gio-types.7z gio
+GetPatch pygobject_gio-types.7z pygobject-$pygobject_version\gio
 
 # PyGTK
 GetPackage https://git.gnome.org/browse/pygtk/snapshot/PYGTK_$pygtk_gitversion.tar.gz pygtk-$pygtk_version
@@ -190,7 +190,8 @@ GetPatch wxpython_vs2015_patch.7z wxpython
 # cheetah 2.4.4
 GetPackage https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$cheetah_version.tar.gz
 
-# libusb 1.0.20
+# libusb 1.0.21
+# patch enables AVX2 optimizations
 GetPackage https://github.com/libusb/libusb/releases/download/v$libusb_version/libusb-$libusb_version.tar.bz2 libusb
 GetPatch libusb_VS2015.7z libusb
 
@@ -198,9 +199,7 @@ GetPatch libusb_VS2015.7z libusb
 GetPackage https://github.com/EttusResearch/uhd/archive/release_$UHD_Version.tar.gz uhd
 
 # libxslt
-# the version of libxslt with the patches we need is not yet released so need to go off the raw git.
-# TODO could specify a particular commit but that will require a change to GetPackage
-GetPackage https://github.com/GNOME/libxslt.git
+GetPackage https://github.com/GNOME/libxslt/archive/v$libxslt_version.tar.gz libxslt 
 
 # lxml
 GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
@@ -219,6 +218,18 @@ if (!$BuildNumpyWithMKL) {
 if (!$BuildNumpyWithMKL) {
 	GetPackage http://www.netlib.org/lapack/lapack-$lapack_version.tgz lapack
 	GetPatch lapack_$lapack_version.7z lapack/SRC
+}
+
+# get GNURadio 3.8+ dependencies
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
+	# log4cpp
+	$mm = GetMajorMinor($log4cpp_version)
+	GetPackage https://downloads.sourceforge.net/projects/log4cpp/files/log4cpp-1.1.x%20%28new%29/log4cpp-$mm/log4cpp-$log4cpp_version.tar.gz log4cpp
+	GetPatch log4cpp_msvc14.7z log4cpp
+
+	# PyQt5
+	GetPackage http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-$PyQt5_version/PyQt5_gpl-$PyQt5_version.tar.gz PyQt5
 }
 
 # cleanup

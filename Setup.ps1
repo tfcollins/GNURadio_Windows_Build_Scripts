@@ -133,9 +133,14 @@ function getPatch
 		[string]$whereToPlace = "",
 
 		[Parameter(Mandatory=$False)]
-		[switch]$Stage3
+		[switch]$Stage3,
+		
+		[Parameter(Mandatory=$False)]
+		[switch]$gnuradio 
 	)
-	if ($Stage3) {$IntDir = "src-stage3/oot_code"} else {$IntDir = "src-stage1-dependencies"}
+	if ($Stage3) {$IntDir = "src-stage3/oot_code"} 
+	elseif ($gnuradio) {$IntDir = "src-stage3/src"}
+	else {$IntDir = "src-stage1-dependencies"}
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
 	$isTar = [io.path]::GetExtension($archiveName)
@@ -175,6 +180,11 @@ function getPatch
 		sz x -y $archive 2>&1 >> $Log
 		sz x -aoa -ttar "$archiveName.tar" 2>&1 >> $Log
 		del "$archiveName.tar"
+	} elseif ($archiveExt -eq ".diff") {
+		New-Item -path $destination -type directory -force >> $Log
+		cd $destination 
+		Copy-Item $archive $destination -Force >> $Log 
+		git apply --verbose --whitespace=fix $toGet >> $Log 
 	} else {
 		throw "Unknown file extension on $archiveName$archiveExt"
 	}
@@ -237,6 +247,8 @@ function Validate
 #load configuration variables
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
+$gnuradio_version = $Config.VersionInfo.gnuradio
+$png_version = $Config.VersionInfo.libpng
 $sdl_version = $Config.VersionInfo.SDL
 $cppunit_version = $Config.VersionInfo.cppunit
 $openssl_version = $Config.VersionInfo.openssl
@@ -266,10 +278,13 @@ $pyzmq_version = $Config.VersionInfo.pyzmq
 $lxml_version = $Config.VersionInfo.lxml
 $pkgconfig_version = $Config.VersionInfo.pkgconfig 
 $dp_version = $Config.VersionInfo.dp
+$log4cpp_version = $Config.VersionInfo.log4cpp
 $gqrx_version = $Config.VersionInfo.gqrx
+$volk_version = $Config.VersionInfo.volk 
+$libxslt_version = $Config.VersionInfo.libxslt
 
 # setup paths
-if (!$Global:root) {$Global:root = "C:/gr-build"}
+if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}
 
 # ensure on a 64-bit machine
 if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"} 
@@ -309,12 +324,19 @@ if (!(Test-Path variable:global:oldpath))
 	}
 	popd
 	write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
-	# set Intel Fortran environment (if exists)
-	if (Test-Path env:IFORT_COMPILER16) {
-		& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
+	# set Intel Fortran environment (if exists)... will detect 2016/2017 compilers only 
+	if (Test-Path env:IFORT_COMPILER17) {
+		& $env:IFORT_COMPILER17\bin\ifortvars.bat -arch intel64 -platform vs2015 
+		$Global:MY_IFORT = $env:IFORT_COMPILER17
 		$Global:hasIFORT = $true
 	} else {
-		$Global:hasIFORT = $false
+		if (Test-Path env:IFORT_COMPILER16) {
+			& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
+			$Global:MY_IFORT = $env:IFORT_COMPILER16
+			$Global:hasIFORT = $true
+		} else {
+			$Global:hasIFORT = $false
+		}
 	}
 	# Now set a persistent variable holding the original path. vcvarsall will continue to add to the path until it explodes
 	Set-Variable -Name oldpath -Value "$env:Path" -Description "original %Path%" -Option readonly -Scope "Global"

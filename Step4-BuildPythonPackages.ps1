@@ -138,6 +138,58 @@ MakePyQt "ReleaseDLL-AVX2"
 $ErrorActionPreference = "Stop"
 "complete"
 
+$mm = GetMajorMinor($gnuradio_version)
+if ($mm -eq "3.8") {
+	#__________________________________________________________________________________________
+	# PyQt
+	#
+	# building libraries separate from the actual install into Python
+	#
+	$ErrorActionPreference = "Continue"
+	SetLog "PyQt5"
+	cd $root\src-stage1-dependencies\PyQt5
+	$env:QMAKESPEC = "win32-msvc2015"
+	Write-Host -NoNewline "building PyQT5..."
+
+	function MakePyQt5
+	{
+		$type = $args[0]
+		Write-Host -NoNewline "$type"
+		if ($type -match "Debug") {$thispython = $pythondebugexe} else {$thispython = $pythonexe}
+		$flags = if ($type -match "Debug") {"-u"} else {""}
+		$flags += if ($type -match "Dll") {""} else {" -k"}
+		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 /MP " + $oldcl} else {$env:CL = "/wd4577 /MP " + $oldCL}
+		$env:_LINK_= ""
+		$env:Path = "$root\src-stage1-dependencies\Qt5\build\$type\bin;" + $oldpath
+
+		& $pythonroot\$thispython configure.py $flags --destdir "build\x64\$type" --confirm-license --verbose --no-designer-plugin --enable QtOpenGL --enable QtGui --enable QtSvg -b build/x64/$type/bin -d build/x64/$type/package -p build/x64/$type/plugins --sipdir build/x64/$type/sip 2>&1 >> $log
+
+		# BUG FIX
+		"all: ;" > .\pylupdate\Makefile
+		"install : ;" >> .\pylupdate\Makefile
+		"clean : ;" >> .\pylupdate\Makefile
+
+		nmake 2>&1 >> $log
+		nmake install 2>&1 >> $log
+		nmake clean 2>&1 >> $log
+		$env:CL = $oldcl
+		$env:_LINK_ = ""
+		Write-Host -NoNewline "-done..."
+	}
+
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	MakePyQt5 "DebugDLL"
+	MakePyQt5 "Debug"
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	MakePyQt5 "Release"
+	MakePyQt5 "ReleaseDLL"
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	MakePyQt5 "Release-AVX2"
+	MakePyQt5 "ReleaseDLL-AVX2"
+	$ErrorActionPreference = "Stop"
+	"complete"
+}
+
 #__________________________________________________________________________________________
 # setup python
 
@@ -319,8 +371,8 @@ Function SetupPython
 		Write-Host -NoNewline "configuring scipy..."
 		$ErrorActionPreference = "Continue"
 		cd $root\src-stage1-dependencies\scipy
-		$env:Path = "${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\bin\intel64;" + $oldPath 
-		$env:LIB = "${env:IFORT_COMPILER16}compiler\lib\intel64_win;" + $oldLib
+		$env:Path = "${MY_IFORT}bin\intel64;" + $oldPath 
+		$env:LIB = "${MY_IFORT}compiler\lib\intel64_win;" + $oldLib
 		# $static indicates if the MKL/OpenBLAS libraries will be linked statically into numpy/scipy or not.  numpy/scipy themselves will be built as DLLs/pyd's always
 		# openblas lapack is always static$static = $true
 		$staticconfig = ($configuration -replace "DLL", "") 
@@ -331,8 +383,8 @@ Function SetupPython
 			if ($static -eq $false) {
 				"[mkl]" | Out-File -filepath site.cfg -Encoding ascii
 				"search_static_first=false" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"include_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"library_dirs = $env:IFORT_COMPILER16\compiler\lib\intel64_win;$env:IFORT_COMPILER16\mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
+				"include_dirs = ${MY_IFORT}mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+				"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;${MY_IFORT}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_rt" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_rt, mkl_lapack95_lp64,mkl_blas95_lp64" | Out-File -filepath site.cfg -Encoding ascii -Append
 			if ($configuration -match "AVX2") {
@@ -345,8 +397,8 @@ Function SetupPython
 			} else {
 				"[mkl]" | Out-File -filepath site.cfg -Encoding ascii
 				"search_static_first=true" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"include_dirs = ${env:ProgramFiles(x86)}\IntelSWTools\compilers_and_libraries\windows\mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
-				"library_dirs = ${env:IFORT_COMPILER16}compiler\lib\intel64_win;${env:IFORT_COMPILER16}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
+				"include_dirs = ${MY_IFORT}mkl\include" | Out-File -filepath site.cfg -Encoding ascii -Append
+				"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;${MY_IFORT}mkl\lib\intel64_win" | Out-File -filepath site.cfg -Encoding ascii -Append 
 				"mkl_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
 				"lapack_libs = mkl_lapack95_lp64,mkl_blas95_lp64,mkl_intel_lp64,mkl_sequential,mkl_core" | Out-File -filepath site.cfg -Encoding ascii -Append
 				if ($configuration -match "AVX2") {
@@ -362,7 +414,7 @@ Function SetupPython
 			Write-Host -NoNewline "OpenBLAS..."
 			"[default]" | Out-File -filepath site.cfg -Encoding ascii
 			"libraries = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
-			"library_dirs = $root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
+			"library_dirs = ${MY_IFORT}compiler\lib\intel64_win;$root/src-stage1-dependencies/openblas/build/$staticconfig/lib;$root/src-stage1-dependencies/lapack/dist/$staticconfig/lib" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"include_dirs = $root/src-stage1-dependencies\OpenBLAS\lapack-netlib\CBLAS\include" | Out-File -filepath site.cfg -Encoding ascii -Append
 			"lapack_libs = libopenblas$staticlib, lapack" | Out-File -filepath site.cfg -Encoding ascii -Append
 			if ($configuration -match "AVX2") {
@@ -392,7 +444,7 @@ Function SetupPython
 		& $pythonroot/$pythonexe setup.py clean  2>&1 >> $log
 		& $pythonroot/$pythonexe setup.py config --fcompiler=intelvem --compiler=msvc  2>&1 >> $log
 		Write-Host -NoNewline "building..."
-		$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib"" /NODEFAULTLIB:""LIBMMT.lib"" /DEFAULTLIB:""LIBMMD.lib"" "
+		$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib"" /NODEFAULTLIB:""LIBMMT.lib"" /DEFAULTLIB:""libifport.lib"" /DEFAULTLIB:""libipgo.lib"" /DEFAULTLIB:""LIBIRC.lib"" /DEFAULTLIB:""LIBMMDS.lib"" "
 		# setup.py doesn't handle debug flag correctly for windows ifort, it adds a -g flag which is ambiguous so we'll do our best to emulate it manually
 		if ($configuration -match "Debug") {$env:__INTEL_POST_FFLAGS = " /debug:all "} else {$env:__INTEL_POST_FFLAGS = ""}
 		& $pythonroot/$pythonexe setup.py build --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
@@ -404,7 +456,7 @@ Function SetupPython
 		$env:_LINK_=""
 		$env:__INTEL_POST_FFLAGS = ""
 		$ErrorActionPreference = "Stop"
-		Validate "dist/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy/sparse/_sparsetools.pyd"
+		Validate "dist/scipy-$scipy_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/linalg/_flapack.pyd"  "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/linalg/cython_lapack.pyd"  "$pythonroot/lib/site-packages/scipy-$scipy_version-py2.7-win-amd64.egg/scipy/sparse/_sparsetools.pyd"
 	} else {
 		# Can't compile scipy without a fortran compiler, and gfortran won't work here
 		# because we can't mix MSVC and gfortran libraries
@@ -542,9 +594,9 @@ Function SetupPython
 	# now it will work
 	& $pythonroot/$pythonexe waf configure --nocache --out=build --prefix=build/x64/$configuration  2>&1 >> $log
 	Write-Host -NoNewline "building..."
-	$env:INCLUDE = "$root/src-stage1/dependencies/x64/include;" + $oldInclude 
+	$env:INCLUDE = "$root/src-stage1-dependencies/x64/include;$root/src-stage1-dependencies/x64/include/cairo;" + $oldInclude 
 	$env:LIB = "$root/src-stage1-dependencies/cairo/build/x64/Release;$root/src-stage1-dependencies/cairo/build/x64/ReleaseDLL;$pythonroot/libs;" + $oldlib 
-	$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /DCAIRO_WIN32_STATIC_BUILD" 
+	$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /I$root/src-stage1-dependencies/x64/include/cairo /DCAIRO_WIN32_STATIC_BUILD" 
 	$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
 	& $pythonroot/$pythonexe waf build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include 2>&1 >> $log
 	$env:_LINK_ = ""
@@ -712,10 +764,10 @@ Function SetupPython
 	cd $root\src-stage1-dependencies\lxml-lxml-$lxml_version
 	New-Item -ItemType Directory -Force $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig 2>&1 >> $Log
     if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
-	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include "
-	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
-	$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
-	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
+	$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include "
+	$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
+	$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
 	cp -Force $root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib/libxml2_a.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/libxml2_a.lib
 	cp -Force $root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig/libiconv.lib $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig/iconv_a.lib
 	& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log

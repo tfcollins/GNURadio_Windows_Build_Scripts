@@ -3,7 +3,7 @@
   <Product Id="CAD51E8A-3E3C-48B2-ABC3-DCB0D9F643C8"
            Name="GNURadio-3.7"
            Language="1033"
-           Version="1.1.2.0"
+           Version="1.2.0"
            Manufacturer="GCN Development"
            UpgradeCode="DAAD3429-A564-45FE-9A06-E1FE30A7E907">
     <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" />
@@ -131,7 +131,7 @@
                   Name="USRP Spectrum Scanner (FFT)"
                   Description="Runs a UHD Spectrum Scanner"
                   Target="[BINARYFILES]run_gr.bat"
-                  Arguments="uhd_fft.py"
+                  Arguments="uhd_fft.py -f 100000000"
                   WorkingDirectory="BINARYFILES"
                   Icon="gr_icon.ico"
                   Directory="ApplicationUHDSubFolder"/>

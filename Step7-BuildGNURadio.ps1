@@ -58,8 +58,11 @@ function BuildGNURadio {
 		-DPYTHON_LIBRARY="$pythonroot\Libs\python27.lib" `
 		-DPYTHON_INCLUDE_DIR="$pythonroot\include"  `
 		-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
-		-DSWIG_EXECUTABLE="$root\bin\swig.exe" `
-		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_PREFIX_PATH="$root/build/$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
 		-DCMAKE_CXX_FLAGS="$archflag" `
 		-DCMAKE_C_FLAGS="$archflag" `
@@ -94,7 +97,7 @@ function BuildGNURadio {
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
 	$env:_LINK_ = " /DEBUG /opt:ref,icf"
 	$env:_CL_ = " /W1 "
-	Write-Host -NoNewline "building..."
+	Write-Host -NoNewline "building..." 
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
@@ -105,16 +108,18 @@ function BuildGNURadio {
 	"complete"
 
 	Write-Host -NoNewline "moving python..."
-	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration
+	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration  2>&1 >> $Log
 	if ((Test-Path $root/src-stage3/staged_install/$configuration/gr-python27) -and (($pythonroot -match "avx2") -or ($pythonroot -match "debug"))) 
 	{
 		del -Recurse -Force $root/src-stage3/staged_install/$configuration/gr-python27
 	}
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
-	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin
-	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin
-	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin
+	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	Copy-Item -Force -Recurse -Path $root\src-stage3\icons $root/src-stage3/staged_install/$configuration/share  2>&1 >> $Log
 
 	# ensure the GR build went well by checking for newmod package, and if found then build
 	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt

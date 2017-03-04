@@ -260,6 +260,7 @@ function BuildDrivers
 		-DLIBOSMOSDR_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\osmosdr.lib" `
 		-DCMAKE_CXX_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /I$root/build/$configuration/include /EHsc " `
 		-DCMAKE_C_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch  /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /EHsc " `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		$SIMD `
 		-DENABLE_DOXYGEN="TRUE" `
 		-DENABLE_RFSPACE="FALSE" 2>&1 >> $Log  # RFSPACE not building in current git pull (0.1.5git 164a09fc 3/13/2016), due to having linux-only headers being added
@@ -396,7 +397,6 @@ function BuildDrivers
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-fosphor/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration 
 		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-		if ($configuration -match "Debug") {$baseconfig = "Debug"} else {$baseconfig = "Release"}
 		if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"} else {$DLLconfig = $configuration + "DLL"}
 		$env:_CL_ = $env:_CL_ + " -D_WIN32 -Zi "
 		$env:_LINK_= " /DEBUG /OPT:ref,icf "
@@ -418,8 +418,12 @@ function BuildDrivers
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 			-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
+			-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+			-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+			-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 			-DGLFW3_PKG_INCLUDE_DIRS="$root\src-stage3\oot_code\glfw\include\" `
-			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$baseconfig" `
+			-DGLFW3_PKG_LIBRARY_DIRS="$root\src-stage3\oot_code\glfw\build\$configuration\src\$buildconfig" `
+			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 			-Wno-dev 2>&1 >> $Log
 		Write-Host -NoNewline "building gr-fosphor..."
 		msbuild .\gr-fosphor.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
@@ -461,12 +465,13 @@ function BuildDrivers
 	cp $root/build/$configuration/gqrx/bin/Qt5Core*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Gui*.dll $root\src-stage3\staged_install\$configuration\bin\
 	cp $root/build/$configuration/gqrx/bin/Qt5Widgets*.dll $root\src-stage3\staged_install\$configuration\bin\
-	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force
-	cp -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\plugins
-	cp -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\plugins
-	cp -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\plugins
-	"[Paths]" | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII
-	"Prefix = .." | out-file -FilePath $root/build/$configuration/bin/qt.conf -encoding ASCII -append 
+	cp $root/build/$configuration/gqrx/bin/Qt5Svg*.dll $root\src-stage3\staged_install\$configuration\bin\
+	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force 2>&1 >> $Log
+	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\bin
+	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\bin
+	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\bin
+	"[Paths]" | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII
+	"Prefix = ." | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
 	# the below are OOT modules that I would like to include but for various reasons are not able to run in windows
