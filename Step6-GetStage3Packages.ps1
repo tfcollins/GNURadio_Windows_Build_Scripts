@@ -76,6 +76,15 @@ GetPackage https://github.com/wnagele/gr-adsb.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
+# gr-air-modes
+#
+# using a fork until some cmake updates are included (push request sent)
+# GetPackage https://github.com/bistromath/gr-air-modes.git -Stage3
+GetPackage https://github.com/gnieboer/gr-air-modes.git -Stage3
+
+
+# ____________________________________________________________________________________________________________
+#
 # gr-fosphor
 #
 # awaiting merge requests to go back to upstream repo instead of my fork
