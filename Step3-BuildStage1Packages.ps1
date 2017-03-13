@@ -509,18 +509,18 @@ if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile)
 nmake confclean 2>&1 >> $Log
 # debugDLL build
 MakeQT "DebugDLL"
-# releaseDLL build
-MakeQT "ReleaseDLL"
 # debug static build
-MakeQT "Debug"
+# MakeQT "Debug"
 # switch to AVX2 mode
 # release AVX2 static build
-MakeQT "Release-AVX2"
+# MakeQT "Release-AVX2"
 # release AVX2 DLL build
 MakeQT "ReleaseDLL-AVX2"
 # do release last because that's the "default" config, and qmake does some strange things
 # like save the last config persistently and globally.
-MakeQT "Release"
+# MakeQT "Release"
+# releaseDLL build
+MakeQT "ReleaseDLL"
 
 #clean up enormous amount of temp files
 nmake clean  2>&1>> $Log
@@ -584,6 +584,8 @@ MakeQT5 "ReleaseDLL-AVX2"
 #MakeQT5 "Debug"
 #MakeQT5 "Release-AVX2"
 #MakeQT5 "Release"
+$env:CL = $oldCL
+$ErrorActionPreference = "Stop"
 
 # ____________________________________________________________________________________________________________
 # QWT 5.2.3
