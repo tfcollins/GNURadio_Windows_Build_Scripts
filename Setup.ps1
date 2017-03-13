@@ -13,7 +13,10 @@ function getPackage
 		[string]$newname = "",
 
 		[Parameter(Mandatory=$False)]
-		[switch]$Stage3
+		[switch]$Stage3,
+
+		[Parameter(Mandatory=$False)]
+		[switch]$AddFolderName
 	)
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
@@ -86,7 +89,12 @@ function getPackage
 		# extract the package if the final destination directory doesn't exist
 		if (!((Test-Path $root\$destdir\$archiveName) -or ($newname -ne "" -and (Test-Path $root\$destdir\$newName)))) {
 			$archive = "$root/packages/$archiveName/$archiveName$archiveExt"
-			cd "$root\$destdir"
+			if ($AddFolderName) {
+				New-Item -Force -ItemType Directory $root/$destdir/$archiveName
+				cd "$root\$destdir\$archiveName"
+			} else {
+				cd "$root\$destdir"
+			}
 			if ($archiveExt -eq ".7z" -or ($archiveExt -eq ".zip")) {
 				sz x -y $archive 2>&1 >> $Log
 			} elseif ($archiveExt -eq ".zip") {
@@ -112,6 +120,9 @@ function getPackage
 					Remove-Item  $root\$destdir\$newname -Force -Recurse >> $Log
 					}
 				if (Test-Path $root\$destdir\$archiveName) {
+					if ($AddFolderName) {
+						cd $root\$destdir
+						}
 					ren $root\$destdir\$archiveName $root\$destdir\$newname
 					}
 			}

@@ -98,6 +98,31 @@ GetPackage https://github.com/glfw/glfw.git -Stage3
 #
 GetPackage https://github.com/csete/gqrx/archive/v$gqrx_version.zip -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# Armadillo
+#
+GetPackage https://downloads.sourceforge.net/project/arma/armadillo-7.800.1.tar.xz -Stage3 
+
+
+# ____________________________________________________________________________________________________________
+#
+# gflags
+#
+GetPackage https://github.com/gflags/gflags.git -Stage3 
+
+# ____________________________________________________________________________________________________________
+#
+# glog
+#
+GetPackage https://github.com/google/glog.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# GNUTLS (binaries!)
+#
+GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.5.8-w64.zip gnutls -Stage3 -AddFolderName 
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 
@@ -108,12 +133,6 @@ if ($false)
 	# libosmocore
 	#
 	GetPackage https://github.com/osmocom/libosmocore.git -Stage3
-
-	# ____________________________________________________________________________________________________________
-	#
-	# GNUTLS (binaries!)
-	#
-	GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.4.9-w32.zip -Stage3
 
 	# ____________________________________________________________________________________________________________
 	#

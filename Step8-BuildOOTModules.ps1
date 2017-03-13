@@ -393,10 +393,6 @@ function BuildDrivers
 	msbuild .\gr-gr-air-modes.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	# the cmake files don't install the samples or examples or docs so let's see what we can do here
-	# TODO update the CMAKE file to move these over
-	#New-Item -ItemType Directory -Force $root/src-stage3/staged_install/$configuration/share/adsb/examples 2>&1 >> $Log
-	#Copy-Item $root/src-stage3/oot_code/gr-adsb/examples/*.* $root/src-stage3/staged_install/$configuration/share/adsb/examples
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
@@ -519,6 +515,103 @@ function BuildDrivers
 	"Prefix = ." | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
+	# ____________________________________________________________________________________________________________
+	#
+	# Armadillo
+	#
+	# Required by GNSS-SDR
+	#
+	SetLog "Armadillo $configuration"
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "configuring $configuration Armadillo..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/armadillo-7.800.1/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/armadillo-7.800.1/build/$configuration 
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
+		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DOpenBLAS_NAMES="libopenblas_static" `
+		-DMKL_ROOT="${MY_IFORT}mkl" `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building armadillo-7.800.1..."
+	msbuild .\armadillo.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	"complete"
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gflags
+	#
+	# Required by GNSS-SDR / glog
+	# note use of non-standard build_folder location because repo already has a file named "BUILD"
+	#
+	SetLog "gflags $configuration"
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "configuring $configuration gflags..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gflags/build_folder/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gflags/build_folder/$configuration 
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
+		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gflags..."
+	msbuild .\gflags.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	"complete"
+
+	# ____________________________________________________________________________________________________________
+	#
+	# glog (Google logging)
+	#
+	# Required by GNSS-SDR
+	#
+	SetLog "glog $configuration"
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "configuring $configuration glog..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/glog/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/glog/build/$configuration 
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
+		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building glog..."
+	msbuild .\google-glog.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	"complete"
+
+
 	# the below are OOT modules that I would like to include but for various reasons are not able to run in windows
 	# There is hope for all of them though and they are at vary levels of maturity.
 	# Some will configure, some will build/install.  But none are currently working 100% so we'll exclude them from the .msi
@@ -637,30 +730,37 @@ function BuildDrivers
 	    #
 	    # NOT WORKING
 	    #
-	    # Requires Armadillo
+	    # This is going to take significant recoding to get it to be cross-platform compatible
 	    #
 	    SetLog "gnss-sdr $configuration"
 	    Write-Host -NoNewline "configuring $configuration gnss-sdr..."
 	    New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gnss-sdr/build/$configuration 2>&1 >> $Log
 	    cd $root/src-stage3/oot_code/gnss-sdr/build/$configuration
 	    $ErrorActionPreference = "Continue"
+		$env:_CL_ = " -DGLOG_NO_ABBREVIATED_SEVERITIES "
 	    & cmake ../../ `
 		    -G "Visual Studio 14 2015 Win64" `
 		    -DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		    -DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		    -DGNUTLS_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
+			-DGNURADIO_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		    -DGNUTLS_LIBRARY="../../../gnutls/lib/libgnutls.la" `
 		    -DGNUTLS_INCLUDE_DIR="../../../gnutls/include" `
-		    -DGNUTLS_OPENSSL_LIBRARY="../../../gnutls/lib/libgnutls.lib" `
+		    -DGNUTLS_OPENSSL_LIBRARY="../../../gnutls/lib/libgnutls.la" `
 		    -DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
 		    -DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		    -DBOOST_ROOT="$root/build/$configuration/" `
 		    -DENABLE_OSMOSDR="ON" `
+			-DGFlags_ROOT="$root/build/$configuration/" `
+			-DGLOG_ROOT="$root/build/$configuration/" `
+			-DCMAKE_CXX_FLAGS=" /DGLOG_NO_ABBREVIATED_SEVERITIES /DNOMINMAX" `
 		    -DLAPACK="ON" `
-		    -Wno-dev 2>&1 >> $Log
+			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+			-Wno-dev 2>&1 >> $Log
 	    Write-Host -NoNewline "building..."
 	    msbuild .\gnss-sdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	    Write-Host -NoNewline "installing..."
 	    msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+		$env:_CL_ = ""
 	    "complete"
     }
 }
