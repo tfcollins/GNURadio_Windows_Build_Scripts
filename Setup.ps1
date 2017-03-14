@@ -231,6 +231,18 @@ function GetMajorMinor($versionstring)
 
 # Used to check each build step to see if the critical files have been built as an indicator of success
 # We need this because powershell doesn't seem to handle exit codes well, particular when they are nested in calls, so it's hard to tell if a build call succeeded.
+function TryValidate
+{
+	$retval = $true
+	foreach ($i in $args)
+	{
+		if (!(Test-Path $i)) {
+			$retval = $false 
+		}
+	}
+	return $retval 
+}
+
 function Validate
 {
 	foreach ($i in $args)
