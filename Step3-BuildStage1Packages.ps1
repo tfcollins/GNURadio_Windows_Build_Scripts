@@ -528,10 +528,7 @@ nmake clean  2>&1>> $Log
 
 Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
 	"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore4.dll" "build/Releasedll/lib/QtOpenGL4.dll" "build/Releasedll/lib/QtSvg4.dll" "build/Releasedll/lib/QtGui4.dll" `
-	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" `
-	"build/Release-AVX2/bin/qmake.exe" "build/Release-AVX2/lib/QtCore.lib" "build/Release-AVX2/lib/QtOpenGL.lib" "build/Release-AVX2/lib/QtSvg.lib" "build/Release-AVX2/lib/QtGui.lib" `
-	"build/Release/bin/qmake.exe" "build/Release/lib/QtCore.lib" "build/Release/lib/QtOpenGL.lib" "build/Release/lib/QtSvg.lib" "build/Release/lib/QtGui.lib" `
-	"build/Debug/bin/qmake.exe" "build/Debug/lib/QtCored.lib" "build/Debug/lib/QtOpenGLd.lib" "build/Debug/lib/QtSvgd.lib" "build/Debug/lib/QtGuid.lib" 
+	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" 
 
 # ____________________________________________________________________________________________________________
 # Qt5
