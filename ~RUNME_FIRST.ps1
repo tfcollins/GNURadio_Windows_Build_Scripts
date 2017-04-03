@@ -4,7 +4,8 @@
 # RUNME_FIRST.ps1
 #
 $ErrorActionPreference = "Stop"
-$Global:root = Read-Host "Please choose an absolute root directory for this build <c:\gr-build>"
+
+$Global:root = Read-Host "Please choose an absolute root directory for this build. <c:\gr-build>"
 if (!$root) {$root = "C:\gr-build"}
 if (!(Test-Path -isValid -LiteralPath $root)) {
     Write-Host "'$root' is not a valid path.  Exiting script."
@@ -14,6 +15,13 @@ if (![System.IO.Path]::IsPathRooted($root)) {
     Write-Host "'$root' is not an absolute path.  Exiting script."
     return
 }
+if ($root.length -gt 11)
+{
+    Write-Host "'$root' cannot be longer than 11 chars due to filename length errors that would occur during build, please choose a different root.  Exiting script."
+	# These errors will manifest themselves in a couple places, but tensorflow is currently the most sensitive to this problem.
+    return
+}
+
 # setup
 "Performing initial setup"
 Write-Host "Setting up directories and checking dependencies..." 
