@@ -511,22 +511,13 @@ if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile)
 nmake confclean 2>&1 >> $Log
 # debugDLL build
 MakeQT "DebugDLL"
-# debug static build
-# MakeQT "Debug"
-# switch to AVX2 mode
-# release AVX2 static build
-# MakeQT "Release-AVX2"
 # release AVX2 DLL build
 MakeQT "ReleaseDLL-AVX2"
-# do release last because that's the "default" config, and qmake does some strange things
-# like save the last config persistently and globally.
-# MakeQT "Release"
 # releaseDLL build
 MakeQT "ReleaseDLL"
 
 #clean up enormous amount of temp files
 nmake clean  2>&1>> $Log
-#nmake distclean 2>&1 >> $Log
 
 Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
 	"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore4.dll" "build/Releasedll/lib/QtOpenGL4.dll" "build/Releasedll/lib/QtSvg4.dll" "build/Releasedll/lib/QtGui4.dll" `
@@ -916,6 +907,7 @@ if (!$BuildNumpyWithMKL -and $hasIFORT) {
 	MakeLapack "Release"
 	MakeLapack "Release-AVX2"
 }
+
 
 # Build GNURadio 3.8+ dependencies only if applicable
 $mm = GetMajorMinor($gnuradio_version)
