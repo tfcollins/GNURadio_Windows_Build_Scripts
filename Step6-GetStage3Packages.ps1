@@ -123,15 +123,30 @@ GetPackage https://github.com/google/glog.git -Stage3
 #
 GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.5.8-w64.zip gnutls -Stage3 -AddFolderName 
 
+# ____________________________________________________________________________________________________________
+#
 # gr-inspector
 # using forked package until pull request is integrated
+#
 GetPackage https://github.com/gnieboer/gr-inspector.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
 # gr-specest
+#
 GetPackage https://github.com/kit-cel/gr-specest.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
 # gr-cdma
+#
 GetPackage https://github.com/anastas/gr-cdma.git -Stage3 
+
+# ____________________________________________________________________________________________________________
+#
+# gr-rds
+#
+GetPackage https://github.com/bastibl/gr-rds.git -Stage3
 
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
