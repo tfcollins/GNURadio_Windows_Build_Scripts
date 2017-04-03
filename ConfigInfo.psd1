@@ -8,6 +8,7 @@
 		libpng = '1.6.28'
 		openssl = '1.0.2j'
 		qwt = '5.2.3'
+		qwt6 = '6.1.3'
 		SDL = '1.2.15'
 		cppunit = '1.12.1'
 		sip = '4.17'

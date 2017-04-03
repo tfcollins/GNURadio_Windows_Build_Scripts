@@ -276,6 +276,7 @@ $sdl_version = $Config.VersionInfo.SDL
 $cppunit_version = $Config.VersionInfo.cppunit
 $openssl_version = $Config.VersionInfo.openssl
 $qwt_version = $Config.VersionInfo.qwt
+$qwt6_version = $Config.VersionInfo.qwt6
 $sip_version = $Config.VersionInfo.sip
 $PyQt_version = $Config.VersionInfo.PyQt
 $cython_version = $Config.VersionInfo.Cython

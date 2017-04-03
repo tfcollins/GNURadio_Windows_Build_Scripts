@@ -919,6 +919,48 @@ Function SetupPython
 	} else {
 		Write-Host "pyzmq already built..."
 	}
+
+	
+	# ____________________________________________________________________________________________________________
+	# tensorflow
+	#
+	# requires numpy
+	#
+	SetLog "$configuration tensorflow"
+	Write-Host -NoNewline "configuring $configuration tensorflow..."
+	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+	# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
+	if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
+	New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
+	cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
+	$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
+	& cmake ..\.. `
+		-G "Visual Studio 14 2015 Win64" `
+		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+		-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
+		-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
+		-DPython_ADDITIONAL_VERSIONS="2.7" `
+		-DPYTHON_LIBRARIES="$pythonroot\libs\python27.lib" `
+		-DPYTHON_LIBRARY="$pythonroot\libs\python27.lib" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_BUILD_TYPE="$buildconfig" `
+		-DCMAKE_INSTALL_PREFIX="$root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\dist\$configuration" `
+		-Dtensorflow_BUILD_CC_TESTS=ON `
+		-Dtensorflow_BUILD_PYTHON_TESTS=ON `
+		-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
+	Write-Host -NoNewline "building..."
+	msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+	Write-Host -NoNewline "installing..."
+	& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check --upgrade --no-deps --force-reinstall 2>&1 >> $Log
+	# TODO this step is just for troubleshooting
+	# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
+	# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
+	# & ctest -C Release
+	# end troubleshooting
+	Validate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd"
+	$env:_CL_ = ""
+
+
 	"finished installing python packages for $configuration"
 }
 
@@ -944,7 +986,7 @@ cd $root/scripts
 if ($false)
 {
 	# these are just here for quick debugging
-
+	$root="Z:\gr-build"
 	ResetLog
 
 	$configuration = "ReleaseDLL"

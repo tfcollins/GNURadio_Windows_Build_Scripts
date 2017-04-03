@@ -44,6 +44,7 @@ Function Consolidate {
 	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
 	if ($configuration -match "Debug") {$d4 = "d4"} else {$d4 = "4"}
 	if ($configuration -match "Debug") {$d5 = "d5"} else {$d5 = "5"}
+	if ($configuration -match "Debug") {$d6 = "d6"} else {$d6 = "6"}
 	if ($configuration -match "Debug") {$q5d = "d"} else {$q5d = ""}
 
 	# move boost
@@ -66,6 +67,7 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtGui$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtOpenGL$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/QtSvg$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
+	#cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/lib/qtmain$d4.* $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtOpenGL* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore* $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtGui* $root/build/$configuration/include/ 2>&1 >> $log
@@ -105,12 +107,24 @@ Function Consolidate {
 	"Prefix = $root/build/$configuration/gqrx" | out-file -FilePath $root/build/$configuration/gqrx/bin/qt.conf -encoding ASCII -append 
 	"complete"
 
-	# move Qwt
+	# move Qwt 5+ 6
+	# for now, move both sets of headers and if in case of conflict, use the qwt 6 ones
+	# just move the shared DLLs, not the static libs
 	Write-Host -NoNewline "Consolidating Qwt..."
 	if ($configuration -match "AVX2") {$qwtdir = "Release-AVX2"} else {$qwtdir = "Debug-Release"}
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/qwt 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-5.2.3/build/x64/$qwtdir/lib/qwt$d5.* $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-5.2.3/build/x64/$qwtdir/include/* $root/build/$configuration/include/qwt/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-$qwt_version/build/x64/$qwtdir/lib/qwt$d5.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-$qwt_version/build/x64/$qwtdir/include/* $root/build/$configuration/include/qwt/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-$qwt6_version/build/x64/$configuration/lib/qwt$d6.* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwt-$qwt6_version/build/x64/$configuration/include/* $root/build/$configuration/include/qwt/ 2>&1 >> $log
+	"complete"
+
+	# move qwtplot3d
+	Write-Host -NoNewline "Consolidating QwtPlot3D..."
+	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/qwt3d 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/$configuration/qwtplot3d.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/$configuration/qwtplot3d.dll $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/include/* $root/build/$configuration/include/qwt3d 2>&1 >> $log
 	"complete"
 
 	# move SDL

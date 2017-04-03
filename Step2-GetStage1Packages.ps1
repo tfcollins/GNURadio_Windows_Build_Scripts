@@ -140,6 +140,10 @@ GetPackage http://downloads.sourceforge.net/project/boost/boost/$boost_version/b
 GetPackage http://downloads.sourceforge.net/project/qwt/qwt/$qwt_version/qwt-$qwt_version.zip
 GetPatch qwtconfig.7z qwt-$qwt_version
 
+# Qwt6
+GetPackage http://downloads.sourceforge.net/project/qwt/qwt/$qwt6_version/qwt-$qwt6_version.zip
+GetPatch qwt6_patch.7z qwt-$qwt6_version
+
 # sip
 GetPackage http://sourceforge.net/projects/pyqt/files/sip/sip-$sip_version/sip-$sip_version.zip
 
@@ -219,6 +223,12 @@ if (!$BuildNumpyWithMKL) {
 	GetPackage http://www.netlib.org/lapack/lapack-$lapack_version.tgz lapack
 	GetPatch lapack_$lapack_version.7z lapack/SRC
 }
+
+# tensorflow
+GetPackage https://github.com/tensorflow/tensorflow.git
+
+# QwtPlot3D
+GetPackage https://downloads.sourceforge.net/project/qwtplot3d/qwtplot3d/0.2.7/qwtplot3d-0.2.7.zip
 
 # get GNURadio 3.8+ dependencies
 $mm = GetMajorMinor($gnuradio_version)

@@ -594,7 +594,7 @@ $ErrorActionPreference = "Stop"
 # Note that even the static builds are linking against the DLL builds of Qt.  This is important, PyQwt will
 # fail with 10 linker errors otherwise.
 SetLog "Qwt"
-Write-Host -NoNewline "building qwt..."
+Write-Host -NoNewline "building qwt5..."
 Function MakeQwt {
 	nmake /NOLOGO clean 2>&1 >> $Log
 	nmake /NOLOGO distclean 2>&1 >> $Log
@@ -604,26 +604,124 @@ Function MakeQwt {
 }
 $ErrorActionPreference = "Continue"
 $env:QMAKESPEC = "win32-msvc2015"
-cd $root\src-stage1-dependencies\qwt-5.2.3 
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+cd $root\src-stage1-dependencies\qwt-$qwt_version 
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 MakeQwt
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd5.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
 MakeQwt
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 MakeQwt
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt5.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
 MakeQwt
 
 $env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $oldCL
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
 MakeQwt
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-5.2.3/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt5.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
 MakeQwt
 
 $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
 Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
 	"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
+
+# ____________________________________________________________________________________________________________
+# QWT 6
+#
+# requires Qt4
+#
+# This builds both debug and release libraries versions for each 
+#
+SetLog "Qwt6"
+Write-Host -NoNewline "building qwt6..."
+Function MakeQwt6 {
+	nmake /NOLOGO clean 2>&1 >> $Log
+	nmake /NOLOGO distclean 2>&1 >> $Log
+	Invoke-Expression $command 2>&1 >> $Log
+	nmake /NOLOGO 2>&1 >>  $Log
+	nmake /NOLOGO install 2>&1 >> $Log
+}
+$ErrorActionPreference = "Continue"
+$env:QMAKESPEC = "win32-msvc2015"
+cd $root\src-stage1-dependencies\qwt-$qwt6_version
+
+# Debug DLL (linked to debug Qt4 libraries)
+$env:_CL_ = " /Zi "
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=YES"" ""AVX2=NO"""
+MakeQwt6
+# Debug static
+$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=NO"" ""AVX2=NO"""
+MakeQwt6
+
+# Release DLL
+$env:_CL_ = " /Zi "
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt6.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+MakeQwt6
+# Release static
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro  ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+MakeQwt6
+
+
+# Release AVX2 DLL
+$env:_CL_ = " /Ox /arch:AVX2 /Zi /Gs- " 
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
+MakeQwt6
+# Release AVX2 Static
+$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
+$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
+MakeQwt6
+
+$env:_CL_ = ""
+$env:_LINK_ = ""
+$ErrorActionPreference = "Stop"
+cd $root\src-stage1-dependencies\qwt-$qwt6_version
+Validate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
+	"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib"
+
+# ____________________________________________________________________________________________________________
+# QwtPlot3D
+#
+# requires Qt4
+#
+Function MakeQwtPlot3d {
+	$configuration = $args[0]
+	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
+	cd $root\src-stage1-dependencies\qwtplot3d
+	New-Item -Force -ItemType Directory build/$configuration
+	$env:Path = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin;$root/src-stage1-dependencies/Qt4/build/$configDLL/bin;"+ $oldPath
+	$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
+	$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
+	if ($configuration -match "AVX2") {
+		$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /arch:AVX2 /Ox /Zi "
+		$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.lib "
+	} else {
+		$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /Zi "
+		$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug-Release/lib/qwt6.lib "
+	}
+	if ($configuration -match "Debug") {$buildconfig="Debug"} else {$buildconfig="Release"}
+	$ErrorActionPreference = "Continue"
+	& qmake qwtplot3d.pro 2>&1 >> $Log  
+	devenv qwtplot3d.vcxproj /Upgrade 2>&1 >> $Log  
+	msbuild .\qwtplot3d.vcxproj /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log  
+	Move-Item -Force lib/qwtplot3d.lib build/$configuration
+	Move-Item -Force lib/qwtplot3d.dll build/$configuration
+	if ($configuration -eq "Debug") {Move-Item -Force lib/qwtplot3d.pdb build/$configuration}
+	$env:_CL_ = " "
+	$env:_LINK_ = ""
+}
+MakeQwtPlot3d "Debug"
+MakeQwtPlot3d "Release"
+MakeQwtPlot3d "Release-AVX2"
 
 # ____________________________________________________________________________________________________________
 # Mako
