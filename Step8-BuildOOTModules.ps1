@@ -272,10 +272,20 @@ function BuildDrivers
 	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
 	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
 	"complete"
+}
+
+function BuildOOTModules 
+{
+	$configuration = $args[0]
+	$buildsymbols=$true
+	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
+	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
+	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
+	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
 
 	# ____________________________________________________________________________________________________________
 	#
-	# gr-acars
+	# gr-acars2
 	#
 	# We can make up for most of the windows incompatibilities, but the inclusion of the "m" lib requires a CMake file change
 	# so need to use a patch
@@ -676,6 +686,10 @@ function BuildDrivers
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 
+
+
+	# ___________________________________STILL IN WORK____________________________________________________________
+	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
 	#
 	# gflags
@@ -894,9 +908,9 @@ function BuildDrivers
 }
 
 # Release build
-if ($configmode -eq "1" -or $configmode -eq "all") {BuildDrivers "Release"}
-if ($configmode -eq "2" -or $configmode -eq "all") {BuildDrivers "Release-AVX2"}
-if ($configmode -eq "3" -or $configmode -eq "all") {BuildDrivers "Debug"}
+if ($configmode -eq "1" -or $configmode -eq "all") {BuildDrivers "Release"; BuildOOTModules "Release"}
+if ($configmode -eq "2" -or $configmode -eq "all") {BuildDrivers "Release-AVX2"; BuildOOTModules "Release-AVX2"}
+if ($configmode -eq "3" -or $configmode -eq "all") {BuildDrivers "Debug"; BuildOOTModules "Debug"}
 
 cd $root/scripts 
 
