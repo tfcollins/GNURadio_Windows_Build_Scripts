@@ -334,8 +334,8 @@ function BuildDrivers
 	cd $root/src-stage3/oot_code/gr-adsb/build/$configuration 
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
-	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:_LINK_= "  $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = "  -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
@@ -519,7 +519,7 @@ function BuildDrivers
 	#
 	# Armadillo
 	#
-	# Required by GNSS-SDR
+	# Required by GNSS-SDR and gr-specest
 	#
 	SetLog "Armadillo $configuration"
 	$ErrorActionPreference = "Continue"
@@ -547,6 +547,134 @@ function BuildDrivers
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 	"complete"
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-specest
+	#
+	if ($hasIFORT) {
+		SetLog "gr-specest $configuration"
+		$ErrorActionPreference = "Continue"
+		Write-Host -NoNewline "configuring $configuration gr-specest..."
+		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-specest/build/$configuration  2>&1 >> $Log
+		cd $root/src-stage3/oot_code/gr-specest/build/$configuration 
+		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2 /O2 "; $fortflags = " /QaxCORE-AVX2 /QxCORE-AVX2 /tune:haswell /arch:AVX "} else {$platform = "x64"; $env:_CL_ = ""; $fortflags = " /arch:SSE2 "}
+		if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
+		$env:_CL_ =  $env:_CL_ + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+		$froot = $root.Replace('\','/')
+		cmake ../../ `
+			-G "Visual Studio 14 2015 Win64" `
+			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+			-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
+			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+			-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+			-DBLAS_LIBRARIES="$froot/build/$configuration/lib/libopenblas_static.lib;$froot/build/$configuration/lib/cblas.lib;$froot/build/$configuration/lib/lapack.lib" `
+			-DLAPACK_LIBRARIES="$froot/build/$configuration/lib/libopenblas_static.lib;$froot/build/$configuration/lib/lapack.lib" `
+			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase $fortflags " `
+			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+			-Wno-dev 2>&1 >> $Log
+		Write-Host -NoNewline "building gr-specest..."
+		msbuild .\gr-specest.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+		Write-Host -NoNewline "installing..."
+		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+		$env:_CL_ = ""
+		$env:_LINK_ = ""
+		$ErrorActionPreference = "Stop"
+		"complete"
+	} else {
+		Write-Host "skipping $configuration gr-specest, no fortran compiler available"
+	}
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-inspector
+	#
+	#
+	SetLog "gr-inspector $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-inspector..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-inspector/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-inspector/build/$configuration
+	$env:_CL_=" /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi "
+	$env:_LINK_= " /DEBUG:FULL "
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DQT_QWTPLOT3D_LIBRARY="$root\build\$configuration\lib\qwtplot3d.lib" `
+		-DQT_QWTPLOT3D_INCLUDE_DIR="$root\build\$configuration\include\qwt3d" `
+		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt" `
+		-DQWT_LIBRARIES="$root\build\$configuration\lib\qwt6.lib" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /Zi " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-inspector..."
+	msbuild .\gr-inspector.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-inspector 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-inspector/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-inspector 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-cdma
+	#
+	# TODO: need to manually change the cdma_parameters.py to alter the fixed path it is looking for
+	#
+	SetLog "gr-cdma $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-cdma..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-cdma/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-cdma/build/$configuration
+	$env:_CL_="  /DNOMINMAX  /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi "
+	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
+	(Get-Content "../../python/cdma_parameters.py").replace('/home/anastas/gr-cdma/', '../lib/site-packages/cdma') | Set-Content "../../python/cdma_parameters.py"
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-cdma..."
+	msbuild .\gr-cdma.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-cdma 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-cdma/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-cdma 2>&1 >> $Log
+	# copy the fsm files across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/lib/site-packages/cdma/python/fsm_files 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-cdma/python/fsm_files/*.fsm $root/src-stage3/staged_install/$configuration/lib/site-packages/cdma/python/fsm_files 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
 
 	# ____________________________________________________________________________________________________________
 	#
