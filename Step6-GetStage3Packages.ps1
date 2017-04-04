@@ -148,6 +148,24 @@ GetPackage https://github.com/anastas/gr-cdma.git -Stage3
 #
 GetPackage https://github.com/bastibl/gr-rds.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gr-ais
+#
+GetPackage https://github.com/bistromath/gr-ais.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# gr-display
+#
+GetPackage https://github.com/dl1ksv/gr-display.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
+# gr-ax25
+#
+GetPackage https://github.com/dl1ksv/gr-ax25.git -Stage3
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 

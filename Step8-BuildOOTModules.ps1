@@ -716,13 +716,130 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
-	Write-Host -NoNewline "building gr-cdma..."
+	Write-Host -NoNewline "building gr-rds..."
 	msbuild .\gr-rds.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	# copy the examples across
 	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-rds 2>&1 >> $Log
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-rds/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-rds 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-ais
+	#
+	#
+	SetLog "gr-ais $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-ais..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-ais/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-ais/build/$configuration
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib "
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-ais..."
+	msbuild .\gr-ais.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ais 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-ais/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ais 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-display
+	#
+	#
+	SetLog "gr-display $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-display..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-display/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-display/build/$configuration
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-display..."
+	msbuild .\gr-display.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-display 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-display/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-display 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-ax25
+	#
+	#
+	SetLog "gr-ax25 $configuration"
+	Write-Host -NoNewline "configuring $configuration gr-ax25..."
+	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-ax25/build/$configuration 2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-ax25/build/$configuration
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
+	$ErrorActionPreference = "Continue"
+	& cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-ax25..."
+	msbuild .\gr-afsk.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ax25 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-ax25/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ax25 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 
