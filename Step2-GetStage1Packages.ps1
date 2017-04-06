@@ -230,6 +230,11 @@ GetPackage https://github.com/tensorflow/tensorflow.git
 # QwtPlot3D
 GetPackage https://downloads.sourceforge.net/project/qwtplot3d/qwtplot3d/0.2.7/qwtplot3d-0.2.7.zip
 
+# MatPlotLib
+GetPackage https://pypi.python.org/packages/79/a9/db688816150a6ef91fd9ce284c828467f7271c7dd5982753a73a8e1aaafa/matplotlib-$matplotlib_version.tar.gz
+GetPatch matplotlib_patch.7z matplotlib-$matplotlib_version
+
+
 # get GNURadio 3.8+ dependencies
 $mm = GetMajorMinor($gnuradio_version)
 if ($mm -eq "3.8") {
