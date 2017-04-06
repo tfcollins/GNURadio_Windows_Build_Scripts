@@ -36,6 +36,7 @@
 		libusb = '1.0.21'   
 		fftw = '3.3.6'      
 		matplotlib = '2.0.0'
+		PIL = '1.1.7'
 		wxpython = '3.0.2.0'# Changing to 3.1+ will require other code changes
 		pygobject = '2.28.6'# Changing to 2.29+ will require other code changes (but don't because 2.29 doesn't have the same setup.py)
 		pygtk = '2.24.0'    # Changing to 2.25+ will require other code changes

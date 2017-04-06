@@ -982,6 +982,36 @@ Function SetupPython
 	$ErrorActionPreference = "Stop"
 	Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
 	$env:_CL_ = ""
+	$env:Path = $oldPath
+	$env:PYTHONPATH = ""
+
+	# ____________________________________________________________________________________________________________
+	# Python Imaging Library (PIL)
+	#
+	# required by gr-paint
+	#
+	SetLog "$configuration gr-paint"
+	Write-Host -NoNewline "configuring $configuration gr-paint..."
+	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+	cd $root\src-stage1-dependencies\Imaging-$PIL_version
+	$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
+	$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
+	Write-Host -NoNewline "building and installing..."
+	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "creating wheel..."
+	& $pythonroot/$pythonexe setup.py bdist_wininst   2>&1 >> $log
+	cd dist
+	& $pythonroot/Scripts/wheel.exe convert PIL-$PIL_version.win-amd64-py2.7.exe 2>&1 >> $log
+	$env:_LINK_ = ""
+	move PIL-$PIL_version-cp27-none-win_amd64.whl PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	Validate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging.pyd"
+	$env:_CL_ = ""
+	$env:Path = $oldPath
+	$env:PYTHONPATH = ""
+	$ErrorActionPreference = "Stop"
 
 	"finished installing python packages for $configuration"
 }

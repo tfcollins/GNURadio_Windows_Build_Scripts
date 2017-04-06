@@ -172,6 +172,12 @@ GetPackage https://github.com/dl1ksv/gr-ax25.git -Stage3
 #
 GetPackage https://github.com/gnieboer/gr-radar.git -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gr-paint
+#
+GetPackage https://github.com/drmpeg/gr-paint.git -Stage3 
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 
