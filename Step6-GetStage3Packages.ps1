@@ -126,9 +126,8 @@ GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.5.8-w64.zip gnutls -S
 # ____________________________________________________________________________________________________________
 #
 # gr-inspector
-# using forked package until pull request is integrated
 #
-GetPackage https://github.com/gnieboer/gr-inspector.git -Stage3
+GetPackage https://github.com/gnuradio/gr-inspector.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
@@ -152,7 +151,9 @@ GetPackage https://github.com/bastibl/gr-rds.git -Stage3
 #
 # gr-ais
 #
-GetPackage https://github.com/bistromath/gr-ais.git -Stage3
+# Awaiting incorporation of pull request 
+#
+GetPackage https://github.com/gnieboer/gr-ais.git -Stage3 -branch "msvc-fixes"
 
 # ____________________________________________________________________________________________________________
 #
@@ -170,13 +171,31 @@ GetPackage https://github.com/dl1ksv/gr-ax25.git -Stage3
 #
 # gr-radar
 #
-GetPackage https://github.com/gnieboer/gr-radar.git -Stage3
+# Awaiting incorporation of pull request 
+#
+GetPackage https://github.com/gnieboer/gr-radar.git -Stage3 -branch "msvc_fixes"
 
 # ____________________________________________________________________________________________________________
 #
 # gr-paint
 #
 GetPackage https://github.com/drmpeg/gr-paint.git -Stage3 
+
+# ____________________________________________________________________________________________________________
+#
+# gr-mapper
+#
+# Awaiting incorporation of pull request 
+#
+GetPackage https://github.com/gnieboer/gr-mapper.git -Stage3 -branch "msvc_fixes"
+
+# ____________________________________________________________________________________________________________
+#
+# gr-nacl
+#
+# Awaiting incorporation of pull request 
+#
+GetPackage https://github.com/gnieboer/gr-nacl.git -Stage3 -branch "msvc_fixes"
 
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
