@@ -16,7 +16,10 @@ function getPackage
 		[switch]$Stage3,
 
 		[Parameter(Mandatory=$False)]
-		[switch]$AddFolderName
+		[switch]$AddFolderName,
+
+		[Parameter(Mandatory=$False)]
+		[string]$branch = ""
 	)
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
@@ -39,7 +42,11 @@ function getPackage
 				Remove-Item  $root\$destdir\$archiveName -Force -Recurse
 			}
 			$ErrorActionPreference = "Continue"
-			git clone --recursive --depth=1 $toGet  2>&1 >> $Log 
+			if ($branch -eq "") {
+				git clone --recursive --depth=1 $toGet  2>&1 >> $Log 
+			} else {
+				git clone --recursive --depth=1 $toGet --branch $branch  2>&1 >> $Log 
+			}
 			$ErrorActionPreference = "Stop"
 			if ($LastErrorCode -eq 1) {
 				Write-Host -BackgroundColor Red -ForegroundColor White "git clone FAILED"
