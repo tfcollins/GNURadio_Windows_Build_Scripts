@@ -197,6 +197,14 @@ GetPackage https://github.com/gnieboer/gr-mapper.git -Stage3 -branch "msvc_fixes
 #
 GetPackage https://github.com/gnieboer/gr-nacl.git -Stage3 -branch "msvc_fixes"
 
+# ____________________________________________________________________________________________________________
+#
+# gr-burst
+#
+# Minor change from main repo
+#
+GetPackage https://github.com/gnieboer/gr-burst.git -Stage3 -branch "msvc_fixes"
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 

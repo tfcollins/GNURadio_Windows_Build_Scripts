@@ -315,6 +315,7 @@ $volk_version = $Config.VersionInfo.volk
 $libxslt_version = $Config.VersionInfo.libxslt
 $matplotlib_version = $Config.VersionInfo.matplotlib
 $PIL_version = $Config.VersionInfo.PIL
+$bitarray_version = $Config.VersionInfo.bitarray
 
 # setup paths
 if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}
