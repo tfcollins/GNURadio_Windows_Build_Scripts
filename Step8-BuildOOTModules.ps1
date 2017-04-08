@@ -1090,6 +1090,57 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-lte
+	#
+	#
+	SetLog "gr-lte $configuration"
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "configuring $configuration gr-lte..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-lte/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-lte/build/$configuration 
+	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /DNOMINMAX $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
+		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
+		-DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
+		-DCPPUNIT_INCLUDE_DIRS="$root/build/$configuration/include" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-Wno-dev 2>&1 >> $Log
+	Write-Host -NoNewline "building gr-lte..."
+	msbuild .\gr-lte.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	# copy the examples across
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-lte 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-lte/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-lte 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-lte/examples/*.py $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-lte 2>&1 >> $Log
+	cp -Recurse -Force $root/src-stage3/oot_code/gr-lte/examples/hier_blocks $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-lte 2>&1 >> $Log
+	# TODO we could call the routine in the examples folder to automatically build the hier blocks.
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	"complete"
+
+
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
@@ -1222,51 +1273,6 @@ function BuildOOTModules
 
 
 
-		# ____________________________________________________________________________________________________________
-		#
-		# gr-lte
-		#
-		# NOT WORKING
-		#
-		# TODO gr-lte There are a whole slew of changes needed to make the C++ MSVC compatible, primarily dynamically sized arrays
-		# but it appears doable
-		#
-		SetLog "gr-lte $configuration"
-		$ErrorActionPreference = "Continue"
-		Write-Host -NoNewline "configuring $configuration gr-lte..."
-		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-lte/build/$configuration  2>&1 >> $Log
-		cd $root/src-stage3/oot_code/gr-lte/build/$configuration 
-		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = " /arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-		if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
-		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-		$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-		cmake ../../ `
-			-G "Visual Studio 14 2015 Win64" `
-			-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
-			-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
-			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
-			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
-			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-			-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
-			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
-			-DBOOST_ROOT="$root/build/$configuration/" `
-			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
-			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
-			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
-			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-			-Wno-dev 2>&1 >> $Log
-		Write-Host -NoNewline "building gr-lte..."
-		msbuild .\gr-lte.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-		Write-Host -NoNewline "installing..."
-		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-		# the cmake files don't install the samples or examples or docs so let's see what we can do here
-		# TODO update the CMAKE file to move these over
-		New-Item -ItemType Directory -Force $root/src-stage3/staged_install/$configuration/share/lte/examples 2>&1 >> $Log
-		Copy-Item $root/src-stage3/oot_code/gr-lte/examples/*.* $root/src-stage3/staged_install/$configuration/share/lte/examples
-		$env:_CL_ = ""
-		$env:_LINK_ = ""
-		$ErrorActionPreference = "Stop"
-		"complete"
 	
 	    # ____________________________________________________________________________________________________________
 	    #

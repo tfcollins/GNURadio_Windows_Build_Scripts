@@ -212,6 +212,12 @@ GetPackage https://github.com/osh/gr-eventstream.git -Stage3
 #
 GetPackage https://github.com/gnieboer/gr-burst.git -Stage3 -branch "msvc_fixes"
 
+# ____________________________________________________________________________________________________________
+#
+# gr-lte
+#
+GetPackage https://github.com/gnieboer/gr-lte.git -Stage3 -branch "msvc_fixes"
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 
@@ -228,12 +234,6 @@ if ($false)
 	# GNSS-SDR
 	#
 	GetPackage https://github.com/gnss-sdr/gnss-sdr.git -Stage3
-
-	# ____________________________________________________________________________________________________________
-	#
-	# gr-lte
-	#
-	GetPackage https://github.com/gnieboer/gr-lte.git -Stage3
 
 	# ____________________________________________________________________________________________________________
 	#
