@@ -199,6 +199,13 @@ GetPackage https://github.com/gnieboer/gr-nacl.git -Stage3 -branch "msvc_fixes"
 
 # ____________________________________________________________________________________________________________
 #
+# gr-eventstream
+#
+#
+GetPackage https://github.com/osh/gr-eventstream.git -Stage3
+
+# ____________________________________________________________________________________________________________
+#
 # gr-burst
 #
 # Minor change from main repo
