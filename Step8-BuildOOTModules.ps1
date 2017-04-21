@@ -12,7 +12,12 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 } else {
     $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 }
-. $mypath\Setup.ps1 -Force
+
+if (Test-Path $mypath\Setup.ps1) {
+	. $mypath\Setup.ps1 -Force
+} else {
+	. $root\scripts\Setup.ps1 -Force
+}
 
 $configmode = $args[0]
 if ($configmode -eq $null) {$configmode = "all"}

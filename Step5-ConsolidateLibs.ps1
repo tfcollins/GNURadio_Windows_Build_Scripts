@@ -18,7 +18,11 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 } else {
     $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 }
-. $mypath\Setup.ps1 -Force
+if (Test-Path $mypath\Setup.ps1) {
+	. $mypath\Setup.ps1 -Force
+} else {
+	. $root\scripts\Setup.ps1 -Force
+}
 
 $pythonexe = "python.exe"
 $pythondebugexe = "python_d.exe"
