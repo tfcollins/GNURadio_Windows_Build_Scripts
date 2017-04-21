@@ -261,7 +261,7 @@ Function SetupPython
 	SetLog "$configuration Cython"
 	$ErrorActionPreference = "Continue"
 	cd $root\src-stage1-dependencies\Cython-$cython_version
-	if ((TryValidate Validate "dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/cython.py" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Compiler/Code$debugext.pyd" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Distutils/build_ext.py") -eq $false) {
+	if ((TryValidate "dist/Cython-$cython_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/cython.py" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Compiler/Code$debugext.pyd" "$pythonroot/lib/site-packages/Cython-$cython_version-py2.7-win-amd64.egg/Cython/Distutils/build_ext.py") -eq $false) {
 		Write-Host -NoNewline "installing Cython..."
 		if ($configuration -match "Debug") { $env:_LINK_ = " /LIB:python27_d.lib " } else { $env:_LINK_="" }
 		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
@@ -835,10 +835,10 @@ Function SetupPython
 	# but now there are no dependencies, just install the wheel
 	SetLog "$configuration lxml"
 	cd $root\src-stage1-dependencies\lxml-lxml-$lxml_version
+	$xsltconfig = ($configuration -replace "DLL", "")
 	if ((TryValidate "dist/lxml-$lxml_version-cp27-cp27${d}m-win_amd64.$xsltconfig.whl" "$pythonroot/lib/site-packages/lxml-$lxml_version-py2.7-win-amd64.egg/lxml/etree.pyd") -eq $false) {
 		Write-Host -NoNewline "configuring lxml..."
 		$ErrorActionPreference = "Continue"
-		$xsltconfig = ($configuration -replace "DLL", "")
 		New-Item -ItemType Directory -Force $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig 2>&1 >> $Log
 		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
 		$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include "
@@ -927,38 +927,43 @@ Function SetupPython
 	# requires numpy
 	#
 	SetLog "$configuration tensorflow"
-	Write-Host -NoNewline "configuring $configuration tensorflow..."
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
-	# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
-	if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
-	New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
-	cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
-	$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
-	& cmake ..\.. `
-		-G "Visual Studio 14 2015 Win64" `
-		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
-		-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
-		-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
-		-DPython_ADDITIONAL_VERSIONS="2.7" `
-		-DPYTHON_LIBRARIES="$pythonroot\libs\python27.lib" `
-		-DPYTHON_LIBRARY="$pythonroot\libs\python27.lib" `
-		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_BUILD_TYPE="$buildconfig" `
-		-DCMAKE_INSTALL_PREFIX="$root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\dist\$configuration" `
-		-Dtensorflow_BUILD_CC_TESTS=ON `
-		-Dtensorflow_BUILD_PYTHON_TESTS=ON `
-		-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
-	Write-Host -NoNewline "building..."
-	msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
-	Write-Host -NoNewline "installing..."
-	& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check --upgrade --no-deps --force-reinstall 2>&1 >> $Log
-	# TODO this step is just for troubleshooting
-	# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
-	# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
-	# & ctest -C Release
-	# end troubleshooting
-	Validate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd"
-	$env:_CL_ = ""
+	if ((TryValidate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd") -eq $false) {
+		Write-Host -NoNewline "configuring $configuration tensorflow..."
+		# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
+		if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe";}
+		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
+		cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
+		$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
+		& cmake ..\.. `
+			-G "Visual Studio 14 2015 Win64" `
+			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+			-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
+			-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
+			-DPython_ADDITIONAL_VERSIONS="2.7" `
+			-DPYTHON_LIBRARIES="$pythonroot\libs\python27.lib" `
+			-DPYTHON_LIBRARY="$pythonroot\libs\python27.lib" `
+			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+			-DCMAKE_BUILD_TYPE="$buildconfig" `
+			-DCMAKE_INSTALL_PREFIX="$root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\dist\$configuration" `
+			-Dtensorflow_BUILD_CC_TESTS=ON `
+			-Dtensorflow_BUILD_PYTHON_TESTS=ON `
+			-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
+		Write-Host -NoNewline "building..."
+		msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+		Write-Host -NoNewline "installing..."
+		& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27${d}m-win_amd64.whl --disable-pip-version-check 2>&1 >> $Log
+		# TODO this step is just for troubleshooting
+		# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
+		# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
+		# & ctest -C Release
+		# end troubleshooting
+		Validate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd"
+		$env:_CL_ = ""
+		$env:CL = $oldCL
+	} else {
+		Write-Host "tensorflow already built..."
+	}
 
 	
 	# ____________________________________________________________________________________________________________
@@ -967,51 +972,60 @@ Function SetupPython
 	# required by gr-radar
 	#
 	SetLog "$configuration matplotlib"
-	Write-Host -NoNewline "configuring $configuration matplotlib..."
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
-	cd $root\src-stage1-dependencies\matplotlib-$matplotlib_version
-	$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
-	$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
-	Write-Host -NoNewline "building and installing..."
-	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
-	Write-Host -NoNewline "creating wheel..."
-	& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
-	$env:_LINK_ = ""
-	move dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.whl dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
-	$ErrorActionPreference = "Stop"
-	Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
-	$env:_CL_ = ""
-	$env:Path = $oldPath
-	$env:PYTHONPATH = ""
+	if ((TryValidate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" ) -eq $false) {
+		$ErrorActionPreference = "Continue"
+		Write-Host -NoNewline "configuring $configuration matplotlib..."
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+		cd $root\src-stage1-dependencies\matplotlib-$matplotlib_version
+		$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
+		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
+		Write-Host -NoNewline "building and installing..."
+		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+		Write-Host -NoNewline "creating wheel..."
+		& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
+		$env:_LINK_ = ""
+		move dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.whl dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
+		$ErrorActionPreference = "Stop"
+		Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
+		$env:_CL_ = ""
+		$env:Path = $oldPath
+		$env:PYTHONPATH = ""
+	} else {
+		Write-Host "matplotlib already built..."
+	}
 
 	# ____________________________________________________________________________________________________________
 	# Python Imaging Library (PIL)
 	#
 	# required by gr-paint
 	#
-	SetLog "$configuration Python Imaging Librar"
-	Write-Host -NoNewline "configuring $configuration gr-paint..."
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
-	cd $root\src-stage1-dependencies\Imaging-$PIL_version
-	$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
-	$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
-	Write-Host -NoNewline "building and installing..."
-	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
-	$ErrorActionPreference = "Continue"
-	Write-Host -NoNewline "creating wheel..."
-	& $pythonroot/$pythonexe setup.py bdist_wininst   2>&1 >> $log
-	cd dist
-	& $pythonroot/Scripts/wheel.exe convert PIL-$PIL_version.win-amd64-py2.7.exe 2>&1 >> $log
-	$env:_LINK_ = ""
-	move PIL-$PIL_version-cp27-none-win_amd64.whl PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $log
-	$ErrorActionPreference = "Stop"
-	Validate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging.pyd"
-	$env:_CL_ = ""
-	$env:Path = $oldPath
-	$env:PYTHONPATH = ""
-	$ErrorActionPreference = "Stop"
+	SetLog "$configuration Python Imaging Library"
+	if ((TryValidate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging.pyd") -eq $false) {
+		Write-Host -NoNewline "configuring $configuration gr-paint..."
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+		cd $root\src-stage1-dependencies\Imaging-$PIL_version
+		$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
+		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
+		Write-Host -NoNewline "building and installing..."
+		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+		$ErrorActionPreference = "Continue"
+		Write-Host -NoNewline "creating wheel..."
+		& $pythonroot/$pythonexe setup.py bdist_wininst   2>&1 >> $log
+		cd dist
+		& $pythonroot/Scripts/wheel.exe convert PIL-$PIL_version.win-amd64-py2.7.exe 2>&1 >> $log
+		$env:_LINK_ = ""
+		move PIL-$PIL_version-cp27-none-win_amd64.whl PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $log
+		$ErrorActionPreference = "Stop"
+		Validate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging.pyd"
+		$env:_CL_ = ""
+		$env:Path = $oldPath
+		$env:PYTHONPATH = ""
+		$ErrorActionPreference = "Stop"
+	} else {
+		Write-Host "PIL already built..."
+	}
 
 	# ____________________________________________________________________________________________________________
 	# bitarray
@@ -1019,26 +1033,30 @@ Function SetupPython
 	# required by gr-burst
 	#
 	SetLog "$configuration bitarray"
-	Write-Host -NoNewline "configuring $configuration bitarray..."
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
-	cd $root\src-stage1-dependencies\bitarray-$bitarray_version
-	$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
-	$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
-	Write-Host -NoNewline "building and installing..."
-	$ErrorActionPreference = "Continue"
-	& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
-	Write-Host -NoNewline "creating wheel..."
-	& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
-	cd dist
-	$env:_LINK_ = ""
-	move bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.whl bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
-	$ErrorActionPreference = "Stop"
-	Validate "bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray.pyd"
-	$env:_CL_ = ""
-	$env:Path = $oldPath
-	$env:PYTHONPATH = ""
-	$ErrorActionPreference = "Stop"
+	if ((TryValidate "bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray.pyd") -eq $false) {
+		Write-Host -NoNewline "configuring $configuration bitarray..."
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+		cd $root\src-stage1-dependencies\bitarray-$bitarray_version
+		$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
+		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
+		Write-Host -NoNewline "building and installing..."
+		$ErrorActionPreference = "Continue"
+		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+		Write-Host -NoNewline "creating wheel..."
+		& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
+		cd dist
+		$env:_LINK_ = ""
+		move bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.whl bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
+		$ErrorActionPreference = "Stop"
+		Validate "bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray.pyd"
+		$env:_CL_ = ""
+		$env:Path = $oldPath
+		$env:PYTHONPATH = ""
+		$ErrorActionPreference = "Stop"
+	} else {
+		Write-Host "gr-burst already built..."
+	}
 
 	"finished installing python packages for $configuration"
 }

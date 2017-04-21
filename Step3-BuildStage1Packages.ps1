@@ -16,7 +16,11 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 } else {
     $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 }
-. $mypath\Setup.ps1 -Force
+if (Test-Path $mypath\Setup.ps1) {
+	. $mypath\Setup.ps1 -Force
+} else {
+	. $root\scripts\Setup.ps1 -Force
+}
 
 # Build packages needed for Stage 1
 cd src-stage1-dependencies
@@ -26,45 +30,58 @@ cd src-stage1-dependencies
 #
 
 SetLog "libusb"
-Write-Host -NoNewline "building libusb..."
 cd $root\src-stage1-dependencies\libusb\msvc
-Write-Host -NoNewline "Debug..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-Write-Host -NoNewline "Release..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Write-Host -NoNewline "Release-AVX2..."
-msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
+if ((TryValidate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
 	"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
-	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
-
+	"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib") -eq $false) {
+	Write-Host -NoNewline "building libusb..."
+	Write-Host -NoNewline "Debug..."
+	msbuild .\libusb_2015.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	Write-Host -NoNewline "Release..."
+	msbuild .\libusb_2015.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	Write-Host -NoNewline "Release-AVX2..."
+	msbuild .\libusb_2015.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+	Validate "../x64/Debug/dll/libusb-1.0.dll" "../x64/Debug/lib/libusb-1.0.lib" `
+		"../x64/Release/dll/libusb-1.0.dll" "../x64/Release/lib/libusb-1.0.lib" `
+		"../x64/Release-AVX2/dll/libusb-1.0.dll" "../x64/Release-AVX2/lib/libusb-1.0.lib"
+} else {
+	Write-Host "libusb already built"
+}
 
 # ____________________________________________________________________________________________________________
 # libpng 
 # uses zlib but incorporates the source directly so doesn't need to be built after zlib
 SetLog "libpng"
-Write-Host -NoNewline "building libpng..."
 cd $root\src-stage1-dependencies\libpng\projects\vstudio-vs2015
-msbuild vstudio.sln /m /p:"configuration=Debug;platform=x64" >> $Log 
-msbuild vstudio.sln /m /p:"configuration=Debug Library;platform=x64" >> $Log
-msbuild vstudio.sln /m /p:"configuration=Release;platform=x64" >> $Log
-msbuild vstudio.sln /m /p:"configuration=Release Library;platform=x64" >> $Log
-msbuild vstudio.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild vstudio.sln /m /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
-Validate "x64/Debug/libpng16.dll" "x64/Debug Library/libpng16.lib" "x64/Release/libpng16.dll" "x64/Release Library/libpng16.lib" "x64/Release-AVX2/libpng16.dll" "x64/Release Library-AVX2/libpng16.lib"
-
+if ((TryValidate "x64/Debug/libpng16.dll" "x64/Debug Library/libpng16.lib" "x64/Release/libpng16.dll" "x64/Release Library/libpng16.lib" "x64/Release-AVX2/libpng16.dll" "x64/Release Library-AVX2/libpng16.lib") -eq $false) {
+	Write-Host -NoNewline "building libpng..."
+	msbuild vstudio.sln /m /p:"configuration=Debug;platform=x64" >> $Log 
+	msbuild vstudio.sln /m /p:"configuration=Debug Library;platform=x64" >> $Log
+	msbuild vstudio.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild vstudio.sln /m /p:"configuration=Release Library;platform=x64" >> $Log
+	msbuild vstudio.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild vstudio.sln /m /p:"configuration=Release Library-AVX2;platform=x64" >> $Log
+	Validate "x64/Debug/libpng16.dll" "x64/Debug Library/libpng16.lib" "x64/Release/libpng16.dll" "x64/Release Library/libpng16.lib" "x64/Release-AVX2/libpng16.dll" "x64/Release Library-AVX2/libpng16.lib"
+} else {
+	Write-Host "libpng already built"
+}
 
 # ____________________________________________________________________________________________________________
 # zlib
 SetLog "zlib"
 Write-Host -NoNewline "Building zlib..."
 cd $root\src-stage1-dependencies\zlib-1.2.8/contrib/vstudio/vc14
-msbuild zlibvc.sln /m /p:"configuration=Release;platform=x64" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=x64" >> $Log
-Validate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/ZlibDllRelease-AVX2/zlibwapi.dll" "x64/ZlibDllReleaseWithoutAsm/zlibwapi.dll" `
-	"x64/ZlibStatDebug/zlib.lib" "x64/ZlibStatRelease/zlib.lib" "x64/ZlibStatRelease-AVX2/zlib.lib" "x64/ZlibStatReleaseWithoutAsm/zlib.lib"
+if ((TryValidate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/ZlibDllRelease-AVX2/zlibwapi.dll" "x64/ZlibDllReleaseWithoutAsm/zlibwapi.dll" `
+	"x64/ZlibStatDebug/zlib.lib" "x64/ZlibStatRelease/zlib.lib" "x64/ZlibStatRelease-AVX2/zlib.lib" "x64/ZlibStatReleaseWithoutAsm/zlib.lib") -eq $false) {
+	msbuild zlibvc.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild zlibvc.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild zlibvc.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild zlibvc.sln /m /p:"configuration=ReleaseWithoutAsm;platform=x64" >> $Log
+	Validate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/ZlibDllRelease-AVX2/zlibwapi.dll" "x64/ZlibDllReleaseWithoutAsm/zlibwapi.dll" `
+		"x64/ZlibStatDebug/zlib.lib" "x64/ZlibStatRelease/zlib.lib" "x64/ZlibStatRelease-AVX2/zlib.lib" "x64/ZlibStatReleaseWithoutAsm/zlib.lib"
+} else {
+	Write-Host "already built"
+}
 
 # __________________________________________________________________
 # get-text / libiconv / libintl
@@ -72,13 +89,19 @@ Validate "x64/ZlibDllDebug/zlibwapi.dll" "x64/ZlibDllRelease/zlibwapi.dll" "x64/
 SetLog "gettext"
 Write-Host -NoNewline "building gettext..."
 cd $root\src-stage1-dependencies\gettext-msvc
-msbuild .\gettext.sln /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\gettext.sln /p:"configuration=DebugDLL;platform=x64" >> $Log
-msbuild .\gettext.sln /p:"configuration=Release;platform=x64" >> $Log
-msbuild .\gettext.sln /p:"configuration=ReleaseDLL;platform=x64" >> $Log
-msbuild .\gettext.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild .\gettext.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
-"complete"
+if ((TryValidate "x64/DebugDLL/libiconv.dll" "x64/ReleaseDLL/libiconv.dll" "x64/ReleaseDLL-AVX2/libiconv.dll" `
+				"x64/Debug/libiconv.lib" "x64/Release/libiconv.lib" "x64/Release-AVX2/libiconv.lib" `
+				) -eq $false) {
+	msbuild .\gettext.sln /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild .\gettext.sln /p:"configuration=DebugDLL;platform=x64" >> $Log
+	msbuild .\gettext.sln /p:"configuration=Release;platform=x64" >> $Log
+	msbuild .\gettext.sln /p:"configuration=ReleaseDLL;platform=x64" >> $Log
+	msbuild .\gettext.sln /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild .\gettext.sln /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
+	"complete"
+} else {
+	"already built"
+}
 
 # __________________________________________________________________
 # libxml2
@@ -120,17 +143,21 @@ cd $root\src-stage1-dependencies\libxslt-$libxslt_version\win32
 function MakeXSLT {
 	$configuration = $args[0]
 	Write-Host -NoNewline "  $configuration..."
-	if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
-	& nmake /NOLOGO clean 2>&1 >> $Log 
-	Write-Host -NoNewline "configuring..."
-	& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
-	Write-Host -NoNewline "building..." 
-	& nmake /NOLOGO 2>&1 >> $Log 
-	Write-Host -NoNewline "installing..."
-	& nmake /NOLOGO install 2>&1 >> $Log 
-	if (Test-Path ..\build\$configuration\bin\libexslt.pdb) {Copy-Item -Path ..\build\$configuration\bin\libexslt.pdb ..\build\$configuration\lib}
-	if (Test-Path ..\build\$configuration\bin\libxslt.pdb) {Copy-Item -Path ..\build\$configuration\bin\libxslt.pdb ..\build\$configuration\lib}
-	Validate "..\build\$configuration\lib\libxslt.dll" "..\build\$configuration\lib\libxslt_a.lib"
+	if ((TryValidate "..\build\$configuration\lib\libxslt.dll" "..\build\$configuration\lib\libxslt_a.lib") -eq $false) {
+		if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
+		& nmake /NOLOGO clean 2>&1 >> $Log 
+		Write-Host -NoNewline "configuring..."
+		& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
+		Write-Host -NoNewline "building..." 
+		& nmake /NOLOGO 2>&1 >> $Log 
+		Write-Host -NoNewline "installing..."
+		& nmake /NOLOGO install 2>&1 >> $Log 
+		if (Test-Path ..\build\$configuration\bin\libexslt.pdb) {Copy-Item -Path ..\build\$configuration\bin\libexslt.pdb ..\build\$configuration\lib}
+		if (Test-Path ..\build\$configuration\bin\libxslt.pdb) {Copy-Item -Path ..\build\$configuration\bin\libxslt.pdb ..\build\$configuration\lib}
+		Validate "..\build\$configuration\lib\libxslt.dll" "..\build\$configuration\lib\libxslt_a.lib"
+	} else {
+		Write-Host "already built"
+	}
 }
 MakeXSLT "Release"
 MakeXSLT "Release-AVX2"
@@ -230,48 +257,63 @@ if ($Config.BuildGTKFromSource) {
 SetLog "SDL"
 Write-Host -NoNewline "building SDL..."
 cd $root\src-stage1-dependencies\sdl-$sdl_version\VisualC
-msbuild .\sdl.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\sdl.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild .\sdl.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Validate "x64/Debug/SDL.dll" "x64/Release/SDL.dll" "x64/Release-AVX2/SDL.dll"
-
+if ((TryValidate "x64/Debug/SDL.dll" "x64/Release/SDL.dll" "x64/Release-AVX2/SDL.dll") -eq $false) {
+	msbuild .\sdl.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild .\sdl.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild .\sdl.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	Validate "x64/Debug/SDL.dll" "x64/Release/SDL.dll" "x64/Release-AVX2/SDL.dll"
+} else {
+	Write-Host "already built"
+}
 # ____________________________________________________________________________________________________________
 # portaudio
 SetLog "portaudio"
 Write-Host -NoNewline "building portaudio..."
 cd $root\src-stage1-dependencies\portaudio\build\msvc
-msbuild .\portaudio.vcxproj /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /m /p:"configuration=Debug-Static;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /m /p:"configuration=Release;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static-AVX2;platform=x64" >> $Log
-Validate "x64/Debug/portaudio_x64.dll" "x64/Release/portaudio_x64.dll" "x64/Release-AVX2/portaudio_x64.dll" `
-	"x64/Debug-Static/portaudio.lib" "x64/Release-Static/portaudio.lib" "x64/Release-Static-AVX2/portaudio.lib"
-
+if ((TryValidate "x64/Debug/portaudio_x64.dll" "x64/Release/portaudio_x64.dll" "x64/Release-AVX2/portaudio_x64.dll" `
+	"x64/Debug-Static/portaudio.lib" "x64/Release-Static/portaudio.lib" "x64/Release-Static-AVX2/portaudio.lib") -eq $false) {
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Debug-Static;platform=x64" >> $Log
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static;platform=x64" >> $Log
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild .\portaudio.vcxproj /m /p:"configuration=Release-Static-AVX2;platform=x64" >> $Log
+	Validate "x64/Debug/portaudio_x64.dll" "x64/Release/portaudio_x64.dll" "x64/Release-AVX2/portaudio_x64.dll" `
+		"x64/Debug-Static/portaudio.lib" "x64/Release-Static/portaudio.lib" "x64/Release-Static-AVX2/portaudio.lib"
+} else {
+	Write-Host "already built"
+}
 # ____________________________________________________________________________________________________________
 # cppunit
 SetLog "cppunit"
 Write-Host -NoNewline "building cppunit..."
 cd $root\src-stage1-dependencies\cppunit-$cppunit_version\src >> $Log
-msbuild .\CppUnitLibraries.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\CppUnitLibraries.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Validate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/lib/cppunit.lib" "x64/Release/lib/cppunit.lib"
+if ((TryValidate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/lib/cppunit.lib" "x64/Release/lib/cppunit.lib") -eq $false) {
+	msbuild .\CppUnitLibraries.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild .\CppUnitLibraries.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	Validate "x64/Debug/dll/cppunit.dll" "x64/Release/dll/cppunit.dll" "x64/Debug/lib/cppunit.lib" "x64/Release/lib/cppunit.lib"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # fftw3
 SetLog "fftw3"
 Write-Host -NoNewline "building fftw3..."
 cd $root\src-stage1-dependencies\fftw-$fftw_version\msvc
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug DLL;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL;platform=x64" >> $Log
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
-Validate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
-	"x64/Release DLL/libfftwf-3.3.DLL" "x64/Release DLL-AVX2/libfftwf-3.3.DLL" "x64/Debug DLL/libfftwf-3.3.DLL" 
-
+if ((TryValidate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
+	"x64/Release DLL/libfftwf-3.3.DLL" "x64/Release DLL-AVX2/libfftwf-3.3.DLL" "x64/Debug DLL/libfftwf-3.3.DLL" ) -eq $false) {
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Debug DLL;platform=x64" >> $Log
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL;platform=x64" >> $Log
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
+	Validate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
+		"x64/Release DLL/libfftwf-3.3.DLL" "x64/Release DLL-AVX2/libfftwf-3.3.DLL" "x64/Debug DLL/libfftwf-3.3.DLL" 
+} else {
+	Write-Host "already built"
+}
 # ____________________________________________________________________________________________________________
 # openssl (python depends on this)
 SetLog "openssl"
@@ -280,16 +322,23 @@ cd $root/src-stage1-dependencies/openssl
 # The TEST target will not only build but also test
 # Note, it appears the static libs are still linked to the /MT runtime
 # don't change config names because they are linked to python's config names below
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Debug;platform=x64" >> $Log
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=DebugDLL;platform=x64" >> $Log
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release;platform=x64" >> $Log
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release-AVX2;platform=x64" >> $Log
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL;platform=x64" >> $Log
-msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
-Validate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" "build/x64/Debug/ssleay32.lib" `
+if ((TryValidate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" "build/x64/Debug/ssleay32.lib" `
 	"build/x64/ReleaseDLL/libeay32.DLL" "build/x64/ReleaseDLL-AVX2/libeay32.DLL" "build/x64/DebugDLL/libeay32.DLL" `
 	"build/x64/Release/libeay32.lib" "build/x64/Release-AVX2/libeay32.lib" "build/x64/Debug/libeay32.lib" `
-	"build/x64/ReleaseDLL/ssleay32.DLL" "build/x64/ReleaseDLL-AVX2/ssleay32.DLL" "build/x64/DebugDLL/ssleay32.DLL" 
+	"build/x64/ReleaseDLL/ssleay32.DLL" "build/x64/ReleaseDLL-AVX2/ssleay32.DLL" "build/x64/DebugDLL/ssleay32.DLL" ) -eq $false) {
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=DebugDLL;platform=x64" >> $Log
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release;platform=x64" >> $Log
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL;platform=x64" >> $Log
+	msbuild openssl.vcxproj /m /t:"Build" /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log
+	Validate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" "build/x64/Debug/ssleay32.lib" `
+		"build/x64/ReleaseDLL/libeay32.DLL" "build/x64/ReleaseDLL-AVX2/libeay32.DLL" "build/x64/DebugDLL/libeay32.DLL" `
+		"build/x64/Release/libeay32.lib" "build/x64/Release-AVX2/libeay32.lib" "build/x64/Debug/libeay32.lib" `
+		"build/x64/ReleaseDLL/ssleay32.DLL" "build/x64/ReleaseDLL-AVX2/ssleay32.DLL" "build/x64/DebugDLL/ssleay32.DLL" 
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # python (boost depends on this)
@@ -297,12 +346,18 @@ Validate "build/x64/Release/ssleay32.lib" "build/x64/Release-AVX2/ssleay32.lib" 
 SetLog "python"
 Write-Host -NoNewline "building core python..."
 cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
-msbuild pcbuild.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-msbuild pcbuild.sln /m /p:"configuration=Release;platform=x64" >> $Log
-msbuild pcbuild.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
-Validate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
+if ((TryValidate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
 	"amd64-avx2/_ssl.pyd" "amd64-avx2/_ctypes.pyd" "amd64-avx2/_tkinter.pyd" "amd64-avx2/python.exe" "amd64-avx2/python27.dll" `
-	"amd64/_ssl_d.pyd" "amd64/_ctypes_d.pyd" "amd64/_tkinter_d.pyd" "amd64/python_d.exe" "amd64/python27_d.dll" 
+	"amd64/_ssl_d.pyd" "amd64/_ctypes_d.pyd" "amd64/_tkinter_d.pyd" "amd64/python_d.exe" "amd64/python27_d.dll" ) -eq $false) {
+	msbuild pcbuild.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	msbuild pcbuild.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	msbuild pcbuild.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
+	Validate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
+		"amd64-avx2/_ssl.pyd" "amd64-avx2/_ctypes.pyd" "amd64-avx2/_tkinter.pyd" "amd64-avx2/python.exe" "amd64-avx2/python27.dll" `
+		"amd64/_ssl_d.pyd" "amd64/_ctypes_d.pyd" "amd64/_tkinter_d.pyd" "amd64/python_d.exe" "amd64/python27_d.dll" 
+} else {
+	Write-Host "python already built"
+}
 
 # now place the binaries where we need them
 # install the main python and minimal dependencies
@@ -401,22 +456,28 @@ GatherPython
 SetLog "boost"
 Write-Host -NoNewline "building boost..."
 cd $root/src-stage1-dependencies/boost
-cmd /c "bootstrap.bat" >> $Log
-# point boost build to our custom python libraries
-$doubleroot = $root -replace "\\", "\\"
-Add-Content .\project-config.jam "`nusing python : 2.7 : $doubleroot\\src-stage2-python\\gr-python27\\python.exe : $doubleroot\\src-stage2-python\\gr-python27\\Include : $doubleroot\\src-stage2-python\\gr-python27\\Libs ;"
-# always rebuild all because boost will reuse objects from a previous build with different command line options
-# Optimized static+shared release libraries
-$cores = Get-WmiObject -class win32_processor -Property "numberOfCores"
-$corestr = $cores.NumberOfCores
-cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\avx2\Release --libdir=build\avx2\Release\lib --includedir=build\avx2\Release\include --stagedir=build\avx2\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags=""/arch:AVX2 /Ox /FS"" cflags=""/arch:AVX2 /Ox /FS"" install" >> $Log
-# Regular  static+shared release libraries
-cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\x64\Release --libdir=build\x64\Release\lib --includedir=build\x64\Release\include --stagedir=build\x64\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags="" -FS"" cflags="" -FS"" install" >> $Log
-# Regular  static+shared debug libraries
-cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\x64\Debug --libdir=build\x64\Debug\lib --includedir=build\x64\Debug\include --stagedir=build\x64\Debug --layout=versioned address-model=64 threading=multi link=static,shared variant=debug cxxflags="" -FS"" cflags="" -FS"" install" >> $Log
-Validate "build/x64/Debug/lib/boost_python-vc140-mt-gd-1_60.dll" "build/x64/Debug/lib/boost_system-vc140-mt-gd-1_60.dll" `
+if ((TryValidate "build/x64/Debug/lib/boost_python-vc140-mt-gd-1_60.dll" "build/x64/Debug/lib/boost_system-vc140-mt-gd-1_60.dll" `
 	"build/x64/Release/lib/boost_python-vc140-mt-1_60.dll" "build/x64/Release/lib/boost_system-vc140-mt-1_60.dll" `
-	"build/avx2/Release/lib/boost_python-vc140-mt-1_60.dll" "build/avx2/Release/lib/boost_system-vc140-mt-1_60.dll"
+	"build/avx2/Release/lib/boost_python-vc140-mt-1_60.dll" "build/avx2/Release/lib/boost_system-vc140-mt-1_60.dll") -eq $false) {
+	cmd /c "bootstrap.bat" >> $Log
+	# point boost build to our custom python libraries
+	$doubleroot = $root -replace "\\", "\\"
+	Add-Content .\project-config.jam "`nusing python : 2.7 : $doubleroot\\src-stage2-python\\gr-python27\\python.exe : $doubleroot\\src-stage2-python\\gr-python27\\Include : $doubleroot\\src-stage2-python\\gr-python27\\Libs ;"
+	# always rebuild all because boost will reuse objects from a previous build with different command line options
+	# Optimized static+shared release libraries
+	$cores = Get-WmiObject -class win32_processor -Property "numberOfCores"
+	$corestr = $cores.NumberOfCores
+	cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\avx2\Release --libdir=build\avx2\Release\lib --includedir=build\avx2\Release\include --stagedir=build\avx2\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags=""/arch:AVX2 /Ox /FS"" cflags=""/arch:AVX2 /Ox /FS"" install" >> $Log
+	# Regular  static+shared release libraries
+	cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\x64\Release --libdir=build\x64\Release\lib --includedir=build\x64\Release\include --stagedir=build\x64\Release --layout=versioned address-model=64 threading=multi link=static,shared variant=release cxxflags="" -FS"" cflags="" -FS"" install" >> $Log
+	# Regular  static+shared debug libraries
+	cmd /c "b2.exe -j$corestr -a --build-type=minimal --prefix=build\x64\Debug --libdir=build\x64\Debug\lib --includedir=build\x64\Debug\include --stagedir=build\x64\Debug --layout=versioned address-model=64 threading=multi link=static,shared variant=debug cxxflags="" -FS"" cflags="" -FS"" install" >> $Log
+	Validate "build/x64/Debug/lib/boost_python-vc140-mt-gd-1_60.dll" "build/x64/Debug/lib/boost_system-vc140-mt-gd-1_60.dll" `
+		"build/x64/Release/lib/boost_python-vc140-mt-1_60.dll" "build/x64/Release/lib/boost_system-vc140-mt-1_60.dll" `
+		"build/avx2/Release/lib/boost_python-vc140-mt-1_60.dll" "build/avx2/Release/lib/boost_system-vc140-mt-1_60.dll"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # libsodium
@@ -448,19 +509,25 @@ Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Rel
 SetLog "gsl"
 Write-Host -NoNewline "building gsl..."
 cd $root/src-stage1-dependencies/gsl-$gsl_version/build.vc14
-#prep headers
-msbuild gsl.lib.sln /t:gslhdrs >> $Log
-#static
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
-msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-#dll
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
-msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
-Validate "x64/Debug/dll/gsl.dll" "x64/Debug/dll/cblas.dll" "x64/Debug/lib/gsl.lib" "x64/Debug/lib/cblas.lib" `
+if ((TryValidate "x64/Debug/dll/gsl.dll" "x64/Debug/dll/cblas.dll" "x64/Debug/lib/gsl.lib" "x64/Debug/lib/cblas.lib" `
 	"x64/Release/dll/gsl.dll" "x64/Release/dll/cblas.dll" "x64/Release/lib/gsl.lib" "x64/Release/lib/cblas.lib" `
-	"x64/Release-AVX2/dll/gsl.dll" "x64/Release-AVX2/dll/cblas.dll" "x64/Release-AVX2/lib/gsl.lib" "x64/Release-AVX2/lib/cblas.lib" 
+	"x64/Release-AVX2/dll/gsl.dll" "x64/Release-AVX2/dll/cblas.dll" "x64/Release-AVX2/lib/gsl.lib" "x64/Release-AVX2/lib/cblas.lib" ) -eq $false) {
+	#prep headers
+	msbuild gsl.lib.sln /t:gslhdrs >> $Log
+	#static
+	msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
+	msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
+	msbuild gsl.lib.sln /m /t:cblaslib /t:gsllib /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
+	#dll
+	msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release;platform=x64"  >> $Log
+	msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Debug;platform=x64"  >> $Log
+	msbuild gsl.dll.sln /m /t:cblasdll /t:gsldll /maxcpucount /p:"configuration=Release-AVX2;platform=x64"  >> $Log
+	Validate "x64/Debug/dll/gsl.dll" "x64/Debug/dll/cblas.dll" "x64/Debug/lib/gsl.lib" "x64/Debug/lib/cblas.lib" `
+		"x64/Release/dll/gsl.dll" "x64/Release/dll/cblas.dll" "x64/Release/lib/gsl.lib" "x64/Release/lib/cblas.lib" `
+		"x64/Release-AVX2/dll/gsl.dll" "x64/Release-AVX2/dll/cblas.dll" "x64/Release-AVX2/lib/gsl.lib" "x64/Release-AVX2/lib/cblas.lib" 
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # qt4
@@ -494,34 +561,40 @@ $ErrorActionPreference = "Continue"
 $env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
 $env:QTDIR = "$root/src-stage1-dependencies/Qt4"
 $env:Path = "$root\src-stage1-dependencies\Qt4\bin;" + $oldPath
-# Qt doesn't do a great job of allowing reconfiguring, so we go a little overkill
-# with the "extra strong" cleaning routines.
-# even this doesn't always work (50%??) so your best bet really is to wipe the Qt4 folder every time you rebuild.
-# more experimentation needed.
-if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile) 
-{
-	nmake clean 2>&1 >> $Log
-	nmake confclean 2>&1 >> $Log
-	nmake distclean 2>&1 >> $Log
-}
-# The below configure builds the base qmake.exe in the "root" directory and will point the environment to the main source tree.  Then the following build commands will convince Qt to build in a different directory
-# while still using the original as the source base.  THIS IS A HACK.  Qt4 does not like there to be more than one build on the same machine and is very troublesome in that regard.
-# If there are build fails, wipe the whole Qt4 directory and start over.  confclean doesn't do everything it promises.
-.\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix .  -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp 2>&1 >> $Log
-nmake confclean 2>&1 >> $Log
-# debugDLL build
-MakeQT "DebugDLL"
-# release AVX2 DLL build
-MakeQT "ReleaseDLL-AVX2"
-# releaseDLL build
-MakeQT "ReleaseDLL"
-
-#clean up enormous amount of temp files
-nmake clean  2>&1>> $Log
-
-Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
+if ((TryValidate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
 	"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore4.dll" "build/Releasedll/lib/QtOpenGL4.dll" "build/Releasedll/lib/QtSvg4.dll" "build/Releasedll/lib/QtGui4.dll" `
-	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" 
+	"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" ) -eq $false) {
+	# Qt doesn't do a great job of allowing reconfiguring, so we go a little overkill
+	# with the "extra strong" cleaning routines.
+	# even this doesn't always work (50%??) so your best bet really is to wipe the Qt4 folder every time you rebuild.
+	# more experimentation needed.
+	if (Test-Path $root/src-stage1-dependencies/Qt4/Makefile) 
+	{
+		nmake clean 2>&1 >> $Log
+		nmake confclean 2>&1 >> $Log
+		nmake distclean 2>&1 >> $Log
+	}
+	# The below configure builds the base qmake.exe in the "root" directory and will point the environment to the main source tree.  Then the following build commands will convince Qt to build in a different directory
+	# while still using the original as the source base.  THIS IS A HACK.  Qt4 does not like there to be more than one build on the same machine and is very troublesome in that regard.
+	# If there are build fails, wipe the whole Qt4 directory and start over.  confclean doesn't do everything it promises.
+	.\configure.exe -opensource -confirm-license -platform win32-msvc2015 -qmake -make nmake -prefix .  -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp 2>&1 >> $Log
+	nmake confclean 2>&1 >> $Log
+	# debugDLL build
+	MakeQT "DebugDLL"
+	# release AVX2 DLL build
+	MakeQT "ReleaseDLL-AVX2"
+	# releaseDLL build
+	MakeQT "ReleaseDLL"
+
+	#clean up enormous amount of temp files
+	nmake clean  2>&1>> $Log
+
+	Validate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll" "build/DebugDLL/lib/QtOpenGLd4.dll" "build/DebugDLL/lib/QtSvgd4.dll" "build/DebugDLL/lib/QtGuid4.dll" `
+		"build/Releasedll/bin/qmake.exe" "build/Releasedll/lib/QtCore4.dll" "build/Releasedll/lib/QtOpenGL4.dll" "build/Releasedll/lib/QtSvg4.dll" "build/Releasedll/lib/QtGui4.dll" `
+		"build/Releasedll-AVX2/bin/qmake.exe" "build/Releasedll-AVX2/lib/QtCore4.dll" "build/Releasedll-AVX2/lib/QtOpenGL4.dll" "build/Releasedll-AVX2/lib/QtSvg4.dll" "build/Releasedll-AVX2/lib/QtGui4.dll" 
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # Qt5
@@ -537,26 +610,32 @@ Function MakeQt5
 	Write-Host -NoNewline "  $type...configuring..."
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
+	$debug = if ($type -match "Debug") {"d"} else {""}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
 	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl; $archflags=@('-sse3','-ssse3','-sse4.1','-sse4.2','-avx','-avx2')} else {$env:CL = $oldCL; $archflags=""}
 	cd $root/src-stage1-dependencies/Qt5
-	if (Test-Path  $root/src-stage1-dependencies/Qt5/build/$type) {rm -r -Force $root/src-stage1-dependencies/Qt5/build/$type}
-	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt5/build/$type >> $Log
-	cd $root/src-stage1-dependencies/Qt5/build/$type
-	../../configure.bat $flags $staticflag -prefix $root/src-stage1-dependencies/Qt5/build/$type `
-		-skip qtdeclarative -skip qttools -skip qtconnectivity -skip qtscript -skip qtcanvas3d -skip qtdoc -skip qtserialbus -skip qtserialport `
-		-skip qtwebview -skip qtactiveqt -skip qtenginio -skip qtandroidextras -skip qtwebsockets -skip qtwebengine -skip qtwebchannel -skip qtxmlpatterns `
-		-nomake examples -nomake tools -nomake tests `
-		-platform win32-msvc2015 -opensource -confirm-license -qmake $archflags -sse2 -ltcg -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop `
-		-qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\$ssltype" `
-		-l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 `
-		OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include"  2>&1 >> $Log
-	Write-Host -NoNewline "building..."
-	nmake module-qtbase 2>&1 >> $Log
-	nmake module-qtsvg 2>&1 >> $Log
-	nmake module-qtbase install 2>&1 >> $Log
-	nmake module-qtsvg install 2>&1 >> $Log
-	Write-Host "done" 
+	if ((TryValidate "build/$type/bin/qmake.exe" "build/$type/bin/Qt5Core$debug.dll" "build/$type/bin/Qt5OpenGL$debug.dll" "build/$type/bin/Qt5Svg$debug.dll" "build/$type/bin/Qt5Gui$debug.dll") -eq $false) {
+		if (Test-Path  $root/src-stage1-dependencies/Qt5/build/$type) {rm -r -Force $root/src-stage1-dependencies/Qt5/build/$type}
+		New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt5/build/$type >> $Log
+		cd $root/src-stage1-dependencies/Qt5/build/$type
+		../../configure.bat $flags $staticflag -prefix $root/src-stage1-dependencies/Qt5/build/$type `
+			-skip qtdeclarative -skip qttools -skip qtconnectivity -skip qtscript -skip qtcanvas3d -skip qtdoc -skip qtserialbus -skip qtserialport `
+			-skip qtwebview -skip qtactiveqt -skip qtenginio -skip qtandroidextras -skip qtwebsockets -skip qtwebengine -skip qtwebchannel -skip qtxmlpatterns `
+			-nomake examples -nomake tools -nomake tests `
+			-platform win32-msvc2015 -opensource -confirm-license -qmake $archflags -sse2 -ltcg -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop `
+			-qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\$ssltype" `
+			-l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 `
+			OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include"  2>&1 >> $Log
+		Write-Host -NoNewline "building..."
+		nmake module-qtbase 2>&1 >> $Log
+		nmake module-qtsvg 2>&1 >> $Log
+		nmake module-qtbase install 2>&1 >> $Log
+		nmake module-qtsvg install 2>&1 >> $Log
+		Validate "bin/qmake.exe" "bin/Qt5Core$debug.dll" "bin/Qt5OpenGL$debug.dll" "bin/Qt5Svg$debug.dll" "bin/Qt5Gui$debug.dll"
+		Write-Host "done" 
+	} else {
+		Write-Host "already built"
+	}
 }
 cd $root/src-stage1-dependencies/Qt5
 # Various things in Qt build are intepreted as errors so 
@@ -598,31 +677,36 @@ Function MakeQwt {
 $ErrorActionPreference = "Continue"
 $env:QMAKESPEC = "win32-msvc2015"
 cd $root\src-stage1-dependencies\qwt-$qwt_version 
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
-MakeQwt
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd5.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
-MakeQwt
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
-MakeQwt
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt5.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
-MakeQwt
+if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
+	"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib") -eq $false) {
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+	MakeQwt
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd5.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+	MakeQwt
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG-=debug"" ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+	MakeQwt
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwt5.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+	MakeQwt
 
-$env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $oldCL
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
-MakeQwt
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt5.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
-MakeQwt
+	$env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $oldCL
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
+	MakeQwt
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt5.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
+	MakeQwt
 
-$env:CL = $oldCL
-$ErrorActionPreference = "Stop"
-Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
-	"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
+	$env:CL = $oldCL
+	$ErrorActionPreference = "Stop"
+	Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
+		"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # QWT 6
@@ -643,43 +727,47 @@ Function MakeQwt6 {
 $ErrorActionPreference = "Continue"
 $env:QMAKESPEC = "win32-msvc2015"
 cd $root\src-stage1-dependencies\qwt-$qwt6_version
+if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
+	"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib") -eq $false) {
+	# Debug DLL (linked to debug Qt4 libraries)
+	$env:_CL_ = " /Zi "
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=YES"" ""AVX2=NO"""
+	MakeQwt6
+	# Debug static
+	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=NO"" ""AVX2=NO"""
+	MakeQwt6
 
-# Debug DLL (linked to debug Qt4 libraries)
-$env:_CL_ = " /Zi "
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=YES"" ""AVX2=NO"""
-MakeQwt6
-# Debug static
-$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""MAKEDLL=NO"" ""AVX2=NO"""
-MakeQwt6
-
-# Release DLL
-$env:_CL_ = " /Zi "
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt6.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
-MakeQwt6
-# Release static
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro  ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
-MakeQwt6
+	# Release DLL
+	$env:_CL_ = " /Zi "
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt6.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
+	MakeQwt6
+	# Release static
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib"" /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release/lib/qwt.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro  ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
+	MakeQwt6
 
 
-# Release AVX2 DLL
-$env:_CL_ = " /Ox /arch:AVX2 /Zi /Gs- " 
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
-MakeQwt6
-# Release AVX2 Static
-$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
-$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
-MakeQwt6
+	# Release AVX2 DLL
+	$env:_CL_ = " /Ox /arch:AVX2 /Zi /Gs- " 
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
+	MakeQwt6
+	# Release AVX2 Static
+	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
+	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
+	MakeQwt6
 
-$env:_CL_ = ""
-$env:_LINK_ = ""
-$ErrorActionPreference = "Stop"
-cd $root\src-stage1-dependencies\qwt-$qwt6_version
-Validate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
-	"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib"
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	cd $root\src-stage1-dependencies\qwt-$qwt6_version
+	Validate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
+		"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # QwtPlot3D
@@ -690,27 +778,32 @@ Function MakeQwtPlot3d {
 	$configuration = $args[0]
 	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
 	cd $root\src-stage1-dependencies\qwtplot3d
-	New-Item -Force -ItemType Directory build/$configuration
-	$env:Path = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin;$root/src-stage1-dependencies/Qt4/build/$configDLL/bin;"+ $oldPath
-	$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
-	$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
-	if ($configuration -match "AVX2") {
-		$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /arch:AVX2 /Ox /Zi "
-		$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.lib "
+	Write-Host -NoNewline "building QwtPlot3d $configuration..."
+	if ((TryValidate "build/$configuration/qwtplot3d.dll") -eq $false) {
+		New-Item -Force -ItemType Directory build/$configuration
+		$env:Path = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin;$root/src-stage1-dependencies/Qt4/build/$configDLL/bin;"+ $oldPath
+		$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
+		$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
+		if ($configuration -match "AVX2") {
+			$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /arch:AVX2 /Ox /Zi "
+			$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.lib "
+		} else {
+			$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /Zi "
+			$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug-Release/lib/qwt6.lib "
+		}
+		if ($configuration -match "Debug") {$buildconfig="Debug"} else {$buildconfig="Release"}
+		$ErrorActionPreference = "Continue"
+		& qmake qwtplot3d.pro 2>&1 >> $Log  
+		devenv qwtplot3d.vcxproj /Upgrade 2>&1 >> $Log  
+		msbuild .\qwtplot3d.vcxproj /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log  
+		Move-Item -Force lib/qwtplot3d.lib build/$configuration
+		Move-Item -Force lib/qwtplot3d.dll build/$configuration
+		if ($configuration -eq "Debug") {Move-Item -Force lib/qwtplot3d.pdb build/$configuration}
+		$env:_CL_ = " "
+		$env:_LINK_ = ""
 	} else {
-		$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /Zi "
-		$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug-Release/lib/qwt6.lib "
+		Write-Host "already built"
 	}
-	if ($configuration -match "Debug") {$buildconfig="Debug"} else {$buildconfig="Release"}
-	$ErrorActionPreference = "Continue"
-	& qmake qwtplot3d.pro 2>&1 >> $Log  
-	devenv qwtplot3d.vcxproj /Upgrade 2>&1 >> $Log  
-	msbuild .\qwtplot3d.vcxproj /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log  
-	Move-Item -Force lib/qwtplot3d.lib build/$configuration
-	Move-Item -Force lib/qwtplot3d.dll build/$configuration
-	if ($configuration -eq "Debug") {Move-Item -Force lib/qwtplot3d.pdb build/$configuration}
-	$env:_CL_ = " "
-	$env:_LINK_ = ""
 }
 MakeQwtPlot3d "Debug"
 MakeQwtPlot3d "Release"
@@ -766,25 +859,29 @@ cd build
 
 Function makeUHD {
 	$configuration = $args[0]
-	Write-Host -NoNewline "  configuring $configuration..."
-	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-	if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
+	if ((TryValidate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h") -eq $false) {
+		Write-Host -NoNewline "  configuring $configuration..."
+		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
 
-	& cmake .. `
-		-G "Visual Studio 14 2015 Win64" `
-		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
-		-DBoost_INCLUDE_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/include/boost-1_60" `
-		-DBoost_LIBRARY_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/lib" `
-		-DLIBUSB_INCLUDE_DIRS="$root/src-stage1-dependencies/libusb/libusb" `
-		-DLIBUSB_LIBRARIES="$root/src-stage1-dependencies/libusb/x64/$configuration/lib/libusb-1.0.lib" 2>&1 >> $Log 
-	Write-Host -NoNewline "building..."
-	msbuild .\UHD.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log 
-	Write-Host -NoNewline "installing..."
-	& cmake -DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration" -DBUILD_TYPE="$buildconfig" -P cmake_install.cmake 2>&1 >> $Log
-	New-Item -ItemType Directory -Path $root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration\share\uhd\examples\ -Force 2>&1 >> $Log
-	cp -Recurse -Force $root/src-stage1-dependencies/uhd-release_$UHD_version/host/build/examples/$buildconfig/* $root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration\share\uhd\examples\
-	Validate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h"
-	$env:_CL_ = ""
+		& cmake .. `
+			-G "Visual Studio 14 2015 Win64" `
+			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+			-DBoost_INCLUDE_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/include/boost-1_60" `
+			-DBoost_LIBRARY_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/lib" `
+			-DLIBUSB_INCLUDE_DIRS="$root/src-stage1-dependencies/libusb/libusb" `
+			-DLIBUSB_LIBRARIES="$root/src-stage1-dependencies/libusb/x64/$configuration/lib/libusb-1.0.lib" 2>&1 >> $Log 
+		Write-Host -NoNewline "building..."
+		msbuild .\UHD.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log 
+		Write-Host -NoNewline "installing..."
+		& cmake -DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration" -DBUILD_TYPE="$buildconfig" -P cmake_install.cmake 2>&1 >> $Log
+		New-Item -ItemType Directory -Path $root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration\share\uhd\examples\ -Force 2>&1 >> $Log
+		cp -Recurse -Force $root/src-stage1-dependencies/uhd-release_$UHD_version/host/build/examples/$buildconfig/* $root/src-stage1-dependencies/uhd-release_$UHD_version\dist\$configuration\share\uhd\examples\
+		Validate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h"
+		$env:_CL_ = ""
+	} else {
+		Write-Host "UHD $configuration already built"
+	}
 }
 
 # AVX2 build
@@ -807,20 +904,25 @@ SetLog "pthreads"
 Write-Host "building pthreads..."
 $ErrorActionPreference = "Continue"
 cd $root\src-stage1-dependencies\pthreads\pthreads.2
-Write-Host -NoNewline "Debug..."
-msbuild .\pthread.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-Write-Host -NoNewline "DLL..."
-msbuild .\pthread.sln /m /p:"configuration=DebugDLL;platform=x64" >> $Log
-Write-Host -NoNewline "Release..."
-msbuild .\pthread.sln /m /p:"configuration=Release;platform=x64" >> $Log
-Write-Host -NoNewline "DLL..."
-msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL;platform=x64" >> $Log
-Write-Host -NoNewline "Release-AVX2..."
-msbuild .\pthread.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
-Write-Host -NoNewline "DLL..."
-msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
-Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
-	"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll"
+if ((TryValidate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
+	"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll") -eq $false) {
+	Write-Host -NoNewline "Debug..."
+	msbuild .\pthread.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	Write-Host -NoNewline "DLL..."
+	msbuild .\pthread.sln /m /p:"configuration=DebugDLL;platform=x64" >> $Log
+	Write-Host -NoNewline "Release..."
+	msbuild .\pthread.sln /m /p:"configuration=Release;platform=x64" >> $Log
+	Write-Host -NoNewline "DLL..."
+	msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL;platform=x64" >> $Log
+	Write-Host -NoNewline "Release-AVX2..."
+	msbuild .\pthread.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log 
+	Write-Host -NoNewline "DLL..."
+	msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
+	Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
+		"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # openblas
@@ -842,24 +944,28 @@ if (!$BuildNumpyWithMKL) {
 		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\openblas-$openblas_version\build\$configuration
-		cmake ..\..\ `
-			-Wno-dev `
-			-G "Visual Studio 14 Win64" `
-			-DTARGET="HASWELL" `
-			-DBUILD_DEBUG="$debug" `
-			-DF_COMPILER="INTEL" `
-			-DCMAKE_Fortran_COMPILER="ifort" `
-			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " `
-			-DNO_LAPACKE="1" `
-			-DNO_LAPACK="1"  2>&1 >> $Log 
-		$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
-		Write-Host -NoNewline "building..."
-		msbuild .\OpenBLAS.sln /m /p:"configuration=$cmakebuildtype;platform=x64" 2>&1 >> $Log 
-		cp $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration\lib\$cmakebuildtype\libopenblas.lib $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration\lib\libopenblas_static.lib 2>&1 >> $Log 
-		$env:_CL_ = ""
-		$env:__INTEL_POST_FFLAGS = ""
-		Validate "lib\libopenblas.lib" "lib\libopenblas.dll" "lib\libopenblas_static.lib"
-		$ErrorActionPreference = "Stop"
+		if ((TryValidate "lib\libopenblas.lib" "lib\libopenblas.dll" "lib\libopenblas_static.lib") -eq $false) {
+			cmake ..\..\ `
+				-Wno-dev `
+				-G "Visual Studio 14 Win64" `
+				-DTARGET="HASWELL" `
+				-DBUILD_DEBUG="$debug" `
+				-DF_COMPILER="INTEL" `
+				-DCMAKE_Fortran_COMPILER="ifort" `
+				-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " `
+				-DNO_LAPACKE="1" `
+				-DNO_LAPACK="1"  2>&1 >> $Log 
+			$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
+			Write-Host -NoNewline "building..."
+			msbuild .\OpenBLAS.sln /m /p:"configuration=$cmakebuildtype;platform=x64" 2>&1 >> $Log 
+			cp $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration\lib\$cmakebuildtype\libopenblas.lib $root\src-stage1-dependencies\OpenBLAS-$openblas_version\build\$configuration\lib\libopenblas_static.lib 2>&1 >> $Log 
+			$env:_CL_ = ""
+			$env:__INTEL_POST_FFLAGS = ""
+			Validate "lib\libopenblas.lib" "lib\libopenblas.dll" "lib\libopenblas_static.lib"
+			$ErrorActionPreference = "Stop"
+		} else {
+			Write-Host "already built"
+		}
 	}
 	MakeOpenBlas "Debug"
 	MakeOpenBlas "Release"
@@ -884,31 +990,76 @@ if (!$BuildNumpyWithMKL -and $hasIFORT) {
 		Write-Host -NoNewline "  configuring $configuration..."
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\lapack\build\$configuration 2>&1 >> $Log 
 		cd $root\src-stage1-dependencies\lapack\build\$configuration
-		cmake ..\..\ `
-			-Wno-dev `
-			-G "Visual Studio 14 Win64" `
-			-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
-			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
-			-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/lapack/dist/$configuration/" `
-			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " 2>&1 >> $Log 
-		$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
-		Write-Host -NoNewline "building..."
-		# use devenv instead of msbuild because of vfproj files unsupported by msbuild
-		devenv .\lapack.sln /project lapack /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
-		devenv .\lapack.sln /project blas /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
-		Write-Host -NoNewline "packaging..."
-		# don't run the INSTALL vcproj because it will fail because the dependencies won't link
-		cmake -DBUILD_TYPE="$cmakebuildtype" -P cmake_install.cmake 2>&1 >> $Log 
-		$env:_CL_ = ""
-		$env:__INTEL_POST_FFLAGS = ""
-		Validate "../../dist/$configuration/lib/blas.lib" "../../dist/$configuration/lib/lapack.lib"
+		if ((TryValidate "../../dist/$configuration/lib/blas.lib" "../../dist/$configuration/lib/lapack.lib") -eq $false) {
+			cmake ..\..\ `
+				-Wno-dev `
+				-G "Visual Studio 14 Win64" `
+				-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
+				-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+				-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/lapack/dist/$configuration/" `
+				-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase " 2>&1 >> $Log 
+			$env:__INTEL_POST_FFLAGS = " /assume:underscore /names:lowercase "
+			Write-Host -NoNewline "building..."
+			# use devenv instead of msbuild because of vfproj files unsupported by msbuild
+			devenv .\lapack.sln /project lapack /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
+			devenv .\lapack.sln /project blas /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
+			Write-Host -NoNewline "packaging..."
+			# don't run the INSTALL vcproj because it will fail because the dependencies won't link
+			cmake -DBUILD_TYPE="$cmakebuildtype" -P cmake_install.cmake 2>&1 >> $Log 
+			$env:_CL_ = ""
+			$env:__INTEL_POST_FFLAGS = ""
+			Validate "../../dist/$configuration/lib/blas.lib" "../../dist/$configuration/lib/lapack.lib"
+		} else {
+			Write-Host "already built"
+		}
 	}
 	MakeLapack "Debug"
 	MakeLapack "Release"
 	MakeLapack "Release-AVX2"
 }
 
-
+# ____________________________________________________________________________________________________________
+# mbedtls (polarssl)
+#
+Write-Host "building mbedtls..."
+SetLog "mbedtls (polarssl)"
+$ErrorActionPreference = "Continue"
+$env:_LINK_ = ""
+function MakembedTLS {
+	$ErrorActionPreference = "Continue"
+	$configuration = $args[0]
+	if ($configuration -match "Debug") {$cmakebuildtype = "Debug"; $debug="Debug"} else {$cmakebuildtype = "Release"; $debug="RelWithDebInfo"}
+	if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
+	if ($configuration -match "DLL") {$DLL = "ON"} else {$DLL = "OFF"}
+	Write-Host -NoNewline "  configuring $configuration..."
+	New-Item -ItemType Directory -Force $root\src-stage1-dependencies\mbedtls-mbedtls-$mbedtls_version\build\$configuration 2>&1 >> $Log 
+	cd $root\src-stage1-dependencies\mbedtls-mbedtls-$mbedtls_version\build\$configuration
+	cmake ..\..\ `
+		-Wno-dev `
+		-G "Visual Studio 14 Win64" `
+		-DENABLE_TESTING="ON" `
+		-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
+		-DUSE_SHARED_MBEDTLS_LIBRARY="$DLL" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/mbedtls-mbedtls-$mbedtls_version/dist/$configuration/" 2>&1 >> $Log 
+	Write-Host -NoNewline "building..."
+	msbuild ".\mbed TLS.sln" /m /p:"configuration=$debug;platform=x64" 2>&1 >> $Log 
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$debug;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_CL_ = ""
+	if ($configuration -match "DLL") {
+		Validate "..\..\dist\$configuration\lib\mbedtls.lib" "..\..\dist\$configuration\lib\mbedtls.dll" 
+	} else {
+		Validate "..\..\dist\$configuration\lib\mbedtls.lib"
+	}
+	$ErrorActionPreference = "Stop"
+}
+MakembedTLS "Debug"
+MakembedTLS "Release"
+MakembedTLS "Release-AVX2"
+MakembedTLS "DebugDLL"
+MakembedTLS "ReleaseDLL"
+MakembedTLS "ReleaseDLL-AVX2"
+	
 # Build GNURadio 3.8+ dependencies only if applicable
 $mm = GetMajorMinor($gnuradio_version)
 if ($mm -eq "3.8") {
@@ -920,10 +1071,15 @@ if ($mm -eq "3.8") {
 	SetLog "log4cpp"
 	Write-Host -NoNewline "Building log4cpp..."
 	cd $root\src-stage1-dependencies\log4cpp\msvc14
-	msbuild msvc14.sln /m /p:"configuration=Release;platform=x64" >> $Log
-	msbuild msvc14.sln /m /p:"configuration=Debug;platform=x64" >> $Log
-	Validate "x64/Release/log4cpp.dll" "x64/Release/log4cpp.pdb"  "x64/Release/log4cppLIB.lib" `
-		"x64/Debug/log4cpp.dll" "x64/Debug/log4cpp.pdb"  "x64/Debug/log4cppD.lib" 
+	if ((TryValidate "x64/Release/log4cpp.dll" "x64/Release/log4cpp.pdb"  "x64/Release/log4cppLIB.lib" `
+		"x64/Debug/log4cpp.dll" "x64/Debug/log4cpp.pdb"  "x64/Debug/log4cppD.lib" ) -eq $false) {
+		msbuild msvc14.sln /m /p:"configuration=Release;platform=x64" >> $Log
+		msbuild msvc14.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+		Validate "x64/Release/log4cpp.dll" "x64/Release/log4cpp.pdb"  "x64/Release/log4cppLIB.lib" `
+			"x64/Debug/log4cpp.dll" "x64/Debug/log4cpp.pdb"  "x64/Debug/log4cppD.lib" 
+	} else {
+		Write-Host "already built"
+	}
 
 # ____________________________________________________________________________________________________________
 # PyQt5
