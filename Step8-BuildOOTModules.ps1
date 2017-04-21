@@ -50,7 +50,7 @@ function BuildDrivers
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/*.exe" "$root/src-stage3/staged_install/$configuration/bin" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy_commands.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
-	"complete"
+	Validate "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.dll"
 	
 	# ____________________________________________________________________________________________________________
 	#
@@ -81,13 +81,13 @@ function BuildDrivers
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-Wno-dev `
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB " 2>&1 >> $Log
-	Write-Host -NoNewline "building bladeRF..."
+	Write-Host -NoNewline "building..."
 	msbuild .\bladeRF.sln /m /p:"configuration=$buildconfig;platform=x64"  2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll" "$root/src-stage3/staged_install/$configuration/bin"
 	Remove-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll"
-	"complete"
+	Validate "$root/src-stage3/oot_code/bladeRF/host/build/$configuration/output/$buildconfig/bladeRF.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -112,7 +112,7 @@ function BuildDrivers
 	msbuild .\rtlsdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	"complete"
+	Validate "$root/src-stage3/oot_code/rtl-sdr/build/$configuration/src/$buildconfig/rtlsdr.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -125,8 +125,10 @@ function BuildDrivers
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/hackrf/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/hackrf/build/$configuration 
 	$env:_CL_ = " $arch "
+	$ErrorActionPreference = "Continue"
 	cmake ../../host/ `
 		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DLIBUSB_INCLUDE_DIR="$root/build/$configuration/include/" `
 		-DLIBUSB_LIBRARIES="$root/build/$configuration/lib/libusb-1.0.lib" `
 		-DTHREADS_PTHREADS_INCLUDE_DIR="$root/build/$configuration/include" `
@@ -140,7 +142,8 @@ function BuildDrivers
 	# this installs hackrf libs to the bin dir, we want to move them
 	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf.lib" "$root/src-stage3/staged_install/$configuration/lib"
 	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf_static.lib" "$root/src-stage3/staged_install/$configuration/lib"
-	"complete"
+	$ErrorActionPreference = "Stop"
+	Validate "$root\src-stage3\oot_code\hackrf\build\$configuration\libhackrf\src\$buildconfig\hackrf.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -155,6 +158,7 @@ function BuildDrivers
 	$env:_CL_ = " $arch "
 	cmake ../../software/libosmosdr/ `
 		-G "Visual Studio 14 2015 Win64" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DLIBUSB_INCLUDE_DIR="$root/build/$configuration/include/" `
 		-DLIBUSB_LIBRARIES="$root/build/$configuration/lib/libusb-1.0.lib" `
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB " `
@@ -163,7 +167,7 @@ function BuildDrivers
 	msbuild .\osmosdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	"complete"
+	Validate "$root\src-stage3\oot_code\osmo-sdr\build\$configuration\src\$buildconfig\osmosdr.dll"
 	
 	
 	# ____________________________________________________________________________________________________________
@@ -183,8 +187,8 @@ function BuildDrivers
 	Write-Host -NoNewline "downloading $configuration UHD firmware images..."
 	if ($configuration -match "Debug") {$ErrorActionPreference = "Continue"}
 	& $pythonroot/$pythonexe $root/src-stage3/staged_install/$configuration/lib/uhd/utils/uhd_images_downloader.py -v -i "$root/src-stage3/staged_install/$configuration/share/uhd/images" 2>&1 >> $log 
-	$ErrorActionPreference = "Stop"
 	"complete"
+	$ErrorActionPreference = "Stop"
 	
 	# ____________________________________________________________________________________________________________
 	#
@@ -219,15 +223,13 @@ function BuildDrivers
 		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
 		-DLINK_LIBRARIES="gnuradio-pmt.lib"  `
 		-Wno-dev 2>&1 >> $Log
-	Write-Host -NoNewline "building gr-iqbal..."
+	Write-Host -NoNewline "building..."
 	msbuild .\gr-iqbalance.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	Validate "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig\gnuradio-iqbalance.dll"
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	"complete"
-	
-
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -283,7 +285,7 @@ function BuildDrivers
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
 	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
-	"complete"
+	Validate "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig\gnuradio-osmosdr.dll"
 }
 
 function BuildOOTModules 
@@ -444,7 +446,7 @@ function BuildOOTModules
 	msbuild .\glfw.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	$env:_CL_ = ""
 	$ErrorActionPreference = "Stop"
-	"complete"
+	Validate "$root\src-stage3\oot_code\glfw\build\$configuration\src\$buildconfig\glfw3.dll"
 	 
 
 	# ____________________________________________________________________________________________________________
@@ -500,10 +502,11 @@ function BuildOOTModules
 		$env:_CL_ = ""
 		$env:Path = $oldPath 
 		$ErrorActionPreference = "Stop"
-		"complete"
+		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-fosphor.dll"
 	} else {
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
 	}
+	
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -540,7 +543,7 @@ function BuildOOTModules
 	"[Paths]" | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII
 	"Prefix = ." | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII -append 
 	$env:_CL_ = ""
-	"complete"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gqrx.exe"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -572,12 +575,12 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	"complete"
+	Validate "$root/build/$configuration/lib/armadillo.lib"
 
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-specest
-	#
+	# 
 	if ($hasIFORT) {
 		SetLog "gr-specest $configuration"
 		$ErrorActionPreference = "Continue"
@@ -612,7 +615,7 @@ function BuildOOTModules
 		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		$ErrorActionPreference = "Stop"
-		"complete"
+		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-specest.dll"
 	} else {
 		Write-Host "skipping $configuration gr-specest, no fortran compiler available"
 	}
@@ -657,6 +660,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-inspector/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-inspector 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-inspector.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -701,7 +705,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-cdma/python/fsm_files/*.fsm $root/src-stage3/staged_install/$configuration/lib/site-packages/cdma/python/fsm_files 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-cdma.dll"
 	
 	# ____________________________________________________________________________________________________________
 	#
@@ -741,6 +745,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-rds/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-rds 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-rds.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -780,6 +785,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-ais/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ais 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-ais.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -819,6 +825,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-display/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-display 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-display.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -858,7 +865,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-ax25/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ax25 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-afsk.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -899,6 +906,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-radar/examples/* $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-radar 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-radar.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -940,6 +948,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-paint/apps/*.bin $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-paint 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-paint.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -980,6 +989,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-paint/examples/*.py $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-mapper 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-mapper.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1022,6 +1032,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.file $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-nacl.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1066,6 +1077,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-eventstream/apps/*.py $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-eventstream 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/eventstream.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1105,6 +1117,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-burst/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-burst 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-burst.dll"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1154,7 +1167,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	"complete"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll"
 
 
 	# ____________________________________________________________________________________________________________
