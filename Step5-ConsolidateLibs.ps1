@@ -128,7 +128,7 @@ Function Consolidate {
 	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/qwt3d 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/$configuration/qwtplot3d.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/$configuration/qwtplot3d.dll $root/build/$configuration/lib/ 2>&1 >> $log
-	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/build/include/* $root/build/$configuration/include/qwt3d 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/Qwtplot3d/include/* $root/build/$configuration/include/qwt3d 2>&1 >> $log
 	"complete"
 
 	# move SDL
