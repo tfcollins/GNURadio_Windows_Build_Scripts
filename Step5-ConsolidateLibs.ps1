@@ -246,6 +246,10 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/lib/freetype.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/include/freetype $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/x64/include/ft2build.h $root/build/$configuration/include/  2>&1 >> $log
+
+	#polarssl / mbedTLS
+	cp -Recurse -Force $root/src-stage1-dependencies/mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/lib/*.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root\src-stage1-dependencies\mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 }
 

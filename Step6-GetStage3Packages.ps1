@@ -222,6 +222,12 @@ GetPackage https://github.com/gnieboer/gr-burst.git -Stage3 -branch "msvc_fixes"
 #
 GetPackage https://github.com/gnieboer/gr-lte.git -Stage3 -branch "msvc_fixes"
 
+# ____________________________________________________________________________________________________________
+#
+# OpenLTE
+#
+GetPackage https://downloads.sourceforge.net/project/openlte/openlte_v$openlte_version.tgz -Stage3
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 

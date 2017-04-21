@@ -244,6 +244,12 @@ GetPatch Imaging_patch.7z Imaging-$PIL_version
 
 # bitarray
 GetPackage https://pypi.python.org/packages/0a/da/9f61d28a20c42b4963334efacfd257c85150ede96d0cd2509b37da69da47/bitarray-$bitarray_version.tar.gz
+
+# mbed-tls (polarssl)
+#
+# Required by OpenLTE
+#
+GetPackage https://github.com/ARMmbed/mbedtls/archive/mbedtls-$mbedtls_version.tar.gz mbedtls
 	
 # get GNURadio 3.8+ dependencies
 $mm = GetMajorMinor($gnuradio_version)
