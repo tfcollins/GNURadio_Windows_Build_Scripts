@@ -52,9 +52,10 @@ function BuildGNURadio {
 
 	$env:PATH = "$root/build/$configuration/lib;$pythonroot/Dlls;" + $oldPath
 
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
 	$ErrorActionPreference = "Continue"
 	# Always use the DLL version of Qt to avoid errors about parent being on a different thread.
-	# ENABLE_MSVC_AVX2_ONLY_MODE is a switch to use in the future if we want to mod the GNURadio cmake files, not currently used (and generates a warning as a result)
 	cmake ../../src/gnuradio `
 		-G "Visual Studio 14 2015 Win64" `
 		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
@@ -68,9 +69,9 @@ function BuildGNURadio {
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root/build/$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
-		-DCMAKE_CXX_FLAGS="$archflag" `
-		-DCMAKE_C_FLAGS="$archflag" `
-		-DENABLE_MSVC_AVX2_ONLY_MODE="OFF" `
+		-DCMAKE_CXX_FLAGS="$archflag /W1" `
+		-DCMAKE_C_FLAGS="$archflag /W1" `
+		-DCMAKE_SHARED_LINKER_FLAGS=" /DEBUG /opt:ref,icf " `
 		-DSPHINX_EXECUTABLE="$pythonroot/Scripts/sphinx-build.exe" `
 		-DCMAKE_BUILD_TYPE="$buildtype" `
 		-Wno-dev
@@ -99,8 +100,6 @@ function BuildGNURadio {
 	Write-Host -NoNewline "Build GNURadio $configuration..."
 	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
 	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
-	$env:_LINK_ = " /DEBUG /opt:ref,icf"
-	$env:_CL_ = " /W1 "
 	Write-Host -NoNewline "building..." 
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
