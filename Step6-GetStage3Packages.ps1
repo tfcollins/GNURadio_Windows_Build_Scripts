@@ -276,7 +276,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
 }
 if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 	# volk submodule did not come across.  This is likely due to a problem with our git repo getting
-	# out of sync with the volk tree.  So we'll just download 1.2.2 release as a backup
+	# out of sync with the volk tree.  So we'll just download $volk_version release as a backup
 	cd $root/src-stage3/src/gnuradio
     $count = 0
     do {
