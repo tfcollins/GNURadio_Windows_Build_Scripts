@@ -129,6 +129,7 @@ function BuildGNURadio {
 	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt
 	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
 	cd $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
+	$ErrorActionPreference = "Continue"
 	cmake ../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
@@ -136,6 +137,7 @@ function BuildGNURadio {
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
 		-Wno-dev
+	$ErrorActionPreference = "Stop"
 	msbuild .\gr-howto.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	$env:_CL_ = ""
