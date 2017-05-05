@@ -909,6 +909,7 @@ makeUHD "Debug"
 SetLog "pthreads"
 Write-Host "building pthreads..."
 $ErrorActionPreference = "Continue"
+$env:_CL_ = ""
 cd $root\src-stage1-dependencies\pthreads\pthreads.2
 if ((TryValidate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
 	"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll") -eq $false) {
