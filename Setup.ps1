@@ -274,6 +274,32 @@ function Validate
 	}
 	"validated complete"
 }
+
+function CheckNoAVX
+{
+	if ($configuration -match "AVX") {return}
+
+	$thisroot = $args[0]
+	if ($thisroot.Length.Equals(0)) {
+		$thisroot=$PWD
+	}
+	cd $thisroot 
+	$avxfound = $false
+	$dirs = $thisroot 
+
+	$libs = $dirs | Get-ChildItem -Recurse -File -Include "*.lib, *.pyd, *.dll, *.exe"
+	foreach ($lib in $libs) {
+		$result = & dumpbin $lib.FullName /DISASM:nobytes /NOLOGO | select-string -pattern "ymm[0-9]"
+		if ($result.length -gt 0) {
+			if ($AVX_Whitelist -notcontains $lib.Name ) {
+				Write-Host -BackgroundColor Black -ForegroundColor Red $lib.FullName + ": AVX FOUND <-----------------------------" 
+				$avxfound = $true
+			}
+		}
+	}
+	if ($avxfound -eq $true) {throw ""  2>&1 >> $null}
+}
+
 #load configuration variables
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
 $Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
@@ -318,6 +344,52 @@ $PIL_version = $Config.VersionInfo.PIL
 $bitarray_version = $Config.VersionInfo.bitarray
 $mbedtls_version = $Config.VersionInfo.mbedtls
 $openlte_version = $Config.VersionInfo.openlte
+
+# The below libraries will have AVX code detected, even for non-AVX builds
+# these libraries all have guards to ensure the feature is supported 
+# whether in the code itself or because the intel fortran compiler added them
+# or it's a known false alarm
+$AVX_Whitelist = @(
+	"boost_log-vc140-mt-1_60.dll",  # specifically built with guards (dump.cpp)
+	"Qt5Gui.dll",                   # specifically built with guards
+	"Qt5Multimedia.dll",            # specifically built with guards
+	"volk.dll",                     # specifically built with guards
+	"sqlite3.dll",
+	"sqlite3_d.dll",
+	"wininst-14.0-amd64.exe",
+	"wininst-9.0-amd64.exe",
+	"gnuradio-specest-fortran.dll", # intel fortran compiler
+	"gnuradio-specest.dll"          # includes openblas_static which uses intel fortran compiler
+	"ssleay32.lib",                 # openssl built with guards
+	"_hashlib.pyd",                 # includes openssl
+	"_ssl.pyd",                     # includes openssl
+	"_hashlib_d.pyd",               # includes openssl 
+	"_ssl_d.pyd",                   # includes openssl
+	
+	"_vq.pyd",                      # scipy begin
+	"lsoda.pyd",
+	"vode.pyd",
+	"_odepack.pyd",
+	"_test_odeint_banded.pyd",
+	"_ppoly.pyd",
+	"cython_blas.pyd",
+	"cython_lapack.pyd",
+	"_fblas.pyd",
+	"_flapack.pyd",
+	"_flinalg.pyd",
+	"_interpolative.pyd",
+	"__odrpack.pyd",
+	"_lbfgsb.pyd",
+	"_sparsetools.pyd",
+	"_arpack.pyd",
+	"_iterative.pyd",
+	"qhull.pyd",
+	"_distance_wrap.pyd",
+	"specfun.pyd",
+	"_ellip_harm_2.pyd",
+	"_ufuncs.pyd",
+	"_funcs_cxx.pyd"                # scipy end
+)
 
 # setup paths
 if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}

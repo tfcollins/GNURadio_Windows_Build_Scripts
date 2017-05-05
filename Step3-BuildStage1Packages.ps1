@@ -311,6 +311,8 @@ if ((TryValidate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.l
 	msbuild .\fftw-3.3-libs.sln /m /p:"configuration=Release DLL-AVX2;platform=x64" >> $Log
 	Validate "x64/Release/libfftwf-3.3.lib" "x64/Release-AVX2/libfftwf-3.3.lib" "x64/Debug/libfftwf-3.3.lib" `
 		"x64/Release DLL/libfftwf-3.3.DLL" "x64/Release DLL-AVX2/libfftwf-3.3.DLL" "x64/Debug DLL/libfftwf-3.3.DLL" 
+	CheckNoAVX "$root/src-stage1-dependencies/fftw-$fftw_version/msvc/x64/Release"
+	CheckNoAVX "$root/src-stage1-dependencies/fftw-$fftw_version/msvc/x64/Release DLL"
 } else {
 	Write-Host "already built"
 }
@@ -704,6 +706,7 @@ if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release
 	$ErrorActionPreference = "Stop"
 	Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
 		"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
+	CheckNoAVX "$root\src-stage1-dependencies\qwt-$qwt_version/build/x64/Debug-Release/lib"
 } else {
 	Write-Host "already built"
 }
@@ -765,6 +768,7 @@ if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" 
 	cd $root\src-stage1-dependencies\qwt-$qwt6_version
 	Validate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
 		"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib"
+	CheckNoAVX "$root\src-stage1-dependencies\qwt-$qwt6_version/build/x64/Release/lib"
 } else {
 	Write-Host "already built"
 }
@@ -920,6 +924,8 @@ if ((TryValidate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Re
 	msbuild .\pthread.sln /m /p:"configuration=ReleaseDLL-AVX2;platform=x64" >> $Log 
 	Validate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Release-AVX2\pthreadVC2.lib" `
 		"x64\DebugDLL\pthreadVC2.dll" "x64\ReleaseDLL\pthreadVC2.dll" "x64\ReleaseDLL-AVX2\pthreadVC2.dll"
+	CheckNoAVX "$root\src-stage1-dependencies\pthreads\pthreads.2\x64\Release"
+	CheckNoAVX "$root\src-stage1-dependencies\pthreads\pthreads.2\x64\ReleaseDLL"
 } else {
 	Write-Host "already built"
 }

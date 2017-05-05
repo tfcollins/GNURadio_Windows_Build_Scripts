@@ -250,6 +250,10 @@ Function Consolidate {
 	#polarssl / mbedTLS
 	cp -Recurse -Force $root/src-stage1-dependencies/mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/lib/*.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root\src-stage1-dependencies\mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
+
+	Write-Host -NoNewline "Confirming AVX configuration..."
+	CheckNoAVX "$root/build/$configuration"
+
 	"complete"
 }
 

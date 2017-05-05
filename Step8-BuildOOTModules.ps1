@@ -51,7 +51,8 @@ function BuildDrivers
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy_commands.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	Validate "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.dll"
-	
+	CheckNoAVX "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration"
+
 	# ____________________________________________________________________________________________________________
 	#
 	# bladeRF
@@ -88,6 +89,7 @@ function BuildDrivers
 	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll" "$root/src-stage3/staged_install/$configuration/bin"
 	Remove-Item -Force -Path "$root/src-stage3/staged_install/$configuration/lib/bladeRF.dll"
 	Validate "$root/src-stage3/oot_code/bladeRF/host/build/$configuration/output/$buildconfig/bladeRF.dll"
+	CheckNoAVX "$root/src-stage3/oot_code/bladeRF/host/build/$configuration/output/$buildconfig"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -113,6 +115,7 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	Validate "$root/src-stage3/oot_code/rtl-sdr/build/$configuration/src/$buildconfig/rtlsdr.dll"
+	CheckNoAVX "$root/src-stage3/oot_code/rtl-sdr/build/$configuration/src/$buildconfig"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -144,6 +147,7 @@ function BuildDrivers
 	Copy-Item -Force -Path "$root/src-stage3/staged_install/$configuration/bin/hackrf_static.lib" "$root/src-stage3/staged_install/$configuration/lib"
 	$ErrorActionPreference = "Stop"
 	Validate "$root\src-stage3\oot_code\hackrf\build\$configuration\libhackrf\src\$buildconfig\hackrf.dll"
+	CheckNoAVX "$root\src-stage3\oot_code\hackrf\build\$configuration\libhackrf\src\$buildconfig"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -168,7 +172,7 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	Validate "$root\src-stage3\oot_code\osmo-sdr\build\$configuration\src\$buildconfig\osmosdr.dll"
-	
+	CheckNoAVX "$root\src-stage3\oot_code\osmo-sdr\build\$configuration\src\$buildconfig"
 	
 	# ____________________________________________________________________________________________________________
 	#
@@ -228,6 +232,7 @@ function BuildDrivers
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	Validate "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig\gnuradio-iqbalance.dll"
+	CheckNoAVX "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig"
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 
@@ -286,6 +291,7 @@ function BuildDrivers
 	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
 	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
 	Validate "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig\gnuradio-osmosdr.dll"
+	CheckNoAVX "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig"
 }
 
 function BuildOOTModules 

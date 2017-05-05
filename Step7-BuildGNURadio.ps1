@@ -142,6 +142,9 @@ function BuildGNURadio {
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	
+	Write-Host -NoNewline "confirming AVX configuration..."
+	CheckNoAVX "$root/src-stage3/staged_install/$configuration"
+
 	"complete"
 }
 

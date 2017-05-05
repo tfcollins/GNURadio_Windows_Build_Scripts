@@ -28,6 +28,8 @@ Function BuildMSI {
 
 	Write-Host -NoNewline "Building $configuration package..."
 
+	CheckNoAVX "$root/src-stage3/staged_install/$configuration"
+
 	New-Item -ItemType Directory -Force build\$configuration 2>&1 >> $Log 
 
 	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64"  2>&1 >> $Log 
