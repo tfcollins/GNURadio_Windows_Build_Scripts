@@ -310,6 +310,7 @@ function BuildOOTModules
 	# We can make up for most of the windows incompatibilities, but the inclusion of the "m" lib requires a CMake file change
 	# so need to use a patch
 	# TODO update CMake to include m only with not win32
+	# fails on debug as the include/swig directory is not created during the Debug build
 	#
 	SetLog "gr-acars2 $configuration"
 	$ErrorActionPreference = "Continue"
@@ -321,6 +322,7 @@ function BuildOOTModules
 	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + " -DUSING_GLEW -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:Path="" 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -337,6 +339,7 @@ function BuildOOTModules
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-acars2..."
 	msbuild .\gr-acars2.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -367,6 +370,7 @@ function BuildOOTModules
 	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= "  $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + "  -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:Path="" 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -376,6 +380,7 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-adsb..."
 	msbuild .\gr-adsb.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -403,6 +408,7 @@ function BuildOOTModules
 	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $arch  + " -DNOMINMAX -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:Path="" 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -420,6 +426,7 @@ function BuildOOTModules
 		-DPYUIC4_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/pyuic4.bat" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-air-modes..."
 	msbuild .\gr-gr-air-modes.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -646,6 +653,7 @@ function BuildOOTModules
 	$env:_CL_=" $arch /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi "
 	$env:_LINK_= " /DEBUG:FULL "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -665,6 +673,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-inspector..."
 	msbuild .\gr-inspector.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -690,6 +699,7 @@ function BuildOOTModules
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	(Get-Content "../../python/cdma_parameters.py").replace('/home/anastas/gr-cdma/', '../lib/site-packages/cdma') | Set-Content "../../python/cdma_parameters.py"
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -707,6 +717,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-cdma..."
 	msbuild .\gr-cdma.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -733,6 +744,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -750,6 +762,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-rds..."
 	msbuild .\gr-rds.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -773,6 +786,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -790,6 +804,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-ais..."
 	msbuild .\gr-ais.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -813,6 +828,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -830,6 +846,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-display..."
 	msbuild .\gr-display.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -853,6 +870,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -870,6 +888,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-ax25..."
 	msbuild .\gr-afsk.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -893,6 +912,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -911,6 +931,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-radar..."
 	msbuild .\gr-radar.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -934,6 +955,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -951,6 +973,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-paint..."
 	msbuild .\gr-paint.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -976,6 +999,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -993,6 +1017,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-mapper..."
 	msbuild .\gr-mapper.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -1017,6 +1042,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1036,6 +1062,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-nacl..."
 	msbuild .\gr-nacl.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -1060,6 +1087,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root\src-stage3\build\$configuration\gnuradio-runtime\swig\RelWithDebInfo\_runtime_swig.lib" 
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1080,6 +1108,7 @@ function BuildOOTModules
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX  /I$root/src-stage1-dependencies/pthreads/pthreads.2  " `
 		-DENABLE_STATIC_LIBS="True" `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-eventstream..."
 	msbuild .\eventstream.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -1105,6 +1134,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/gnuradio-fft.lib "
 	$ErrorActionPreference = "Continue"
+	$env:Path="" 
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1122,6 +1152,7 @@ function BuildOOTModules
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-burst..."
 	msbuild .\gr-burst.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -1143,10 +1174,10 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-lte..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-lte/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-lte/build/$configuration 
-	$env:_CL_ = " $arch "
 	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = " $arch -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:Path="" 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
@@ -1168,6 +1199,7 @@ function BuildOOTModules
 		-DCPPUNIT_INCLUDE_DIRS="$root/build/$configuration/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-lte..."
 	msbuild .\gr-lte.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
@@ -1188,6 +1220,7 @@ function BuildOOTModules
 	#
 	# OpenLTE
 	#
+	# RENAME pthreadVC2 to pthread
 	#
 	#SetLog "OpenLTE $configuration"
 	#Write-Host -NoNewline "configuring $configuration OpenLTE..."
@@ -1196,6 +1229,7 @@ function BuildOOTModules
 	#$env:_CL_ = " $arch ";
 	#$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	#$ErrorActionPreference = "Continue"
+	#$env:Path = ""
 	#& cmake ../../ `
 	#	-G "Visual Studio 14 2015 Win64" `
 	#	-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1215,6 +1249,7 @@ function BuildOOTModules
 	#	-DFFTW3F_LIBRARIES="$root/build/$configuration/lib/libfftw3f.lib" `
 	#	-DFFTW3F_INCLUDE_DIRS="$root/build/$configuration/include/" `
 	#	-Wno-dev 2>&1 >> $Log
+	#$env:Path = $oldPath
 	#Write-Host -NoNewline "building OpenLTE..."
 	#msbuild .\openLTE.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	#Write-Host -NoNewline "installing..."
@@ -1325,6 +1360,7 @@ function BuildOOTModules
 		if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 		$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+		$env:Path = ""
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
 			-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
@@ -1340,6 +1376,7 @@ function BuildOOTModules
 			-DBOOST_ROOT="$root/build/$configuration/" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 			-Wno-dev 2>&1 >> $Log
+		$env:Path = $oldPath
 		Write-Host -NoNewline "building gr-gsm..."
 		msbuild .\gr-gsm.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 		Write-Host -NoNewline "installing..."
@@ -1418,6 +1455,8 @@ if ($false)
 	$configuration = "Debug"
 	$configuration = "Release"
 	$configuration = "Release-AVX2"
+
+	$root = "Z:/gr-build"
 
 	ResetLog
 }
