@@ -647,10 +647,10 @@ $env:QTDIR = "$root/src-stage1-dependencies/Qt5"
 $env:Path = "$root\src-stage1-dependencies\Qt5\qtbase\bin;" + $oldPath
 # debugDLL build
 MakeQT5 "DebugDLL"
-# releaseDLL build
-MakeQT5 "ReleaseDLL"
 # release AVX2 DLL build
 MakeQT5 "ReleaseDLL-AVX2"
+# releaseDLL build
+MakeQT5 "ReleaseDLL"
 # Static builds (Disabled for speed since we aren't using them)
 #MakeQT5 "Debug"
 #MakeQT5 "Release-AVX2"
