@@ -34,7 +34,7 @@
 		log4cpp = '1.1.1'
 		gqrx = '2.6'
 		libusb = '1.0.21'   
-		fftw = '3.3.6'      
+		fftw = '3.3.6-pl2'      
 		matplotlib = '2.0.0'
 		PIL = '1.1.7'
 		bitarray = '0.8.1'
