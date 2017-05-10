@@ -1215,56 +1215,11 @@ function BuildOOTModules
 	$ErrorActionPreference = "Stop"
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll"
 
-
-	# ____________________________________________________________________________________________________________
-	#
-	# OpenLTE
-	#
-	# RENAME pthreadVC2 to pthread
-	#
-	#SetLog "OpenLTE $configuration"
-	#Write-Host -NoNewline "configuring $configuration OpenLTE..."
-	#New-Item -Force -ItemType Directory $root/src-stage3/oot_code/OpenLTE_v$openLTE_version/build/$configuration 2>&1 >> $Log
-	#cd $root/src-stage3/oot_code/OpenLTE_v$openLTE_version/build/$configuration
-	#$env:_CL_ = " $arch ";
-	#$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
-	#$ErrorActionPreference = "Continue"
-	#$env:Path = ""
-	#& cmake ../../ `
-	#	-G "Visual Studio 14 2015 Win64" `
-	#	-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
-	#	-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-	#	-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
-	#	-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
-	#	-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
-	#	-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
-	#	-DBOOST_ROOT="$root/build/$configuration/" `
-	#	-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
-	#	-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
-	#	-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
-	#	-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-	#	-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-	#	-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi  " `
-	#	-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi  " `
-	#	-DFFTW3F_LIBRARIES="$root/build/$configuration/lib/libfftw3f.lib" `
-	#	-DFFTW3F_INCLUDE_DIRS="$root/build/$configuration/include/" `
-	#	-Wno-dev 2>&1 >> $Log
-	#$env:Path = $oldPath
-	#Write-Host -NoNewline "building OpenLTE..."
-	#msbuild .\openLTE.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-	#Write-Host -NoNewline "installing..."
-	#msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	## copy the examples across
-	#New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
-	#cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
-	#cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.file $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
-	#$env:_CL_ = ""
-	#$env:_LINK_ = ""
-	#$env:FFTW3_DIR = ""
-	
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
+	
+
 	#
 	# gflags
 	#
@@ -1333,6 +1288,52 @@ function BuildOOTModules
 	# but keep this code here so tinkerers have a place to start.
 	if ($false) 
 	{
+
+		# ____________________________________________________________________________________________________________
+		#
+		# OpenLTE
+		#
+		# RENAME pthreadVC2 to pthread
+		#
+		SetLog "OpenLTE $configuration"
+		Write-Host -NoNewline "configuring $configuration OpenLTE..."
+		New-Item -Force -ItemType Directory $root/src-stage3/oot_code/OpenLTE_v$openLTE_version/build/$configuration 2>&1 >> $Log
+		cd $root/src-stage3/oot_code/OpenLTE_v$openLTE_version/build/$configuration
+		$env:_CL_ = " $arch ";
+		$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
+		$ErrorActionPreference = "Continue"
+		$env:Path = ""
+		& cmake ../../ `
+			-G "Visual Studio 14 2015 Win64" `
+			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+			-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+			-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+			-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+			-DBOOST_ROOT="$root/build/$configuration/" `
+			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
+			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+			-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi  " `
+			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi  " `
+			-DFFTW3F_LIBRARIES="$root/build/$configuration/lib/libfftw3f.lib" `
+			-DFFTW3F_INCLUDE_DIRS="$root/build/$configuration/include/" `
+			-Wno-dev 2>&1 >> $Log
+		$env:Path = $oldPath
+		Write-Host -NoNewline "building OpenLTE..."
+		msbuild .\openLTE.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+		Write-Host -NoNewline "installing..."
+		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+		# copy the examples across
+		New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
+		cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
+		cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.file $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
+		$env:_CL_ = ""
+		$env:_LINK_ = ""
+		$env:FFTW3_DIR = ""
 
 		# ____________________________________________________________________________________________________________
 		#
