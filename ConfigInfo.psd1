@@ -5,7 +5,7 @@
 	VersionInfo = @{
 		gnuradio = '3.7.11' 
 		volk = '1.3'
-		libpng = '1.6.28'
+		libpng = '1.6.29'
 		openssl = '1.0.2j'
 		qwt = '5.2.3'
 		qwt6 = '6.1.3'
