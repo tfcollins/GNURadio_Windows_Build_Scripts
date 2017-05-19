@@ -993,7 +993,7 @@ function BuildOOTModules
 	# gr-mapper
 	#
 	#
-	SetLog "gr-paint $configuration"
+	SetLog "gr-mapper $configuration"
 	Write-Host -NoNewline "configuring $configuration gr-paint..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-mapper/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-mapper/build/$configuration
