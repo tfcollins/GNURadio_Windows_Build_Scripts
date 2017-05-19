@@ -668,6 +668,9 @@ function BuildOOTModules
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DQT_QWTPLOT3D_LIBRARY="$root\build\$configuration\lib\qwtplot3d.lib" `
 		-DQT_QWTPLOT3D_INCLUDE_DIR="$root\build\$configuration\include\qwt3d" `
+		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt" `
 		-DQWT_LIBRARIES="$root\build\$configuration\lib\qwt6.lib" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
