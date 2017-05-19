@@ -934,6 +934,9 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt" `
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
