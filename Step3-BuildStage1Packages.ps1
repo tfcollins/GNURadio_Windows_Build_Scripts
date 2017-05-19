@@ -674,7 +674,7 @@ $ErrorActionPreference = "Stop"
 SetLog "Qwt"
 Write-Host -NoNewline "building qwt5..."
 Function MakeQwt {
-	Write-Host -NoNewLine $args[0] + "..."
+	Write-Host -NoNewLine $args[0]"..."
 	nmake /NOLOGO clean 2>&1 >> $Log
 	nmake /NOLOGO distclean 2>&1 >> $Log
 	Invoke-Expression $command 2>&1 >> $Log
@@ -726,7 +726,7 @@ if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release
 SetLog "Qwt6"
 Write-Host -NoNewline "building qwt6..."
 Function MakeQwt6 {
-	Write-Host -NoNewLine $args[0] + "..."
+	Write-Host -NoNewLine $args[0]"..."
 	nmake /NOLOGO clean 2>&1 >> $Log
 	nmake /NOLOGO distclean 2>&1 >> $Log
 	Invoke-Expression $command 2>&1 >> $Log
@@ -899,7 +899,7 @@ Function makeUHD {
 		Validate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h"
 		$env:_CL_ = ""
 	} else {
-		Write-Host "UHD $configuration already built"
+		Write-Host "  UHD $configuration already built"
 	}
 }
 
