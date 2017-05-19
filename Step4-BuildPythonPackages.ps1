@@ -56,7 +56,8 @@ Function MakeSip
 		if (Test-Path sipconfig.py) {del sipconfig.py}
 		"FLAGS: $kflag $dflag" >> $Log 
 		"command line : configure.py $dflag $kflag -p win32-msvc2015" >> $Log
-		& $pythonroot\python$debugext.exe configure.py $dflag $kflag -p win32-msvc2015 2>&1 >> $Log
+		& $pythonroot\python$debugext.exe configure.py $dflag $kflag --platform win32-msvc2015 2>&1 >> $Log
+		nmake clean 2>&1 >> $Log
 		nmake 2>&1 >> $Log
 		New-Item -ItemType Directory -Force -Path ./build/x64/$type 2>&1 >> $Log
 		cd siplib
