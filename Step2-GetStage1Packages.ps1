@@ -235,7 +235,7 @@ if (!$BuildNumpyWithMKL) {
 GetPackage https://github.com/gnieboer/tensorflow.git -branch "msvc_fixes2"
 
 # QwtPlot3D
-GetPackage https://downloads.sourceforge.net/project/qwtplot3d/qwtplot3d/0.2.7/qwtplot3d-0.2.7.zip
+GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/qwtplot3d.7z
 
 # MatPlotLib
 GetPackage https://pypi.python.org/packages/79/a9/db688816150a6ef91fd9ce284c828467f7271c7dd5982753a73a8e1aaafa/matplotlib-$matplotlib_version.tar.gz
