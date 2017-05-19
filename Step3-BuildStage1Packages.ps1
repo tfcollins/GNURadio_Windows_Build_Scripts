@@ -784,33 +784,42 @@ if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" 
 #
 # requires Qt4
 #
-Function MakeQwtPlot3d {
+# 
+SetLog "QwtPlot3d"
+Function MakeQwtPlot3d { 
 	$configuration = $args[0]
-	if ($configuration -match "AVX2") {$configDLL = "ReleaseDLL-AVX2"} else {$configDLL = $configuration + "DLL"}
 	cd $root\src-stage1-dependencies\qwtplot3d
 	Write-Host -NoNewline "building QwtPlot3d $configuration..."
 	if ((TryValidate "build/$configuration/qwtplot3d.dll") -eq $false) {
-		New-Item -Force -ItemType Directory build/$configuration
-		$env:Path = "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin;$root/src-stage1-dependencies/Qt4/build/$configDLL/bin;"+ $oldPath
+		New-Item -Force -ItemType Directory build/$configuration  2>&1 >> $Log  
 		$env:QMAKESPEC = "$root/src-stage1-dependencies/Qt4/mkspecs/win32-msvc2015"
 		$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
+		if ($configuration -match "Debug") {$buildconfig="Debug"; $debug = "d"} else {$buildconfig="Release"; $debug = ""}
 		if ($configuration -match "AVX2") {
-			$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /arch:AVX2 /Ox /Zi "
-			$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2/lib/qwt6.lib "
+			$configDLL = "ReleaseDLL-AVX2"
+			$env:_CL_ = " /Fdbuild/$configuration/qwtplot3d.pdb /I$root/src-stage1-dependencies/zlib-1.2.8 /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /arch:AVX2 /Ox /Zi "
+			$env:_LINK_ = " /LIBPATH:""$root\src-stage1-dependencies\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStat$configuration"" /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/$configuration/lib/qwt6.lib "
 		} else {
-			$env:_CL_ = " /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /Zi "
-			$env:_LINK_ = " /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug-Release/lib/qwt6.lib "
+			$configDLL = $configuration + "DLL"
+			$env:_CL_ = " /Fdbuild/$configuration/qwtplot3d.pdb /I$root/src-stage1-dependencies/zlib-1.2.8 /I$root/src-stage1-dependencies/Qt4/build/$configDLL/include/QtCore /D_M_X64 /D_WIN64 /UQT_NO_DYNAMIC_CAST /GR /EHsc /Zi "
+			$env:_LINK_ = " /LIBPATH:""$root\src-stage1-dependencies\zlib-1.2.8\contrib\vstudio\vc14\x64\ZlibStat$configuration"" /LIBPATH:""$root/src-stage1-dependencies/Qt4/build/$configDLL/lib"" /LTCG /DEFAULTLIB:""$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/$configuration/lib/qwt$debug6.lib "
 		}
-		if ($configuration -match "Debug") {$buildconfig="Debug"} else {$buildconfig="Release"}
+		$env:Path = "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC\bin\amd64;$root\src-stage1-dependencies\Qt4\build\$configDLL\bin;" +  $oldPath
 		$ErrorActionPreference = "Continue"
-		& qmake qwtplot3d.pro 2>&1 >> $Log  
+		& qmake.exe qwtplot3d.pro  2>&1 >> $Log  
+		# this invocation of qmake seems to get confused about what version of msvc to build for so we need to manually upgrade
 		devenv qwtplot3d.vcxproj /Upgrade 2>&1 >> $Log  
 		msbuild .\qwtplot3d.vcxproj /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log  
 		Move-Item -Force lib/qwtplot3d.lib build/$configuration
 		Move-Item -Force lib/qwtplot3d.dll build/$configuration
+		Move-Item -Force lib/qwtplot3d.exp build/$configuration
 		if ($configuration -eq "Debug") {Move-Item -Force lib/qwtplot3d.pdb build/$configuration}
+		Remove-Item Backup -Recurse  
+		Remove-Item UpgradeLog.htm 
+		Validate "build/$configuration/qwtplot3d.dll"
 		$env:_CL_ = " "
 		$env:_LINK_ = ""
+		$env:Path = $oldPath
 	} else {
 		Write-Host "already built"
 	}
