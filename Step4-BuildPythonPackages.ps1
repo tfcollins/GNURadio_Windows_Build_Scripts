@@ -1045,9 +1045,8 @@ Function SetupPython
 	#
 	SetLog "$configuration bitarray"
 	cd $root\src-stage1-dependencies\bitarray-$bitarray_version
-	if ((TryValidate "dist/bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray$debug_ext.pyd") -eq $false) {
+	if ((TryValidate "dist/bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray$debugext.pyd") -eq $false) {
 		Write-Host -NoNewline "configuring $configuration bitarray..."
-		if ($configuration -match "Release") {$buildconfig="Release"; $pythonexe = "python.exe"} else {$buildconfig="Debug"; $pythonexe = "python_d.exe"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
 		$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
 		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
@@ -1060,13 +1059,13 @@ Function SetupPython
 		$env:_LINK_ = ""
 		move bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.whl bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force 2>&1 >> $log
 		$ErrorActionPreference = "Stop"
-		Validate "bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray$debug_ext.pyd"
+		Validate "bitarray-$bitarray_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/bitarray-$bitarray_version-py2.7-win-amd64.egg/bitarray/_bitarray$debugext.pyd"
 		$env:_CL_ = ""
 		$env:Path = $oldPath
 		$env:PYTHONPATH = ""
 		$ErrorActionPreference = "Stop"
 	} else {
-		Write-Host "gr-burst already built..."
+		Write-Host "bitarray already built..."
 	}
 
 	"finished installing python packages for $configuration"
