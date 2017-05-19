@@ -964,9 +964,10 @@ Function SetupPython
 			-Dtensorflow_BUILD_PYTHON_TESTS=ON `
 			-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
 		Write-Host -NoNewline "building..."
+		msbuild  farmhash_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
 		msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
 		Write-Host -NoNewline "installing..."
-		& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check 2>&1 >> $Log
+		& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0-cp27-cp27m-win_amd64.whl --disable-pip-version-check 2>&1 >> $Log
 		# TODO this step is just for troubleshooting
 		# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
 		# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
