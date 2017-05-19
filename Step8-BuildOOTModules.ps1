@@ -842,6 +842,9 @@ function BuildOOTModules
 		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
+		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
+		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
