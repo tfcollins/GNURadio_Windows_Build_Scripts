@@ -601,6 +601,7 @@ if ((TryValidate "build/DebugDLL/bin/qmake.exe" "build/DebugDLL/lib/QtCored4.dll
 } else {
 	Write-Host "already built"
 }
+$env:Path = $oldPath
 
 # ____________________________________________________________________________________________________________
 # Qt5
@@ -659,6 +660,7 @@ MakeQT5 "ReleaseDLL"
 #MakeQT5 "Debug"
 #MakeQT5 "Release-AVX2"
 #MakeQT5 "Release"
+$env:Path = $oldPath
 $env:CL = $oldCL
 $ErrorActionPreference = "Stop"
 
