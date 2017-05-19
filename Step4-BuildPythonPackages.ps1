@@ -1013,15 +1013,14 @@ Function SetupPython
 	#
 	SetLog "$configuration Python Imaging Library"
 	cd $root\src-stage1-dependencies\Imaging-$PIL_version
-	if ((TryValidate "dist/PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging$debug_ext.pyd") -eq $false) {
+	if ((TryValidate "dist/PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging$debugext.pyd") -eq $false) {
 		Write-Host -NoNewline "configuring $configuration PIL..."
-		if ($configuration -match "Release") {$buildconfig="Release"; $pythonexe = "python.exe"} else {$buildconfig="Debug"; $pythonexe = "python_d.exe"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
 		$env:Path = "$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
 		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
 		Write-Host -NoNewline "building and installing..."
-		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
 		$ErrorActionPreference = "Continue"
+		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
 		Write-Host -NoNewline "creating wheel..."
 		& $pythonroot/$pythonexe setup.py bdist_wininst   2>&1 >> $log
 		cd dist
@@ -1029,7 +1028,7 @@ Function SetupPython
 		$env:_LINK_ = ""
 		move PIL-$PIL_version-cp27-none-win_amd64.whl PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $log
 		$ErrorActionPreference = "Stop"
-		Validate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging$debug_ext.pyd"
+		Validate "PIL-$PIL_version-cp27-none-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/PIL/_imaging$debugext.pyd"
 		$env:_CL_ = ""
 		$env:Path = $oldPath
 		$env:PYTHONPATH = ""
