@@ -932,6 +932,13 @@ Function SetupPython
 	# requires numpy
 	#
 	# Tensorflow won't build in debug mode because the cmake config assumes zlibstatic, not zlibstaticd, so even for debug builds we'll make the Release version.  Also RelWithDebInfo fails as well.
+	# 3 files need to be change.:
+	# farmhash.cmake to only have a single include dir (no /util)
+	# Cmakelists.txt to allow cmake 3.3 and allow python 2.7 uniquely for us (since 2.7 should be compiled w/ 2008 but we don't)
+	# zlib.cmake to change filename
+	# need to add hacked create_def_file.py for py2.7
+	#
+	# need to also change dependencies for tf_core_kernels to wait for farmhash_copy_header project
 	#
 	SetLog "$configuration tensorflow"
 	if ((TryValidate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd") -eq $false) {
