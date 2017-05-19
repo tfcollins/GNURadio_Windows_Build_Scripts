@@ -171,8 +171,10 @@ Function Consolidate {
 
 	# libsodium
 	Write-Host -NoNewline "Consolidating libsodium..."
-	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/gsl 2>&1 >> $log
+	New-Item -ItemType Directory -Force -Path $root/build/$configuration/include/sodium 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/libsodium/bin/x64/$baseconfig/v140/dynamic/* $root/build/$configuration/lib/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/libsodium/src/libsodium/include/sodium.h $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/libsodium/src/libsodium/include/sodium/*.h $root/build/$configuration/include/sodium 2>&1 >> $log
 	"complete"
 
 	# libzmq
@@ -215,6 +217,7 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/x64/$configuration/pthreadVC2.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/COPYING.lib $root/build/$configuration/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/pthread.h $root/build/$configuration/include/ 2>&1 >> $log
+	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/semaphore.h $root/build/$configuration/include/ 2>&1 >> $log
 	cp -Recurse -Force $root/src-stage1-dependencies/pthreads/pthreads.2/sched.h $root/build/$configuration/include/ 2>&1 >> $log
 	"complete"
 

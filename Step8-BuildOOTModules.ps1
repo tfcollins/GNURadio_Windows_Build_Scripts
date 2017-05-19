@@ -137,9 +137,10 @@ function BuildDrivers
 		-DTHREADS_PTHREADS_INCLUDE_DIR="$root/build/$configuration/include" `
 		-DTHREADS_PTHREADS_WIN32_LIBRARY="$root/build/$configuration/lib/pthreadVC2.lib" `
 		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB " `
+		-DFFTW_LIBRARIES="$root/build/$configuration/lib/libfftw3f.lib" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" 2>&1 >> $Log
 	Write-Host -NoNewline "building..."
-	msbuild .\hackrf_all.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	msbuild .\hackrf.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	# this installs hackrf libs to the bin dir, we want to move them
@@ -1053,7 +1054,7 @@ function BuildOOTModules
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DSODIUM_LIBRARIES="$root/build/$configuration/lib/libsodium.lib" `
-		-DSODIUM_INCLUDE_DIRS="$root/src-stage1-dependencies/libsodium/src/libsodium/include" `
+		-DSODIUM_INCLUDE_DIRS="$root/build/$configuration/include" `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
@@ -1104,8 +1105,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/python.exe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX  /I$root/src-stage1-dependencies/pthreads/pthreads.2  " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX  /I$root/src-stage1-dependencies/pthreads/pthreads.2  " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX    " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX  " `
 		-DENABLE_STATIC_LIBS="True" `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
