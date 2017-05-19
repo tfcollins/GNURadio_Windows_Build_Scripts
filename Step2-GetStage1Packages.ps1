@@ -229,7 +229,10 @@ if (!$BuildNumpyWithMKL) {
 }
 
 # tensorflow
-GetPackage https://github.com/tensorflow/tensorflow.git
+#
+# contains patches to work with python 2.7 and cmake 3.3
+#
+GetPackage https://github.com/gnieboer/tensorflow.git -branch "msvc_fixes2"
 
 # QwtPlot3D
 GetPackage https://downloads.sourceforge.net/project/qwtplot3d/qwtplot3d/0.2.7/qwtplot3d-0.2.7.zip
