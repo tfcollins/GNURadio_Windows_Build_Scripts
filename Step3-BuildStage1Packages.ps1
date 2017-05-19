@@ -376,7 +376,7 @@ Function gatherPython {
 	New-Item -ItemType Directory -Force -Path $pythonroot/lib >> $Log
 	New-Item -ItemType Directory -Force -Path $pythonroot/lib/site-packages >> $Log
 	New-Item -ItemType Directory -Force -Path $pythonroot/tcl >> $Log
-	$env:Path = $pythonroot+ ";$OLD_PATH"
+	$env:Path = $pythonroot+ ";$oldPath"
 
 	# no DOCs dir
 	# copy the files
@@ -425,7 +425,7 @@ Function gatherPython {
 	cp ../../Lib/*.* $pythonroot/Lib
 
 	# then install key packages
-	$env:Path = $pythonroot+ ";$oldpath"
+	$env:Path = $pythonroot+ ";$oldPath"
 	# these packages will give warnings about files not found that will be errors on powershell if set to "Stop"
 	$ErrorActionPreference = "Continue"
 	cd $root/src-stage1-dependencies/setuptools-20.1.1
@@ -440,6 +440,7 @@ Function gatherPython {
 	# cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
 	# & $pythonroot\python.exe setup.py install
 	$ErrorActionPreference = "Stop"
+	$env:Path = $oldPath
 }
 
 Write-Host -NoNewline "staging core python..." 
