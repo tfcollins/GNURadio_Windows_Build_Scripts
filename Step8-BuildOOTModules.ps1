@@ -671,7 +671,7 @@ function BuildOOTModules
 		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
 		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
 		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
-		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt" `
+		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt6" `
 		-DQWT_LIBRARIES="$root\build\$configuration\lib\qwt6.lib" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi " `
