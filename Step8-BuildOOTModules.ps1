@@ -533,12 +533,14 @@ function BuildOOTModules
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration
 	$ErrorActionPreference = "Continue"
-	$env:_CL_ = $arch;
+	$env:_CL_ = ""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration\gqrx" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DBOOST_LIBRARYDIR="$root\build\$configuration\lib" `
+		-DCMAKE_C_FLAGS=" $arch " `
+		-DCMAKE_CXX_FLAGS=" $arch " `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building..."
 	msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
