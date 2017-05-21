@@ -478,7 +478,7 @@ function BuildOOTModules
 		} else {
 			$DLLconfig = $configuration + "DLL"
 		}
-		$env:_CL_ = $arch + " -D_WIN32 -Zi "
+		$env:_CL_ = ""
 		$env:_LINK_= " /DEBUG /OPT:ref,icf "
 		$env:Path = $env:AMDAPPSDKROOT + ";" + $oldPath 
 		cmake ../../ `
@@ -492,7 +492,8 @@ function BuildOOTModules
 			-DOpenCL_INCLUDE_DIR="$env:AMDAPPSDKROOT/include" `
 			-DFREETYPE2_PKG_INCLUDE_DIRS="$root/build/$configuration/include" `
 			-DFREETYPE2_PKG_LIBRARY_DIRS="$root/build/$configuration/lib" `
-			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
+			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /Zi " `
+			-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /Zi" `
 			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
