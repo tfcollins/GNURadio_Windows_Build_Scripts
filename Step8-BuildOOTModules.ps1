@@ -607,14 +607,11 @@ function BuildOOTModules
 		Write-Host -NoNewline "configuring $configuration gr-specest..."
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-specest/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-specest/build/$configuration 
+		$env:_CL_ = ""
+		# the quotes that are likely to be in the below path make it impossible to added to the cmake config
+		$env:_LINK_ = " /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
+		$linkflags= " /DEBUG  /NODEFAULTLIB:m.lib  /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 		if ($configuration -match "AVX2") {$fortflags = " /QaxCORE-AVX2 /QxCORE-AVX2 /tune:haswell /arch:AVX2 "} else {$fortflags = " /arch:SSE2 "}
-		if ($configuration -match "Release") {
-			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRT.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
-		} else {
-			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
-		}
-		
-		$env:_CL_ =  " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" " 
 		$froot = $root.Replace('\','/')
 		# set path to empty to ensure another GR install is not located
 		$env:Path="" 
@@ -623,8 +620,12 @@ function BuildOOTModules
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 			-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
-			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration"" " `
-			-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration"" " `
+			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig"" $runtime " `
+			-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig""  $runtime " `
+			-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
@@ -635,11 +636,10 @@ function BuildOOTModules
 			-DLAPACK_LIBRARIES="$froot/build/$configuration/lib/libopenblas_static.lib;$froot/build/$configuration/lib/lapack.lib" `
 			-DCMAKE_Fortran_FLAGS=" /assume:underscore /names:lowercase $fortflags " `
 			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-			-Wno-dev 2>&1 >> $Log
+			-Wno-dev  2>&1 >> $Log
 		$env:Path = $oldPath
 		Write-Host -NoNewline "building gr-specest..."
 		# use devenv instead of msbuild because of vfproj files unsupported by msbuild
-		#devenv .\lapack.sln /project lapack /rebuild "$cmakebuildtype|x64"  2>&1 >> $Log 
 		devenv .\gr-specest.sln  /project ALL_BUILD /rebuild "$buildconfig|x64" 2>&1 >> $Log
 		Write-Host -NoNewline "installing..."
 		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
