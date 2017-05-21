@@ -1094,10 +1094,11 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-eventstream..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-eventstream/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-eventstream/build/$configuration
-	$env:_CL_ = " $arch ";
-	$env:_LINK_= " /DEBUG:FULL $root\src-stage3\build\$configuration\gnuradio-runtime\swig\RelWithDebInfo\_runtime_swig.lib" 
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$linkflags = " /DEBUG " 
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path= ""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1114,12 +1115,18 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX    " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX  " `
+		-DCMAKE_CXX_FLAGS=" /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX $arch $runtime  " `
+		-DCMAKE_C_FLAGS=" /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi /D_ENABLE_ATOMIC_ALIGNMENT_FIX $arch $runtime " `
+		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 		-DENABLE_STATIC_LIBS="True" `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-eventstream..."
+	# test_eventstream build will fail because dependency is set incorrectly
+	msbuild .\eventstream_static.vcxproj /m /p:"configuration=$buildconfig;platform=x64"  2>&1 >> $Log
 	msbuild .\eventstream.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
