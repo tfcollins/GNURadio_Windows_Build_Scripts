@@ -952,13 +952,12 @@ if ((TryValidate "x64\Debug\pthreadVC2.lib" "x64\Release\pthreadVC2.lib" "x64\Re
 # ____________________________________________________________________________________________________________
 # openblas
 #
-# for the moment this only generates a DLL.  The CMAKE code is too immature to support anything else at this point
-# TODO make a static lib
-# Also note that openblas will be slow as the assembly code is not used because it's not in MSVC format
+# Note that openblas will be slow as the assembly code is not used because it's not in MSVC format
 # TODO upgrade openblas asm format
 # openblas lapack and lapacke have a ton of external errors during build
 # TODO build patch for modified CMAKE
-if (!$BuildNumpyWithMKL) {
+# TODO we will always build this for now because gr-specest and Armadillo also would need to point to MKL and right now they don't
+if (!$BuildNumpyWithMKL -or $true) {
 	SetLog "openblas"
 	Write-Host "building openblas..."
 	function MakeOpenBLAS {

@@ -254,9 +254,17 @@ Function Consolidate {
 	cp -Recurse -Force $root/src-stage1-dependencies/mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/lib/*.lib $root/build/$configuration/lib/ 2>&1 >> $log
 	cp -Recurse -Force $root\src-stage1-dependencies\mbedTLS-mbedtls-$mbedTLS_version/dist/$configuration/include/* $root/build/$configuration/include/ 2>&1 >> $log
 
-	#lapack
+	#lapack / openblas
 	cp -Recurse -Force $root/src-stage1-dependencies/lapack/dist/$configuration/lib/*.lib $root/build/$configuration/lib/ 2>&1 >> $log
-
+	if ($BuildNumpyWithMKL)
+	{
+		# gr-specest and Armadillo use blas and lapack and could link to MKL, but for the moment they only link to OpenBLAS so we need this.
+		cp -Recurse -Force $root/src-stage1-dependencies/OpenBLAS-$openblas_version/build/$configuration/lib/libopenblas_static.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	} else {
+		cp -Recurse -Force $root/src-stage1-dependencies/OpenBLAS-$openblas_version/build/$configuration/lib/libopenblas_static.lib $root/build/$configuration/lib/ 2>&1 >> $log
+	}
+	
+	
 	Write-Host -NoNewline "Confirming AVX configuration..."
 	CheckNoAVX "$root/build/$configuration"
 
