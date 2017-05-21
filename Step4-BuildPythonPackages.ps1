@@ -217,7 +217,7 @@ Function SetupPython
 	if ($configuration -match "Debug") { 
 		$d = "d" 
 		$debugext = "_d"
-		 $debug = "--debug"
+		$debug = "--debug"
 	} else {
 		$d = ""
 		$debugext = ""
