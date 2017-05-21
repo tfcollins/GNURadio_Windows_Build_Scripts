@@ -1364,7 +1364,6 @@ function BuildOOTModules
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-gsm/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-gsm/build/$configuration 
 		$env:_CL_ = " $arch "
-		if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 		$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 		$env:Path = ""
