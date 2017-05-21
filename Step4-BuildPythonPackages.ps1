@@ -992,33 +992,30 @@ Function SetupPython
 	#
 	SetLog "$configuration matplotlib"
 	cd $root\src-stage1-dependencies\matplotlib-$matplotlib_version
-	if ($configuration -match "Debug") {
-		Write-Host "matplotlib skipped in Debug due to lack of wx"
+	if ((TryValidate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" ) -eq $false) {
+		$ErrorActionPreference = "Continue"
+		Write-Host -NoNewline "configuring $configuration matplotlib..."
+		if ($configuration -match "Release") {$buildlibdir = "Release"} else {$buildlibdir = "Debug"}
+		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "; $buildlibdir = "Release-AVX2"} else {$env:_CL_ = ""}
+		$env:Path = "$root/build/$buildlibdir/lib;$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
+		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
+		Copy-Item ../x64/lib/zlib1.lib ../x64/lib/z.lib -Force 
+		Write-Host -NoNewline "building and installing..."
+		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
+		Write-Host -NoNewline "creating wheel..."
+		& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
+		$env:_LINK_ = ""
+		Remove-Item ../x64/lib/z.lib
+		move dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.whl dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
+		$ErrorActionPreference = "Stop"
+		Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
+		$env:_CL_ = ""
+		$env:Path = $oldPath
+		$env:PYTHONPATH = ""
 	} else {
-		if ((TryValidate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" ) -eq $false) {
-			$ErrorActionPreference = "Continue"
-			Write-Host -NoNewline "configuring $configuration matplotlib..."
-			if ($configuration -match "Release") {$buildlibdir = "Release"} else {$buildlibdir = "Debug"}
-			if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "; $buildlibdir = "Release-AVX2"} else {$env:_CL_ = ""}
-			$env:Path = "$root/build/$buildlibdir/lib;$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
-			$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
-			Copy-Item ../x64/lib/zlib1.lib ../x64/lib/z.lib -Force 
-			Write-Host -NoNewline "building and installing..."
-			& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
-			Write-Host -NoNewline "creating wheel..."
-			& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
-			$env:_LINK_ = ""
-			Remove-Item ../x64/lib/z.lib
-			move dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.whl dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
-			$ErrorActionPreference = "Stop"
-			Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
-			$env:_CL_ = ""
-			$env:Path = $oldPath
-			$env:PYTHONPATH = ""
-		} else {
-			Write-Host "matplotlib already built..."
-		}
+		Write-Host "matplotlib already built..."
 	}
+
 
 	# ____________________________________________________________________________________________________________
 	# Python Imaging Library (PIL)
