@@ -603,8 +603,14 @@ function BuildOOTModules
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-specest/build/$configuration  2>&1 >> $Log
 		cd $root/src-stage3/oot_code/gr-specest/build/$configuration 
 		if ($configuration -match "AVX2") {$fortflags = " /QaxCORE-AVX2 /QxCORE-AVX2 /tune:haswell /arch:AVX2 "} else {$fortflags = " /arch:SSE2 "}
-		if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
-		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRT.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
+		if ($configuration -match "Release") {
+			$boostconfig = "Release"
+			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRT.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
+		} else {
+			$boostconfig = "Debug"
+			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
+		}
+		
 		$env:_CL_ =  " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" " 
 		$froot = $root.Replace('\','/')
 		# set path to empty to ensure another GR install is not located
