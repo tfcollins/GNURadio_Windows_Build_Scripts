@@ -868,7 +868,7 @@ Function SetupPython
 		Write-Host -NoNewline "building..."
 		& $pythonroot/$pythonexe setup.py build --static $debug 2>&1 >> $log
 		Write-Host -NoNewline "installing..."
-		& $pythonroot/$pythonexe setup.py install 2>&1 >> $log
+		& $pythonroot/$pythonexe setup.py install --static 2>&1 >> $log
 		Write-Host -NoNewline "crafting wheel..."
 		& $pythonroot/$pythonexe setup.py bdist_wheel --static 2>&1 >> $log
 		move dist/lxml-$lxml_version-cp27-cp27${d}m-win_amd64.whl dist/lxml-$lxml_version-cp27-cp27${d}m-win_amd64.$xsltconfig.whl -Force 2>&1 >> $log
