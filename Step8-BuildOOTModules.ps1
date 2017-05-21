@@ -210,7 +210,6 @@ function BuildDrivers
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
 	$env:_CL_ = " $arch "
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG "
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 	cmake ../../ `
@@ -320,7 +319,6 @@ function BuildOOTModules
 	Copy-Item -Force $root\src-stage3\staged_install\$configuration\include\gnuradio\swig\gnuradio.i $root/bin/Lib
 	cd $root/src-stage3/oot_code/gr-acars2/build/$configuration 
 	$env:_CL_ = " $arch ";
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + " -DUSING_GLEW -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:Path="" 
@@ -368,7 +366,6 @@ function BuildOOTModules
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-adsb/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-adsb/build/$configuration 
 	$env:_CL_ = " $arch "
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= "  $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + "  -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:Path="" 
@@ -406,7 +403,6 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-air-modes..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-air-modes/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-air-modes/build/$configuration 
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $arch  + " -DNOMINMAX -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:Path="" 
@@ -604,10 +600,8 @@ function BuildOOTModules
 		cd $root/src-stage3/oot_code/gr-specest/build/$configuration 
 		if ($configuration -match "AVX2") {$fortflags = " /QaxCORE-AVX2 /QxCORE-AVX2 /tune:haswell /arch:AVX2 "} else {$fortflags = " /arch:SSE2 "}
 		if ($configuration -match "Release") {
-			$boostconfig = "Release"
 			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRT.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
 		} else {
-			$boostconfig = "Debug"
 			$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:LIBCMT.lib /DEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:m.lib /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
 		}
 		
@@ -1190,7 +1184,6 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-lte..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-lte/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-lte/build/$configuration 
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = " $arch -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:Path="" 
@@ -1247,7 +1240,6 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gflags..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gflags/build_folder/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gflags/build_folder/$configuration 
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_CL_ = $arch + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	cmake ../../ `
@@ -1278,7 +1270,6 @@ function BuildOOTModules
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/glog/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/glog/build/$configuration 
 	$env:_CL_ = " $arch "
-	if ($configuration -match "Release") {$boostconfig = "Release"} else {$boostconfig = "Debug"}
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_ + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	cmake ../../ `
