@@ -302,6 +302,7 @@ function BuildOOTModules
 	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
 	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
+	if ($configuration -match "Debug") {$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"} else {$debugext = ""; $debug_ext = "";$runtime = "/MD"}
 
 	# ____________________________________________________________________________________________________________
 	#
