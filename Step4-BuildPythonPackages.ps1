@@ -699,9 +699,9 @@ Function SetupPython
 		& $pythonroot/Scripts/wheel.exe convert pygobject-$pygobject_version.win-amd64-py2.7.exe 2>&1 >> $Log
 		move gtk-2.0/pygobject-cp27-none-win_amd64.whl gtk-2.0/pygobject-cp27-none-win_amd64.$configuration.whl -Force
 		cd ..
-		$env:_CL_ = $null
+		$env:_CL_ = ""
 		$env:PATH = $oldPath
-		$env:PKG_CONFIG_PATH = $null
+		$env:PKG_CONFIG_PATH = ""
 		$ErrorActionPreference = "Stop" 
 		Validate "dist/gtk-2.0/pygobject-cp27-none-win_amd64.$configuration.whl" "$pythonroot\lib\site-packages\gtk-2.0\gobject\_gobject.pyd"
 	} else {
@@ -733,9 +733,10 @@ Function SetupPython
 		& $pythonroot/Scripts/wheel.exe convert pygtk-$pygtk_version.win-amd64-py2.7.exe 2>&1 >> $Log
 		move gtk-2.0/pygtk-cp27-none-win_amd64.whl gtk-2.0/pygtk-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $Log
 		cd ..
-		$env:_CL_ = $null
+		$env:_CL_ = ""
+		$env:_LINK_ = ""
 		$env:PATH = $oldPath
-		$env:PKG_CONFIG_PATH = $null
+		$env:PKG_CONFIG_PATH = ""
 		$ErrorActionPreference = "Stop" 
 		Validate "dist/gtk-2.0/pygtk-cp27-none-win_amd64.$configuration.whl" "$pythonroot\lib\site-packages\gtk-2.0\gtk\_gtk.pyd"
 	} else {
@@ -791,7 +792,7 @@ Function SetupPython
 		move wx-3.0-cp27-none-win_amd64.whl wx-3.0-cp27-none-win_amd64.$configuration.whl -Force 2>&1 >> $Log
 		move .\wxPython-common-$wxpython_version.win-amd64.exe .\wxPython-common-$wxpython_version.win-amd64.$configuration.exe -Force 2>&1 >> $Log
 		$ErrorActionPreference = "Stop" 
-		$env:_CL_ = $null
+		$env:_CL_ = ""
 		$env:PATH = $oldPath
 		Validate "$pythonroot\lib\site-packages\wx-3.0-msw\wx\_core_.pyd" "wx-3.0-cp27-none-win_amd64.$configuration.whl"
 	} else {
