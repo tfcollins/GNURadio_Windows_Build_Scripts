@@ -61,6 +61,7 @@ function BuildGNURadio {
 		-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
 		-DQA_PYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
 		-DPYTHON_LIBRARY="$pythonroot\Libs\python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$pythonroot\Libs\python27_d.lib" `
 		-DPYTHON_INCLUDE_DIR="$pythonroot\include"  `
 		-DQT_QMAKE_EXECUTABLE="$root/build/$configuration/bin/qmake.exe" `
 		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
@@ -118,7 +119,12 @@ function BuildGNURadio {
 	}
 	if ($pythonroot -match "avx2") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-avx2 $root/src-stage3/staged_install/$configuration/gr-python27}
 	if ($pythonroot -match "debug") {Rename-Item $root/src-stage3/staged_install/$configuration/gr-python27-debug $root/src-stage3/staged_install/$configuration/gr-python27}
-	Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	if ($configuration -match "debug") {
+		# calls python_d.exe instead
+		Copy-Item -Force -Path $root\src-stage3\src\run_gr_d.bat $root/src-stage3/staged_install/$configuration/bin/run_gr.bat  2>&1 >> $Log
+	} else {
+		Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	}
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
