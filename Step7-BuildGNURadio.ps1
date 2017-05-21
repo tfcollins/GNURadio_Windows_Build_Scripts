@@ -50,7 +50,8 @@ function BuildGNURadio {
 	cd $root/src-stage3/build/$configuration
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 
-	$env:PATH = "$root/build/$configuration/lib;$pythonroot/Dlls;" + $oldPath
+	$env:PATH = "$root/build/$configuration/lib;$pythonroot;$pythonroot/Dlls;$pythonroot/Lib/site-packages/wx-3.0-msw;" + $oldPath
+	$env:PYTHONPATH="$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/wx-3.0-msw;"
 
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
