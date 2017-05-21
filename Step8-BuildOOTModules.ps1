@@ -1020,7 +1020,7 @@ function BuildOOTModules
 	#
 	#
 	SetLog "gr-mapper $configuration"
-	Write-Host -NoNewline "configuring $configuration gr-paint..."
+	Write-Host -NoNewline "configuring $configuration gr-mapper..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-mapper/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-mapper/build/$configuration
 	$env:_CL_ = " $arch ";
