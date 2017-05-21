@@ -927,8 +927,9 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-radar..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-radar/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-radar/build/$configuration
-	$env:_CL_ = " $arch ";
-	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$linkflags= " /DEBUG  /NODEFAULTLIB:m.lib  /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
 	$env:Path="" 
 	& cmake ../../ `
@@ -948,9 +949,14 @@ function BuildOOTModules
 		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
 		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
 		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
-		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt6" `
+		-DQWT_LIBRARIES="$root\build\$configuration\lib\qwt${debugext}6.lib" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch  $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch  $runtime " `
+		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-radar..."
