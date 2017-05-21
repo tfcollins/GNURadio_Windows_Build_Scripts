@@ -660,7 +660,7 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-inspector..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-inspector/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-inspector/build/$configuration
-	$env:_CL_=" $arch /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc /Zi "
+	$env:_CL_=""
 	$env:_LINK_= " /DEBUG:FULL "
 	$ErrorActionPreference = "Continue"
 	$env:Path="" 
@@ -668,6 +668,8 @@ function BuildOOTModules
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DCMAKE_C_FLAGS=" $arch /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
+		-DCMAKE_CXX_FLAGS=" $arch /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
 		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
