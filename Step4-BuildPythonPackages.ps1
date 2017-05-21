@@ -759,26 +759,31 @@ Function SetupPython
 	cd $root\src-stage1-dependencies\wxpython\wxPython
 	if ((TryValidate "$pythonroot\lib\site-packages\wx-3.0-msw\wx\_core_.pyd" "dist\wx-3.0-cp27-none-win_amd64.$configuration.whl") -eq $false) {
 		Write-Host -NoNewline "prepping wxpython..."
-		$canbuildwxdebug = $false
+		$canbuildwxdebug = $true
 		$wxdebug = ($canbuildwxdebug -and $d -eq "d")
+		$wxdebugstring = ""
 		$env:WXWIN="$root\src-stage1-dependencies\wxpython"
-		if ($configuration -match "AVX2") {$env:_CL_ = " /DwxMSVC_VERSION_AUTO /D_UNICODE /DUNICODE /DMSLU /arch:AVX2 "} else {$env:_CL_ = " /DWXWIN=.. /DMSLU /D_UNICODE /DUNICODE /DwxMSVC_VERSION_AUTO "}
-		if ($wxdebug) {
-			$env:_CL_ = " /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswud /D__WXDEBUG__ /D_DEBUG  " + $env:_CL_ 
-			$wxdebugstring = "--debug"
-		} else {
-			$env:_CL_ = " /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswu " + $env:_CL_
-			$wxdebugstring = ""
-		}
-		$env:_CL_ = "/I$root/src-stage1-dependencies/wxpython/include/msvc " + $env:_CL_
 		$env:PATH = "$root/src-stage1-dependencies/x64/bin;$root/src-stage1-dependencies/x64/lib;$pythonroot/Scripts;$pythonroot" + $oldpath
+		$env:_CL_ = "/I$root/src-stage1-dependencies/wxpython/include/msvc /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswu  /DWXWIN=.. /DMSLU /D_UNICODE /DUNICODE /DwxMSVC_VERSION_AUTO "
+		if ($configuration -match "AVX2") {$env:_CL_ = $env:_CL_ +  " /arch:AVX2 "}
 		$ErrorActionPreference = "Continue"
 		if (Test-Path .\build) {del -recurse .\build\*.* 2>&1 >> $Log}
 		& $pythonroot\$pythonexe build-wxpython.py --clean 2>&1 >> $Log
-		& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config --install $wxdebugstring 2>&1 >> $Log
+		if ($wxdebug) {
+			Write-Host -NoNewline "building release..."
+			$env:_CL_ = " /D__WXMSW__  /MDd " + $env:_CL_ 
+			& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config  2>&1 >> $Log
+			$env:_CL_ = " /I$root/src-stage1-dependencies/wxpython/lib/vc140_dll/mswud /D__WXDEBUG__ /D_DEBUG " + $env:_CL_ 
+			$wxdebugstring = "--debug"
+			Write-Host -NoNewline "building & installing..."
+		    & $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config --install $wxdebugstring 2>&1 >> $Log
+		} else {
+			Write-Host -NoNewline "building & installing..."
+			& $pythonroot\$pythonexe build-wxpython.py --build_dir=../build  --force_config --install 2>&1 >> $Log
+		}
 		# the above assumes the core WX dll's will be installed to the system someplace on the PATH.
-		# That's not what we want to do, so since these are gr-python-only DLLs, we'll put then in the DLLs dir for that python build
-		cp "$root/src-stage1-dependencies/wxpython/lib/vc140_dll/wx*.dll" "$pythonroot/DLLs"
+		# That's not what we want to do, so since these are gr-python-only DLLs, we'll put then in the site packages dir
+		cp "$root/src-stage1-dependencies/wxpython/lib/vc140_dll/wx*.dll" "$pythonroot/Lib/site-packages/wx-3.0-msw/wx"
 		#Write-Host -NoNewline "configing..."
 		#& $pythonroot\$pythonexe setup.py clean 2>&1 >> $Log
 		#& $pythonroot\$pythonexe setup.py config MONOLITHIC=1 2>&1 >> $Log
