@@ -690,10 +690,16 @@ Function MakeQwt {
 	nmake /NOLOGO install 2>&1 >> $Log
 }
 $ErrorActionPreference = "Continue"
-$env:QMAKESPEC = "win32-msvc2015"
+
 cd $root\src-stage1-dependencies\qwt-$qwt_version 
 if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
 	"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib") -eq $false) {
+	$env:QMAKESPEC = "win32-msvc2015"
+	$env:QTDIR = "$root/src-stage1-dependencies/Qt4"
+	Copy-Item -Force $root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib\*4.lib $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib
+	Copy-Item -Force $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib\*d4.lib $root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib
+	Copy-Item -Force $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib\*d4.lib $root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib
+
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd.pdb"" "
 	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 	MakeQwt "Debug"
