@@ -492,11 +492,16 @@ if ((TryValidate "build/x64/Debug/lib/boost_python-vc140-mt-gd-1_60.dll" "build/
 SetLog "libsodium"
 Write-Host -NoNewline "building libsodium..."
 cd $root/src-stage1-dependencies/libsodium
-cd builds\msvc\build
-& .\buildbase.bat ..\vs2015\libsodium.sln 14 >> $Log
-cd ../../../bin/x64
-Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib" "Release/v140/ltcg/libsodium.lib" `
-	"Debug/v140/dynamic/libsodium.dll" "Debug/v140/static/libsodium.lib" "Debug/v140/ltcg/libsodium.lib"
+if ((TryValidate "bin/x64/Release/v140/dynamic/libsodium.dll" "bin/x64/Release/v140/static/libsodium.lib" "bin/x64/Release/v140/ltcg/libsodium.lib" `
+	"bin/x64/Debug/v140/dynamic/libsodium.dll" "bin/x64/Debug/v140/static/libsodium.lib" "bin/x64/Debug/v140/ltcg/libsodium.lib") -eq $false) {
+	cd builds\msvc\build
+	& .\buildbase.bat ..\vs2015\libsodium.sln 14 >> $Log
+	cd ../../../bin/x64
+	Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib" "Release/v140/ltcg/libsodium.lib" `
+		"Debug/v140/dynamic/libsodium.dll" "Debug/v140/static/libsodium.lib" "Debug/v140/ltcg/libsodium.lib"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # libzmq
@@ -504,12 +509,17 @@ Validate "Release/v140/dynamic/libsodium.dll" "Release/v140/static/libsodium.lib
 SetLog "libzmq"
 Write-Host -NoNewline "building libzmq..."
 cd $root/src-stage1-dependencies/libzmq/builds/msvc
-# & .\configure.bat 2>&1 >> $log
-cd build
-& .\buildbase.bat ..\vs2015\libzmq.sln 14 2>&1 >> $Log
-cd ../../../bin/x64
-Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Release/v140/ltcg/libzmq.lib" `
-	"Debug/v140/dynamic/libzmq.dll" "Debug/v140/static/libzmq.lib" "Debug/v140/ltcg/libzmq.lib"
+if ((TryValidate "../../bin/x64/Release/v140/dynamic/libzmq.dll" "../../bin/x64/Release/v140/static/libzmq.lib" "../../bin/x64/Release/v140/ltcg/libzmq.lib" `
+	"../../bin/x64/Debug/v140/dynamic/libzmq.dll" "../../bin/x64/Debug/v140/static/libzmq.lib" "../../bin/x64/Debug/v140/ltcg/libzmq.lib") -eq $false) {
+	cd build
+	& .\buildbase.bat ..\vs2015\libzmq.sln 14 2>&1 >> $Log
+	cd ../../../bin/x64
+	Validate "Release/v140/dynamic/libzmq.dll" "Release/v140/static/libzmq.lib" "Release/v140/ltcg/libzmq.lib" `
+		"Debug/v140/dynamic/libzmq.dll" "Debug/v140/static/libzmq.lib" "Debug/v140/ltcg/libzmq.lib"
+} else {
+	Write-Host "already built"
+}
+
 
 # ____________________________________________________________________________________________________________
 # gsl
@@ -838,16 +848,19 @@ MakeQwtPlot3d "Release-AVX2"
 #
 SetLog "Mako"
 Write-Host -NoNewline "installing Mako using pip..."
-
-$pythonroot = "$root\src-stage2-python\gr-python27"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-$ErrorActionPreference = "Continue" # pip will "error" on debug
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$ErrorActionPreference = "Stop"
-"complete"
+if ((TryValidate "$root\src-stage2-python\gr-python27\lib\site-packages\mako" "$root\src-stage2-python\gr-python27-avx2\lib\site-packages\mako" "$root\src-stage2-python\gr-python27-debug\lib\site-packages\mako") -eq $false) {
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	$ErrorActionPreference = "Continue" # pip will "error" on debug
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install mako -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	"complete"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # Requests
@@ -856,15 +869,19 @@ $ErrorActionPreference = "Stop"
 #
 SetLog "Requests"
 Write-Host -NoNewline "installing Requests using pip..."
-$pythonroot = "$root\src-stage2-python\gr-python27"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$pythonroot = "$root\src-stage2-python\gr-python27-debug"
-$ErrorActionPreference = "Continue" # pip will "error" on debug
-& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
-$ErrorActionPreference = "Stop"
-"complete"
+if ((TryValidate "$root\src-stage2-python\gr-python27\lib\site-packages\requests" "$root\src-stage2-python\gr-python27-avx2\lib\site-packages\requests" "$root\src-stage2-python\gr-python27-debug\lib\site-packages\requests") -eq $false) {
+	$pythonroot = "$root\src-stage2-python\gr-python27"
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$pythonroot = "$root\src-stage2-python\gr-python27-avx2"
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$pythonroot = "$root\src-stage2-python\gr-python27-debug"
+	$ErrorActionPreference = "Continue" # pip will "error" on debug
+	& $pythonroot/Scripts/pip.exe --disable-pip-version-check -v install requests -U -t $pythonroot\lib\site-packages 2>&1 >> $log
+	$ErrorActionPreference = "Stop"
+	"complete"
+} else {
+	Write-Host "already built"
+}
 
 # ____________________________________________________________________________________________________________
 # UHD 
@@ -1058,22 +1075,27 @@ function MakembedTLS {
 	Write-Host -NoNewline "  configuring $configuration..."
 	New-Item -ItemType Directory -Force $root\src-stage1-dependencies\mbedtls-mbedtls-$mbedtls_version\build\$configuration 2>&1 >> $Log 
 	cd $root\src-stage1-dependencies\mbedtls-mbedtls-$mbedtls_version\build\$configuration
-	cmake ..\..\ `
-		-Wno-dev `
-		-G "Visual Studio 14 Win64" `
-		-DENABLE_TESTING="ON" `
-		-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
-		-DUSE_SHARED_MBEDTLS_LIBRARY="$DLL" `
-		-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/mbedtls-mbedtls-$mbedtls_version/dist/$configuration/" 2>&1 >> $Log 
-	Write-Host -NoNewline "building..."
-	msbuild ".\mbed TLS.sln" /m /p:"configuration=$debug;platform=x64" 2>&1 >> $Log 
-	Write-Host -NoNewline "installing..."
-	msbuild .\INSTALL.vcxproj /m /p:"configuration=$debug;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	$env:_CL_ = ""
-	if ($configuration -match "DLL") {
-		Validate "..\..\dist\$configuration\lib\mbedtls.lib" "..\..\dist\$configuration\lib\mbedtls.dll" 
+	if (((TryValidate "..\..\dist\$configuration\lib\mbedtls.dll") -eq $false -and ($DLL -eq "ON")) -or `
+		((TryValidate "..\..\dist\$configuration\lib\mbedtls.lib") -eq $false)) {
+		cmake ..\..\ `
+			-Wno-dev `
+			-G "Visual Studio 14 Win64" `
+			-DENABLE_TESTING="ON" `
+			-DCMAKE_BUILD_TYPE="$cmakebuildtype" `
+			-DUSE_SHARED_MBEDTLS_LIBRARY="$DLL" `
+			-DCMAKE_INSTALL_PREFIX="$root/src-stage1-dependencies/mbedtls-mbedtls-$mbedtls_version/dist/$configuration/" 2>&1 >> $Log 
+		Write-Host -NoNewline "building..."
+		msbuild ".\mbed TLS.sln" /m /p:"configuration=$debug;platform=x64" 2>&1 >> $Log 
+		Write-Host -NoNewline "installing..."
+		msbuild .\INSTALL.vcxproj /m /p:"configuration=$debug;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+		$env:_CL_ = ""
+		if ($configuration -match "DLL") {
+			Validate "..\..\dist\$configuration\lib\mbedtls.lib" "..\..\dist\$configuration\lib\mbedtls.dll" 
+		} else {
+			Validate "..\..\dist\$configuration\lib\mbedtls.lib"
+		}
 	} else {
-		Validate "..\..\dist\$configuration\lib\mbedtls.lib"
+		Write-Host "already built"
 	}
 	$ErrorActionPreference = "Stop"
 }
