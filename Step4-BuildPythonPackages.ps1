@@ -951,6 +951,8 @@ Function SetupPython
 	#
 	# need to also change dependencies for tf_core_kernels to wait for farmhash_copy_header project
 	#
+	# Finally, farmhash doesn't seem to change configurations well, and building in debug then release will leave /MDd libraries in release build.  So we need to add a clean.
+	#
 	SetLog "$configuration tensorflow"
 	if ((TryValidate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd") -eq $false) {
 		Write-Host -NoNewline "configuring $configuration tensorflow..."
@@ -975,6 +977,7 @@ Function SetupPython
 			-Dtensorflow_BUILD_PYTHON_TESTS=ON `
 			-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
 		Write-Host -NoNewline "building..."
+		msbuild farmhash.lib /t:Clean /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
 		msbuild  farmhash_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
 		msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
 		Write-Host -NoNewline "installing..."
