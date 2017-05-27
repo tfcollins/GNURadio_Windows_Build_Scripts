@@ -1000,6 +1000,9 @@ Function SetupPython
 	#
 	# required by gr-radar
 	#
+	# Most important part is to set up the paths correctly so it finds all the possible back ends it can use.  The code for the checks is all in buildext.py
+	# And since we haven't consolidated the libraries yet (that's step 5) we need to do add a bunch of different paths to the environment vars.
+	#
 	SetLog "$configuration matplotlib"
 	cd $root\src-stage1-dependencies\matplotlib-$matplotlib_version
 	if ((TryValidate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" ) -eq $false) {
@@ -1007,18 +1010,19 @@ Function SetupPython
 		Write-Host -NoNewline "configuring $configuration matplotlib..."
 		if ($configuration -match "Release") {$buildlibdir = "Release"} else {$buildlibdir = "Debug"}
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "; $buildlibdir = "Release-AVX2"} else {$env:_CL_ = ""}
-		$env:Path = "$root/build/$buildlibdir/lib;$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;"+ $oldPath
-		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0"
-		Copy-Item ../x64/lib/zlib1.lib ../x64/lib/z.lib -Force 
+		$env:INCLUDE = "$pythonroot\Include\pygtk-2.0;$root/src-stage1-dependencies/x64/include;$root/src-stage1-dependencies/x64/include/cairo;$root/src-stage1-dependencies/x64/lib/gtk-2.0/include;" + $oldInclude
+		$env:Path = "$root/build/$buildlibdir/lib;$pythonroot;$pythonroot/Dlls;$pythonroot\scripts;$root/src-stage1-dependencies/x64/include;$pythonroot\Include\pygtk-2.0\;$pythonroot/include;$pythonroot/Lib/site-packages/wx-3.0-msw;$root\src-stage1-dependencies\x64\bin;$root\src-stage1-dependencies\Qt5\build\$configuration\bin;$root\src-stage1-dependencies\Qt4\build\$configuration\bin;"+ $oldPath
+		$env:PYTHONPATH="$pythonroot/Lib/site-packages/wx-3.0-msw;$pythonroot/Lib/site-packages;$pythonroot/Lib/site-packages/gtk-2.0;$pythonroot\Include\pygtk-2.0\"
+		$env:_LINK_ = " /DEBUG "
 		Write-Host -NoNewline "building and installing..."
 		& $pythonroot/$pythonexe setup.py build $debug install 2>&1 >> $log
 		Write-Host -NoNewline "creating wheel..."
 		& $pythonroot/$pythonexe setup.py bdist_wheel   2>&1 >> $log
 		$env:_LINK_ = ""
-		Remove-Item ../x64/lib/z.lib
 		move dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.whl dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl -Force
 		$ErrorActionPreference = "Stop"
 		Validate "dist/matplotlib-$matplotlib_version-cp27-cp27${d}m-win_amd64.$configuration.whl" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/pylab.py" "$pythonroot/lib/site-packages/matplotlib-$matplotlib_version-py2.7-win-amd64.egg/matplotlib/_path$debugext.pyd" 
+		$env:INCLUDE = $oldinclude
 		$env:_CL_ = ""
 		$env:Path = $oldPath
 		$env:PYTHONPATH = ""
