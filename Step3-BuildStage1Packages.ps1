@@ -430,15 +430,10 @@ Function gatherPython {
 	$ErrorActionPreference = "Continue"
 	cd $root/src-stage1-dependencies/setuptools-20.1.1
 	& $pythonroot\$pythonexe setup.py install --single-version-externally-managed --root=/ 2>&1  >> $Log
-	cd $root/src-stage1-dependencies/pip-8.0.2
-	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
+	cd $root/src-stage1-dependencies/pip-9.0.1
+	& $pythonroot\$pythonexe setup.py install --force 2>&1 >> $Log
 	cd $root\src-stage1-dependencies/wheel-0.29.0
-	& $pythonroot\$pythonexe setup.py install 2>&1 >> $Log
-	# TODO do we really need virtualenv since this will be a standalone distro?  Probably not.  This is windows so the user might not even have python installed
-	# which means this install WOULD be the system python which is a really bad idea.  Probably a better move would be to check if a system python is installed
-	# and then react accordingly.
-	# cd $root/src-stage1-dependencies/python27/virtualenv-13.1.0
-	# & $pythonroot\python.exe setup.py install
+	& $pythonroot\$pythonexe setup.py install --force 2>&1 >> $Log
 	$ErrorActionPreference = "Stop"
 	$env:Path = $oldPath
 }
