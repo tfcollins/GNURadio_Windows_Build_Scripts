@@ -355,7 +355,9 @@ cd $root/src-stage1-dependencies/python27/Python-2.7.10/PCbuild.vc14
 if ((TryValidate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
 	"amd64-avx2/_ssl.pyd" "amd64-avx2/_ctypes.pyd" "amd64-avx2/_tkinter.pyd" "amd64-avx2/python.exe" "amd64-avx2/python27.dll" `
 	"amd64/_ssl_d.pyd" "amd64/_ctypes_d.pyd" "amd64/_tkinter_d.pyd" "amd64/python_d.exe" "amd64/python27_d.dll" ) -eq $false) {
+	$env:_CL_ = " -DPy_DEBUG; -D_DEBUG "
 	msbuild pcbuild.sln /m /p:"configuration=Debug;platform=x64" >> $Log
+	$env:_CL_ = ""
 	msbuild pcbuild.sln /m /p:"configuration=Release;platform=x64" >> $Log
 	msbuild pcbuild.sln /m /p:"configuration=Release-AVX2;platform=x64" >> $Log
 	Validate "amd64/_ssl.pyd" "amd64/_ctypes.pyd" "amd64/_tkinter.pyd" "amd64/python.exe" "amd64/python27.dll" `
