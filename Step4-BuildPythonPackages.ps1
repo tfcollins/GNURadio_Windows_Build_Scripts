@@ -657,15 +657,15 @@ Function SetupPython
 		$env:_CL_ = "/MD$d /I$root/src-stage1-dependencies/x64/include /I$root/src-stage1-dependencies/x64/include/cairo /DCAIRO_WIN32_STATIC_BUILD" 
 		$env:_LINK_ = "/DEFAULTLIB:cairo /DEFAULTLIB:pixman-1 /DEFAULTLIB:freetype /LIBPATH:$root/src-stage1-dependencies/x64/lib /LIBPATH:$pythonroot/libs"
 		& $pythonroot/$pythonexe waf build --nocache --out=build --prefix=build/x64/$configuration --includedir=$root\src-stage1\dependencies\x64\include 2>&1 >> $log
-		if ($configuration -match "Debug") {
-			cp -Force "$pythonroot\lib\site-packages\cairo\_cairo.pyd" "$pythonroot\lib\site-packages\cairo\_cairo_d.pyd"
-		}
 		$env:_LINK_ = ""
 		$env:_CL_ = ""
 		$env:LIB = $oldLib
 		$env:INCLUDE = $oldInclude 
 		Write-Host -NoNewline "installing..."
 		& $pythonroot/$pythonexe waf install --nocache --out=build --prefix=build/x64/$configuration 2>&1 >> $log
+		if ($configuration -match "Debug") {
+			cp -Force "$pythonroot\lib\site-packages\cairo\_cairo.pyd" "$pythonroot\lib\site-packages\cairo\_cairo_d.pyd"
+		}
 		cp -Recurse -Force build/x64/$configuration/lib/python2.7/site-packages/cairo $pythonroot\lib\site-packages 2>&1 >> $log
 		cp -Force $root\src-stage1-dependencies\py2cairo-$py2cairo_version\pycairo.pc $pythonroot\lib\pkgconfig\
 		& $pythonroot/$pythonexe waf clean  2>&1 >> $log
