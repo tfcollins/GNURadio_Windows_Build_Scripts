@@ -34,7 +34,7 @@ if (!(Test-Path $root/src-stage3/staged_install)) {
 
 function BuildGNURadio {
 	$configuration = $args[0]
-	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe"}
+	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"; $d=""} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe";$d="d"}
 	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"; $archflag="/arch:AVX2 /Ox /GS- /EHsc"} else {$DLLconfig = $configuration + "DLL"; $archflag="/EHsc"}
 
 	# prep for cmake
@@ -68,6 +68,8 @@ function BuildGNURadio {
 		-DQT_UIC_EXECUTABLE="$root/build/$configuration/bin/uic.exe" `
 		-DQT_MOC_EXECUTABLE="$root/build/$configuration/bin/moc.exe" `
 		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
+		-DQWT_INCLUDE_DIRS="$root/build/$configuration/include/qwt6" `
+		-DQWT_LIBRARIES="$root/build/$configuration/lib/qwt${d}6.lib" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root/build/$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
