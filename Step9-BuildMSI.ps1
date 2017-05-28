@@ -30,6 +30,8 @@ Function BuildMSI {
 
 	CheckNoAVX "$root/src-stage3/staged_install/$configuration"
 
+	cd $root\src-stage4-installer
+
 	New-Item -ItemType Directory -Force build\$configuration 2>&1 >> $Log 
 
 	msbuild gnuradio-winstaller.wixproj /m /p:"configuration=$configuration;root=$root;platform=x64"  2>&1 >> $Log 
