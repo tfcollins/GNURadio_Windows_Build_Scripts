@@ -760,7 +760,7 @@ cd $root\src-stage1-dependencies\qwt-$qwt6_version
 if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" "build/x64/Release/lib/qwt6.dll" "build/x64/Release/lib/qwt.lib" `
 	"build/x64/Release-AVX2/lib/qwt6.dll" "build/x64/Release-AVX2/lib/qwt.lib" "build/x64/Release-AVX2/lib/qwt6.lib") -eq $false) {
 	# Debug DLL (linked to debug Qt4 libraries)
-	$env:_CL_ = " /Zi "
+	$env:_CL_ = " /Zi /EHsc "
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib""  "
 	$env:Path =  " $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib;$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib" + $oldPath
 	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Debug"" ""CONFIG-=release_with_debuginfo"" ""CONFIG=debug"" ""MAKEDLL=YES"" ""AVX2=NO"" ""QT_DLL=YES"""
@@ -771,7 +771,7 @@ if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" 
 	MakeQwt6 "Debug"
 
 	# Release DLL
-	$env:_CL_ = " /Zi "
+	$env:_CL_ = " /Zi /EHsc "
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib""  "
 	$env:Path = " $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib;$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib" + $oldPath
 	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release"" ""CONFIG-=release_with_debuginfo"" ""CONFIG+=release"" ""MAKEDLL=YES"" ""AVX2=NO"" ""QT_DLL=YES"""
@@ -783,7 +783,7 @@ if ((TryValidate "build/x64/Debug/lib/qwtd.lib" "build/x64/Debug/lib/qwtd6.dll" 
 
 
 	# Release AVX2 DLL
-	$env:_CL_ = " /Ox /arch:AVX2 /Zi /Gs- " 
+	$env:_CL_ = " /Ox /arch:AVX2 /Zi /Gs- /EHsc " 
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" "
 	$env:Path = " $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib;$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib" + $oldPath
 	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt6_version/build/x64/Release-AVX2"" ""CONFIG-=release_with_debuginfo"" ""CONFIG+=release"" ""MAKEDLL=YES"" ""AVX2=YES"" ""QT_DLL=YES"""
