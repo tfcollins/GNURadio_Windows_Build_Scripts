@@ -579,8 +579,8 @@ function BuildOOTModules
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
 		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
 		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
