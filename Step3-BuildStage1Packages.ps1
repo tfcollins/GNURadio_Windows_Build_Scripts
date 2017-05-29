@@ -647,7 +647,6 @@ Function MakeQt5
 		nmake module-qtbase install 2>&1 >> $Log
 		nmake module-qtsvg install 2>&1 >> $Log
 		Validate "bin/qmake.exe" "bin/Qt5Core$debug.dll" "bin/Qt5OpenGL$debug.dll" "bin/Qt5Svg$debug.dll" "bin/Qt5Gui$debug.dll"
-		Write-Host "done" 
 	} else {
 		Write-Host "already built"
 	}
