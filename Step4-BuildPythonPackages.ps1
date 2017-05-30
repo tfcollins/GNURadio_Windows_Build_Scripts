@@ -218,10 +218,12 @@ Function SetupPython
 		$d = "d" 
 		$debugext = "_d"
 		$debug = "--debug"
+		$pythonexe = "python_d.exe"
 	} else {
 		$d = ""
 		$debugext = ""
 		$debug = ""
+		$pythonexe = "python.exe"
 	}
 
 	#__________________________________________________________________________________________
@@ -958,13 +960,13 @@ Function SetupPython
 		Write-Host -NoNewline "configuring $configuration tensorflow..."
 		# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
 		if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
-		if ($configuration -match "Release") {$buildconfig="Release"; $pythonexe = "python.exe"} else { $buildconfig="Release"; $pythonexe = "python.exe";}
+		if ($configuration -match "Release") {$buildconfig="Release"; $tfpythonexe = $pythonexe} else { $buildconfig="Release"; $tfpythonexe = "python.exe";}
 		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
 		cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
 		$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
 		& cmake ..\.. `
 			-G "Visual Studio 14 2015 Win64" `
-			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+			-DPYTHON_EXECUTABLE="$pythonroot\$tfpythonexe" `
 			-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
 			-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
 			-DPython_ADDITIONAL_VERSIONS="2.7" `
