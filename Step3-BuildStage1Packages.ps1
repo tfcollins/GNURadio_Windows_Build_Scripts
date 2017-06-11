@@ -913,12 +913,16 @@ Function makeUHD {
 	$configuration = $args[0]
 	if ((TryValidate "..\..\dist\$configuration\bin\uhd.dll" "..\..\dist\$configuration\lib\uhd.lib" "..\..\dist\$configuration\include\uhd.h") -eq $false) {
 		Write-Host -NoNewline "  configuring $configuration..."
-		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"}
-
+		if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2 "} else {$platform = "x64"; $env:_CL_ = ""}
+		if ($configuration -match "Release") {$boostconfig = "Release"; $buildconfig="RelWithDebInfo"; $pythonexe = "python.exe"; $env:_CL_ = $env:_CL_ + " /MD "} else {$boostconfig = "Debug"; $buildconfig="Debug"; $pythonexe = "python_d.exe"; $env:_CL_ = $env:_CL_ + " /MDd "}
+		$linkflags= " /DEBUG  /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:LIBCMTD.lib "
 		& cmake .. `
 			-G "Visual Studio 14 2015 Win64" `
 			-DPYTHON_EXECUTABLE="$pythonroot\$pythonexe" `
+			-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+			-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 			-DBoost_INCLUDE_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/include/boost-1_60" `
 			-DBoost_LIBRARY_DIR="$root/src-stage1-dependencies/boost/build/$platform/$boostconfig/lib" `
 			-DLIBUSB_INCLUDE_DIRS="$root/src-stage1-dependencies/libusb/libusb" `
