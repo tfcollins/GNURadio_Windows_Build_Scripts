@@ -71,8 +71,8 @@
 %define SWIGWARN_PARSE_EXTEND_NAME        326 %enddef
 
 %define SWIGWARN_CPP11_LAMBDA             340 %enddef
-%define SWIGWARN_CPP11_ALIAS_DECLARATION  341 %enddef
-%define SWIGWARN_CPP11_ALIAS_TEMPLATE     342 %enddef
+%define SWIGWARN_CPP11_ALIAS_DECLARATION  341 %enddef  /* redundant now */
+%define SWIGWARN_CPP11_ALIAS_TEMPLATE     342 %enddef  /* redundant now */
 %define SWIGWARN_CPP11_VARIADIC_TEMPLATE  343 %enddef
 
 %define SWIGWARN_IGNORE_OPERATOR_NEW        350 %enddef	/* new */
@@ -191,9 +191,9 @@
 /* -- Language module specific warnings (700 - 899) -- */
 
 
-%define SWIGWARN_D_TYPEMAP_CTYPE_UNDEF           700 %enddef
+%define SWIGWARN_D_TYPEMAP_CTYPE_UNDEF            700 %enddef
 %define SWIGWARN_D_TYPEMAP_IMTYPE_UNDEF           701 %enddef
-%define SWIGWARN_D_TYPEMAP_DTYPE_UNDEF           702 %enddef
+%define SWIGWARN_D_TYPEMAP_DTYPE_UNDEF            702 %enddef
 %define SWIGWARN_D_MULTIPLE_INHERITANCE           703 %enddef
 %define SWIGWARN_D_TYPEMAP_CLASSMOD_UNDEF         704 %enddef
 %define SWIGWARN_D_TYPEMAP_DBODY_UNDEF            705 %enddef
@@ -232,6 +232,7 @@
 %define SWIGWARN_JAVA_TYPEMAP_JAVAIN_UNDEF        818 %enddef
 %define SWIGWARN_JAVA_TYPEMAP_JAVADIRECTORIN_UNDEF    819 %enddef
 %define SWIGWARN_JAVA_TYPEMAP_JAVADIRECTOROUT_UNDEF   820 %enddef
+%define SWIGWARN_JAVA_TYPEMAP_INTERFACECODE_UNDEF 821 %enddef
 %define SWIGWARN_JAVA_COVARIANT_RET               822 %enddef
 %define SWIGWARN_JAVA_TYPEMAP_JAVACONSTRUCT_UNDEF 823 %enddef
 %define SWIGWARN_JAVA_TYPEMAP_DIRECTORIN_NODESC   824 %enddef
@@ -251,6 +252,7 @@
 %define SWIGWARN_CSHARP_TYPEMAP_CSIN_UNDEF        838 %enddef
 %define SWIGWARN_CSHARP_TYPEMAP_CSDIRECTORIN_UNDEF    839 %enddef
 %define SWIGWARN_CSHARP_TYPEMAP_CSDIRECTOROUT_UNDEF   840 %enddef
+%define SWIGWARN_CSHARP_TYPEMAP_INTERFACECODE_UNDEF   841 %enddef
 %define SWIGWARN_CSHARP_COVARIANT_RET             842 %enddef
 %define SWIGWARN_CSHARP_TYPEMAP_CSCONSTRUCT_UNDEF 843 %enddef
 %define SWIGWARN_CSHARP_EXCODE                    844 %enddef

@@ -25,7 +25,7 @@
 // MACRO for use within the std::vector class body
 %define SWIG_STD_VECTOR_MINIMUM_INTERNAL(CSINTERFACE, CONST_REFERENCE, CTYPE...)
 %typemap(csinterfaces) std::vector< CTYPE > "global::System.IDisposable, global::System.Collections.IEnumerable\n    , global::System.Collections.Generic.CSINTERFACE<$typemap(cstype, CTYPE)>\n";
-%typemap(cscode) std::vector< CTYPE > %{
+%proxycode %{
   public $csclassname(global::System.Collections.ICollection c) : this() {
     if (c == null)
       throw new global::System.ArgumentNullException("c");
@@ -398,4 +398,5 @@ SWIG_STD_VECTOR_ENHANCED(unsigned long long)
 SWIG_STD_VECTOR_ENHANCED(float)
 SWIG_STD_VECTOR_ENHANCED(double)
 SWIG_STD_VECTOR_ENHANCED(std::string) // also requires a %include <std_string.i>
+SWIG_STD_VECTOR_ENHANCED(std::wstring) // also requires a %include <std_wstring.i>
 
