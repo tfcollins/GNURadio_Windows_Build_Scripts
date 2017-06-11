@@ -555,17 +555,19 @@ Function MakeQt
 	$ssltype = ($type -replace "Dll", "") -replace "-AVX2", ""
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
-	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
+	if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 "} else {$env:_CL_ =""}
 	New-Item -ItemType Directory -Force -Path $root/src-stage1-dependencies/Qt4/build/$type/bin >> $Log
 	cp -Force $root\src-stage1-dependencies/Qt4/bin/qmake.exe $root/src-stage1-dependencies/Qt4/build/$type/bin
 	.\configure.exe $flags $staticflag -prefix $root/src-stage1-dependencies/Qt4/build/$type -platform win32-msvc2015 -opensource -confirm-license -qmake -ltcg -nomake examples -nomake network -nomake demos -nomake tools -nomake sql -no-script -no-scripttools -no-qt3support -sse2 -directwrite -mp -qt-libpng -qt-libjpeg -opengl desktop -graphicssystem opengl -no-webkit -qt-sql-sqlite -plugin-sql-sqlite -openssl -L "$root\src-stage1-dependencies\openssl\build\x64\$ssltype" -l ssleay32 -l libeay32 -l crypt32 -l kernel32 -l user32 -l gdi32 -l winspool -l comdlg32 -l advapi32 -l shell32 -l ole32 -l oleaut32 -l uuid -l odbc32 -l odbccp32 -l advapi32 OPENSSL_LIBS="-L$root\src-stage1-dependencies\openssl\build\x64\$ssltype -lssleay32 -llibeay32" -I "$root\src-stage1-dependencies\openssl\build\x64\$ssltype\Include" -make nmake  2>&1 >> $Log
-	$env:_CL_ = " /Zi /EHsc "
+	$env:_CL_ = $env:_CL_  + " /Zi /EHsc "
 	$env:_LINK_ = " /DEBUG:FULL "
 	Write-Host -NoNewline "building..."
 	nmake 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	nmake install 2>&1 >> $Log 
+	Copy-Item -Force $root\src-stage1-dependencies/Qt4/lib/*.pdb  $root/src-stage1-dependencies/Qt4/build/$type/lib
 	nmake confclean 2>&1 >> $Log
+	$env:_CL_  = ""
 	Write-Host "done"
 }
 # TODO find/copy over vc140.pdb
