@@ -955,46 +955,66 @@ Function SetupPython
 	# Finally, farmhash doesn't seem to change configurations well, and building in debug then release will leave /MDd libraries in release build.  So we need to add a clean.
 	#
 	SetLog "$configuration tensorflow"
-	if ((TryValidate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd") -eq $false) {
-		Write-Host -NoNewline "configuring $configuration tensorflow..."
-		# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
-		if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
-		if ($configuration -match "Release") {$buildconfig="Release"; $tfpythonexe = $pythonexe} else { $buildconfig="Release"; $tfpythonexe = "python.exe";}
-		New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
-		cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
-		$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
-		& cmake ..\.. `
-			-G "Visual Studio 14 2015 Win64" `
-			-DPYTHON_EXECUTABLE="$pythonroot\$tfpythonexe" `
-			-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
-			-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
-			-DPython_ADDITIONAL_VERSIONS="2.7" `
-			-DPYTHON_LIBRARIES="$pythonroot\libs\python27.lib" `
-			-DPYTHON_LIBRARY="$pythonroot\libs\python27.lib" `
-			-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-			-DCMAKE_BUILD_TYPE="Release" `
-			-DCMAKE_INSTALL_PREFIX="$root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\dist\$configuration" `
-			-Dtensorflow_BUILD_CC_TESTS=ON `
-			-Dtensorflow_BUILD_PYTHON_TESTS=ON `
-			-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
-		Write-Host -NoNewline "building..."
-		msbuild farmhash.lib /t:Clean /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
-		msbuild  farmhash_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
-		msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
-		Write-Host -NoNewline "installing..."
-		& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0-cp27-cp27m-win_amd64.whl --disable-pip-version-check 2>&1 >> $Log
-		# TODO this step is just for troubleshooting
-		# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
-		# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
-		# & ctest -C Release
-		# end troubleshooting
-		Validate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd"
-		$env:_CL_ = ""
-		$env:CL = $oldCL
+	if ($configuration -match "Debug") {
+		Write-Host "tensorflow skipped in debug..."
 	} else {
-		Write-Host "tensorflow already built..."
+		if ((TryValidate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd") -eq $false) {
+			Write-Host -NoNewline "configuring $configuration tensorflow..."
+			# We need to truncate the builddir or else we end up with a handful of files with paths that exceed max size and it fails.
+			if ($configuration -match "AVX2") {$env:_CL_ = " /D__SSE__ /D__SSE2__ /D__SSE3__ /D__SSE4_1__ /D__SSE4_2__ /D__FMA__ /arch:AVX2 "; $builddir = "RelAVX2"} else {$env:_CL_ = " /D__SSE__ /D__SSE2__ "; $builddir=$configuration}
+			if ($configuration -match "Release") {$buildconfig="Release"; $tfpythonexe = $pythonexe;$linkflags = "";$tests="ON"} else { $buildconfig="Debug"; $tfpythonexe = "python_d.exe";$linkflags = " /INCREMENTAL:NO /OPT:REF ";$tests="OFF"}
+			New-Item -ItemType Directory -Force $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir 2>&1 >> $Log
+			cd $root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\build\$builddir
+			$env:Path = "$pythonroot;$pythonroot\bin;$pythonroot\scripts;"+ $oldPath
+			& cmake ..\.. `
+				-G "Visual Studio 14 2015 Win64" `
+				-DPYTHON_EXECUTABLE="$pythonroot\$tfpythonexe" `
+				-DPYTHON_INCLUDE_DIR="$pythonroot\include" `
+				-DNUMPY_INCLUDE_DIR="$pythonroot\lib\site-packages\numpy-$numpy_version-py2.7-win-amd64.egg\numpy\core\include" `
+				-DPython_ADDITIONAL_VERSIONS="2.7" `
+				-DPYTHON_LIBRARIES="$pythonroot\libs\python27.lib" `
+				-DPYTHON_LIBRARY="$pythonroot\libs\python27.lib" `
+				-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+				-DCMAKE_BUILD_TYPE="$buildconfig" `
+				-DCMAKE_INSTALL_PREFIX="$root\src-stage1-dependencies\tensorflow\tensorflow\contrib\cmake\dist\$configuration" `
+				-Dtensorflow_BUILD_CC_TESTS=$tests `
+				-Dtensorflow_BUILD_PYTHON_TESTS=$tests `
+				-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+				-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+				-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+				-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
+				-DCMAKE_CXX_FLAGS="$env:_CL_" 2>&1 >> $Log 
+			Write-Host -NoNewline "building..."
+			# some specific re-ordering of projects and renaming of files is required because of flaws in the cmakelists
+			msbuild  zlib_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			if ($configuration -match "Debug") {
+				Copy-Item -Force "zlib/install/lib/zlibstaticd.lib" "zlib/install/lib/zlibstatic.lib"
+			}
+			msbuild  png_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			if ($configuration -match "Debug") {
+				Copy-Item -Force "png/install/lib/libpng12_staticd.lib" "png/install/lib/libpng12_static.lib"
+			}
+			msbuild  protobuf.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			if ($configuration -match "Debug") {
+				Copy-Item -Force "protobuf/src/protobuf/Debug/libprotobufd.lib" "protobuf/src/protobuf/Debug/libprotobuf.lib"
+				Copy-Item -Force "protobuf/src/protobuf/Debug/libprotocd.lib" "protobuf/src/protobuf/Debug/libprotoc.lib"
+			}
+			msbuild  farmhash.vcxproj /t:Clean /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			msbuild  farmhash_copy_headers_to_destination.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			msbuild  tf_python_build_pip_package.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64" 2>&1 >> $Log 
+			Write-Host -NoNewline "installing..."
+			& $pythonroot\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0-cp27-cp27${d}m-win_amd64.whl --disable-pip-version-check 2>&1 >> $Log
+			# TODO this step is just for troubleshooting
+			# & $root\src-stage3\staged_install\Release-AVX2\gr-python27\$pythonexe -m pip install .\tf_python\dist\tensorflow-1.1.0rc0-cp27-cp27m-win_amd64.whl --disable-pip-version-check  --upgrade --no-deps --force-reinstall
+			# msbuild  ALL_BUILD.vcxproj /m /p:"configuration=$buildconfig;platform=x64;PreferredToolArchitecture=x64"
+			# & ctest -C Release
+			# end troubleshooting
+			Validate "$pythonroot/lib/site-packages/tensorflow/python/_pywrap_tensorflow_internal.pyd"
+			$env:_CL_ = ""
+		} else {
+			Write-Host "tensorflow already built..."
+		}
 	}
-
 	
 	# ____________________________________________________________________________________________________________
 	# matplotlib
