@@ -627,7 +627,7 @@ Function MakeQt5
 	$flags = if ($type -match "Debug") {"-debug"} else {"-release"}
 	$debug = if ($type -match "Debug") {"d"} else {""}
 	$staticflag = if ($type -match "Dll") {""} else {"-static"}
-	if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl; $archflags=@('-sse3','-ssse3','-sse4.1','-sse4.2','-avx','-avx2')} else {$env:CL = $oldCL; $archflags=""}
+	if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 "; $archflags=@('-sse3','-ssse3','-sse4.1','-sse4.2','-avx','-avx2')} else {$env:_CL_ = ""; $archflags=""}
 	cd $root/src-stage1-dependencies/Qt5
 	if ((TryValidate "build/$type/bin/qmake.exe" "build/$type/bin/Qt5Core$debug.dll" "build/$type/bin/Qt5OpenGL$debug.dll" "build/$type/bin/Qt5Svg$debug.dll" "build/$type/bin/Qt5Gui$debug.dll") -eq $false) {
 		if (Test-Path  $root/src-stage1-dependencies/Qt5/build/$type) {rm -r -Force $root/src-stage1-dependencies/Qt5/build/$type}
@@ -646,6 +646,7 @@ Function MakeQt5
 		nmake module-qtsvg 2>&1 >> $Log
 		nmake module-qtbase install 2>&1 >> $Log
 		nmake module-qtsvg install 2>&1 >> $Log
+		$env:_CL_ = ""
 		Validate "bin/qmake.exe" "bin/Qt5Core$debug.dll" "bin/Qt5OpenGL$debug.dll" "bin/Qt5Svg$debug.dll" "bin/Qt5Gui$debug.dll"
 	} else {
 		Write-Host "already built"
@@ -668,7 +669,6 @@ MakeQT5 "ReleaseDLL"
 #MakeQT5 "Release-AVX2"
 #MakeQT5 "Release"
 $env:Path = $oldPath
-$env:CL = $oldCL
 $ErrorActionPreference = "Stop"
 
 # ____________________________________________________________________________________________________________
@@ -701,6 +701,7 @@ if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release
 	Copy-Item -Force $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib\*d4.lib $root\src-stage1-dependencies\Qt4\build\ReleaseDLL\lib
 	Copy-Item -Force $root\src-stage1-dependencies\Qt4\build\DebugDLL\lib\*d4.lib $root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib
 
+	$env:_CL_ = ""
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\DebugDLL\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release/lib/qwtd.pdb"" "
 	$command = "$root\src-stage1-dependencies\Qt4\build\DebugDLL\bin\qmake.exe qwt.pro ""CONFIG-=release_with_debuginfo"" ""CONFIG+=debug"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=NO"" ""AVX2=NO"""
 	MakeQwt "Debug"
@@ -714,7 +715,7 @@ if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release
 	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Debug-Release"" ""MAKEDLL=YES"" ""AVX2=NO"""
 	MakeQwt "ReleaseDLL"
 
-	$env:CL = "/Ox /arch:AVX2 /Zi /Gs- " + $oldCL
+	$env:_CL_ = "/Ox /arch:AVX2 /Zi /Gs- " 
 	$env:_LINK_ = "  /LIBPATH:""$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\lib"" /DEBUG:FULL /PDB:""$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2/lib/qwt.pdb"" "
 	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=NO"" ""AVX2=YES"""
 	MakeQwt "Release-AVX2"
@@ -722,7 +723,8 @@ if ((TryValidate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release
 	$command = "$root\src-stage1-dependencies\Qt4\build\ReleaseDLL-AVX2\bin\qmake.exe qwt.pro ""CONFIG+=release_with_debuginfo"" ""PREFIX=$root/src-stage1-dependencies/qwt-$qwt_version/build/x64/Release-AVX2"" ""MAKEDLL=YES"" ""AVX2=YES"""
 	MakeQwt "ReleaseDLL-AVX2"
 
-	$env:CL = $oldCL
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 	Validate "build/x64/Debug-Release/lib/qwtd.lib" "build/x64/Debug-Release/lib/qwtd5.dll" "build/x64/Debug-Release/lib/qwt5.dll" "build/x64/Debug-Release/lib/qwt.lib" `
 		"build/x64/Release-AVX2/lib/qwt5.dll" "build/x64/Release-AVX2/lib/qwt.lib"
