@@ -286,8 +286,9 @@ function CheckNoAVX
 	cd $thisroot 
 	$avxfound = $false
 	$dirs = $thisroot 
+	$Include=@("*.lib","*.pyd","*.dll", "*.exe")
 
-	$libs = $dirs | Get-ChildItem -Recurse -File -Include "*.lib, *.pyd, *.dll, *.exe"
+	$libs = $dirs | Get-ChildItem -Recurse -File -Include "$Include"
 	foreach ($lib in $libs) {
 		$result = & dumpbin $lib.FullName /DISASM:nobytes /NOLOGO | select-string -pattern "ymm[0-9]"
 		if ($result.length -gt 0) {
