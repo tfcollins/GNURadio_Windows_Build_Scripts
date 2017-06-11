@@ -148,10 +148,10 @@ function MakeXSLT {
 	$configuration = $args[0]
 	Write-Host -NoNewline "  $configuration..."
 	if ((TryValidate "..\build\$configuration\lib\libxslt.dll" "..\build\$configuration\lib\libxslt_a.lib") -eq $false) {
-		if ($configuration -match "Debug") {$de="yes"} else {$de="no"}
+		if ($configuration -match "Debug") {$de="yes"; $runtime="/MD"} else {$de="no"; $runtime="/MDd"}
 		& nmake /NOLOGO clean 2>&1 >> $Log 
 		Write-Host -NoNewline "configuring..."
-		& cscript configure.js zlib=yes compiler=msvc cruntime="/MD" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
+		& cscript configure.js zlib=yes compiler=msvc cruntime="$runtime" static=yes prefix=..\build\$configuration include="../../zlib-1.2.8;../../libxml2/include;../../gettext-msvc/libiconv-1.14" lib="../../libxml2/build/x64/$configuration/lib;../../gettext-msvc/x64/$configuration;../../zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$configuration" debug=$de 2>&1 >> $Log 
 		Write-Host -NoNewline "building..." 
 		& nmake /NOLOGO 2>&1 >> $Log 
 		Write-Host -NoNewline "installing..."
