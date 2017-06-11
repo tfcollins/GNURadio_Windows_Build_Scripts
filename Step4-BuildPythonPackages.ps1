@@ -52,7 +52,7 @@ Function MakeSip
 	$kflag = if ($type -match "Dll") {""} else {" --static"}
 	$debugext = if ($type -match "Debug") {"_d"} else {""}
 	if ((TryValidate "$pythonroot/sip.exe" "$pythonroot/include/sip.h" "$pythonroot/lib/site-packages/sip$debugext.pyd") -eq $false) {
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 "} else {$env:_CL_ = ""}
 		if (Test-Path sipconfig.py) {del sipconfig.py}
 		"FLAGS: $kflag $dflag" >> $Log 
 		"command line : configure.py $dflag $kflag -p win32-msvc2015" >> $Log
@@ -81,6 +81,7 @@ Function MakeSip
 			Validate "$pythonroot/sip.exe" "$pythonroot/include/sip.h" "$pythonroot/lib/site-packages/sip$debugext.pyd" 
 		}
 		nmake clean 2>&1 >> $Log
+		$env:_CL_ = ""
 	} else {
 		Write-Host -NoNewline "already built..."
 	}
@@ -120,7 +121,7 @@ function MakePyQt
 		if ($type -match "Debug") {$thispython = $pythondebugexe} else {$thispython = $pythonexe}
 		$flags = if ($type -match "Debug") {"-u"} else {""}
 		$flags += if ($type -match "Dll") {""} else {" -k"}
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 /MP " + $oldcl} else {$env:CL = "/wd4577 /MP " + $oldCL}
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 /wd4577 /MP " } else {$env:_CL_ = "/wd4577 /MP "}
 		$env:_LINK_= ""
 		$env:Path = "$root\src-stage1-dependencies\Qt4\build\$type\bin;" + $oldpath
 
@@ -134,7 +135,7 @@ function MakePyQt
 		nmake 2>&1 >> $log
 		nmake install 2>&1 >> $log
 		nmake clean 2>&1 >> $log
-		$env:CL = $oldcl
+		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		Write-Host -NoNewline "-done..."
 	} else {
@@ -174,7 +175,7 @@ if ($mm -eq "3.8") {
 		if ($type -match "Debug") {$thispython = $pythondebugexe} else {$thispython = $pythonexe}
 		$flags = if ($type -match "Debug") {"-u"} else {""}
 		$flags += if ($type -match "Dll") {""} else {" -k"}
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 /MP " + $oldcl} else {$env:CL = "/wd4577 /MP " + $oldCL}
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 /wd4577 /MP "} else {$env:_CL_ = "/wd4577 /MP " }
 		$env:_LINK_= ""
 		$env:Path = "$root\src-stage1-dependencies\Qt5\build\$type\bin;" + $oldpath
 
@@ -188,7 +189,7 @@ if ($mm -eq "3.8") {
 		nmake 2>&1 >> $log
 		nmake install 2>&1 >> $log
 		nmake clean 2>&1 >> $log
-		$env:CL = $oldcl
+		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		Write-Host -NoNewline "-done..."
 	}
@@ -235,7 +236,7 @@ Function SetupPython
 		$ErrorActionPreference = "Continue"
 		cd $root\src-stage1-dependencies\PyQt4
 		$flags = if ($configuration -match "Debug") {"-u"} else {""}
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 /MP " + $oldcl} else {$env:CL = "/wd4577 /MP " + $oldCL}
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 /wd4577 /MP "} else {$env:_CL_ = "/wd4577 /MP " }
 		$env:Path = "$root\src-stage1-dependencies\Qt4\build\$configuration\bin;" + $oldpath
 		$env:QMAKESPEC = "win32-msvc2015"
 		$env:_LINK_= ""
@@ -252,7 +253,7 @@ Function SetupPython
 		Write-Host -NoNewline "installing..."
 		Exec {nmake install} 2>&1 >> $log
 		$env:Path = $oldpath
-		$env:CL = $oldcl
+		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		$ErrorActionPreference = "Stop"
 		Validate "$pythonroot/lib/site-packages/PyQt4/Qt$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/QtCore$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/QtGui$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/QtOpenGL$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/QtSvg$debugext.pyd"
@@ -532,7 +533,7 @@ Function SetupPython
 		if ($configuration -eq "DebugDLL") {$QtVersion = "ReleaseDLL"} else {$QtVersion = $configuration}
 		$env:Path = "$root\src-stage1-dependencies\Qt4\build\$QtVersion\bin;$root\src-stage1-dependencies\Qwt-$qwt_version\build\x64\Debug-Release\lib;" + $oldpath
 		$envLib = $oldlib
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 /wd4577 " + $oldcl} else {$env:CL = "/wd4577 " + $oldCL}
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 /wd4577 " } else {$env:_CL_ = "/wd4577 " }
 		cd configure
 		# CALL "../../%1/Release/Python27/python.exe" configure.py %DEBUG% --extra-cflags=%FLAGS% %DEBUG% -I %~dp0..\qwt-5.2.3\build\include -L %~dp0..\Qt-4.8.7\lib -L %~dp0..\qwt-5.2.3\build\lib -l%QWT_LIB%
 		if ($configuration -eq "DebugDLL") {
@@ -560,7 +561,7 @@ Function SetupPython
 		# cd dist
 		# & $pythonroot/Scripts/wheel.exe convert PyQwt-5.2.1.win-amd64.DebugDLL.exe
 		$env:Path = $oldpath
-		$env:CL = $oldCL
+		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		$ErrorActionPreference = "Stop"
 		Validate "dist/PyQwt-5.2.1.win-amd64.$configuration.exe" "$pythonroot/lib/site-packages/PyQt4/Qwt5/Qwt$debugext.pyd" "$pythonroot/lib/site-packages/PyQt4/Qwt5/_iqt.pyd" "$pythonroot/lib/site-packages/PyQt4/Qwt5/qplt.py"
@@ -644,7 +645,6 @@ Function SetupPython
 		Write-Host -NoNewline "configuring py2cairo..."
 		$env:path = "$root\bin;$root\src-stage1-dependencies\x64\bin;" + $oldPath
 		$ErrorActionPreference = "Continue" 
-		$env:CL = $oldCL
 		# HACK the below will fail, but will run the command to unpack the rest of the library
 		# what we really should do here is run just the python needed to unpack the library
 		# and not intentionally run code that will error out
@@ -858,8 +858,8 @@ Function SetupPython
 		Write-Host -NoNewline "configuring lxml..."
 		$ErrorActionPreference = "Continue"
 		New-Item -ItemType Directory -Force $root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig 2>&1 >> $Log
-		if ($type -match "AVX2") {$env:CL = "/Ox /arch:AVX2 " + $oldcl} else {$env:CL = $oldCL}
-		$env:_CL_ = "/I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include "
+		if ($type -match "AVX2") {$env:_CL_ = "/Ox /arch:AVX2 "} else {$env:_CL_ = ""}
+		$env:_CL_ = $env:_CL_ + " /I$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2 /I$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14 /I$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include "
 		$env:_LINK_ = "/LIBPATH:$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig /LIBPATH:$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib /LIBPATH:$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
 		$env:LIBRARY = "$root/src-stage1-dependencies/lxml-lxml-$lxml_version/libs/$xsltconfig;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/lib;$root/src-stage1-dependencies/zlib-1.2.8/contrib/vstudio/vc14/x64/ZlibStat$xsltconfig;$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/lib;$root/src-stage1-dependencies/gettext-msvc/x64/$xsltconfig"
 		$env:INCLUDE = "$root/src-stage1-dependencies/libxml2/build/x64/$xsltconfig/include/libxml2;$root/src-stage1-dependencies/gettext-msvc/libiconv-1.14;$root/src-stage1-dependencies/libxslt-$libxslt_version/build/$xsltconfig/include;$root/src-stage1-dependencies/lxml/src/lxml/includes"
@@ -911,7 +911,6 @@ Function SetupPython
 		if ($configuration -match "AVX2") {$env:_CL_ = " /arch:AVX2 "} else {$env:_CL_ = ""}
 		$env:_LINK_ = " /MANIFEST "
 		$env:INCLUDE = $oldinclude + ";$root/libzmq/include"
-		$env:CL = $oldcl
 		$env:LINK = $oldlink
 		# don't run clean because it wipes out /dist folder as well
 		& $pythonroot/$pythonexe setup.py clean 2>&1 >> $log
