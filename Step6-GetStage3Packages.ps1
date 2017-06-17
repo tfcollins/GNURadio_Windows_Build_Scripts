@@ -266,7 +266,8 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
     $ErrorActionPreference = "Continue"
     # most packages we just get the most recent commit when coming from git
     # however, since this is the one most users might want to modify, we'll get more.
-	git clone --depth=100 --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log 
+	git clone --depth=150 --no-single-branch --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log 
+	git checkout maint
 	cd gnuradio
 	git pull --recurse-submodules=on
 	git submodule update
