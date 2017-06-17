@@ -55,14 +55,15 @@ function BuildGNURadio {
 
 	# set PYTHONPATH=%~dp0..\gr-python27\Lib\site-packages; %~dp0..\gr-python27\dlls;%~dp0..\gr-python27\libs;%~dp0..\gr-python27\lib;%~dp0..\lib\site-packages;%~dp0..\gr-python27\Lib\site-packages\pkgconfig;%~dp0..\gr-python27\Lib\site-packages\gtk-2.0\glib;%~dp0..\gr-python27\Lib\site-packages\gtk-2.0;%~dp0..\gr-python27\Lib\site-packages\wx-3.0-msw;%~dp0..\gr-python27\Lib\site-packages\sphinx;%~dp0..\gr-python27\Lib\site-packages\lxml-3.4.4-py2.7-win.amd64.egg;%~dp0..\lib\site-packages\gnuradio\gr;%~dp0..\lib\site-packages\pmt;%~dp0..\lib\site-packages\gnuradio\blocks;%~dp0..\lib\site-packages\gnuradio\fec;%~dp0..\lib\site-packages\gnuradio\fft;%~dp0..\lib\site-packages\gnuradio\qtgui;%~dp0..\lib\site-packages\gnuradio\trellis;%~dp0..\lib\site-packages\gnuradio\vocoder;%~dp0..\lib\site-packages\gnuradio\audio;%~dp0..\lib\site-packages\gnuradio\channels;%~dp0..\lib\site-packages\gnuradio\ctrlport;%~dp0..\lib\site-packages\gnuradio\digital;%~dp0..\lib\site-packages\gnuradio\grc;%~dp0..\lib\site-packages\gnuradio\filter;%~dp0..\lib\site-packages\gnuradio\analog;%~dp0..\lib\site-packages\gnuradio\wxgui;%~dp0..\lib\site-packages\gnuradio\zeromq;%~dp0..\lib\site-packages\gnuradio\pager;%~dp0..\lib\site-packages\gnuradio\fcd;%~dp0..\lib\site-packages\gnuradio\video_sdl;%~dp0..\lib\site-packages\gnuradio\wavelet;%~dp0..\lib\site-packages\gnuradio\noaa;%~dp0..\lib\site-packages\gnuradio\dtv;%~dp0..\lib\site-packages\gnuradio\atsc;%~dp0..\lib\site-packages\gnuradio\pmt
 	# test notes... the following qa batch files must have the pythonpath prepended instead of appended:
-	# qa_tag_utils_test.bat
+	# qa_tag_utils_test.bat requires this pythonpath: Z:/gr-build/src-stage3/src/gnuradio/gnuradio-runtime/python;Z:\gr-build\src-stage3\build\Release\gnuradio-runtime\swig\RelWithDebInfo;Z:\gr-build\src-stage3\build\Release\gnuradio-runtime\python;;Z:\gr-build\src-stage3\build\Release\gnuradio-runtime\swig
 	# qa_socket_pdu_test.bat
 	# qa_burst_shaper_test.bat
 	#
-	# qa_agc will also fail for legit reasons still unknown (possibly due to variable alignment issues?)
+	# There are a couple pulls requests pending to fix several test failures, at those a couple are left
+	# qa_agc will also fail for legit reasons still unknown, even after alignment gets fixed.  agc3 isn't converging as fast as it should
 	# qa_tcp_server_sink will fail because it in TCP source/sink is incompatible with windows
-	# qa_file_metadata / qa_file_source_sink will fail due to permissions in the file path
-	# qa_polar_* will failed due to type errors involving vectors
+	# qa_file_source_sink will fail because of the way the locking/opening of temp files varies in python between windows and linux
+
 
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
