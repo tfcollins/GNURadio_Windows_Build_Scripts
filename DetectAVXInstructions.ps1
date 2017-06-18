@@ -53,4 +53,4 @@ foreach ($lib in $libs) {
     }
 }
 
-"Found $dllfound DLLs, $pydfound PYDs, $libfound libs, and $exefound exes with AVX registers out of $($dlls.count) DLLs, $(pyds.count) PYDs, $($libs.count) libs, and $($exes.count) exes scanned"
+"Found $dllfound DLLs, $pydfound PYDs, $libfound libs, and $exefound exes with AVX registers out of $($dlls.count) DLLs, $($pyds.count) PYDs, $($libs.count) libs, and $($exes.count) exes scanned"
