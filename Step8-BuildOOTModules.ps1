@@ -404,16 +404,18 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-air-modes..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-air-modes/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-air-modes/build/$configuration 
-	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-	$env:_CL_ = $arch  + " -DNOMINMAX -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-	$env:Path="" 
+	$linkflags = " /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = ""
+	$env:Path= "$root/build/$configuration/lib;" + $oldPath
+	$env:PYTHONPATH="$pythonroot/Lib/site-packages"
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
 		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /EHsc /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" /I""$root/src-stage3/staged_install/$configuration/include""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /EHsc /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" /I""$root/src-stage3/staged_install/$configuration/include""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
@@ -423,12 +425,18 @@ function BuildOOTModules
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DPYUIC4_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/pyuic4.bat" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_BUILD_TYPE="$buildconfig" `
+		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 		-Wno-dev 2>&1 >> $Log
-	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-air-modes..."
 	msbuild .\gr-gr-air-modes.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:Path = $oldPath
+	$env:PYTHONPATH=""
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
