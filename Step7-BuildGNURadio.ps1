@@ -34,7 +34,7 @@ if (!(Test-Path $root/src-stage3/staged_install)) {
 
 function BuildGNURadio {
 	$configuration = $args[0]
-	if ($configuration -match "Release") {$buildtype = "relwithDebInfo"; $pythonexe = "python.exe"; $d=""} else {$buildtype = "DEBUG"; $pythonexe = "python_d.exe";$d="d"}
+	if ($configuration -match "Release") {$runtime = "/MD"; $buildtype = "relwithDebInfo"; $pythonexe = "python.exe"; $d=""} else {$runtime = "/MDd"; $buildtype = "DEBUG"; $pythonexe = "python_d.exe";$d="d"}
 	if ($configuration -match "AVX") {$DLLconfig="ReleaseDLL-AVX2"; $archflag="/arch:AVX2 /Ox /GS- /EHsc"} else {$DLLconfig = $configuration + "DLL"; $archflag="/EHsc"}
 
 	# prep for cmake
@@ -85,8 +85,8 @@ function BuildGNURadio {
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-DCMAKE_PREFIX_PATH="$root/build/$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration/" `
-		-DCMAKE_CXX_FLAGS="$archflag /W1" `
-		-DCMAKE_C_FLAGS="$archflag /W1" `
+		-DCMAKE_CXX_FLAGS="$archflag $runtime /W1" `
+		-DCMAKE_C_FLAGS="$archflag $runtime /W1" `
 		-DCMAKE_SHARED_LINKER_FLAGS=" /DEBUG /opt:ref,icf " `
 		-DSPHINX_EXECUTABLE="$pythonroot/Scripts/sphinx-build.exe" `
 		-DCMAKE_BUILD_TYPE="$buildtype" `
@@ -114,8 +114,6 @@ function BuildGNURadio {
 
 	# NOW we build gnuradio finally
 	Write-Host -NoNewline "Build GNURadio $configuration..."
-	if ($configuration -match "AVX2") {$platform = "avx2"; $env:_CL_ = "/arch:AVX2"} else {$platform = "x64"; $env:_CL_ = ""}
-	if ($configuration -match "Release") {$boostconfig = "Release"; $pythonexe = "python.exe"} else {$boostconfig = "Debug"; $pythonexe = "python_d.exe"}
 	Write-Host -NoNewline "building..." 
 	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
 	Write-Host -NoNewline "staging install..."
