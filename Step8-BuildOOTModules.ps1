@@ -261,7 +261,7 @@ function BuildDrivers
 	if ($configuration -match "AVX") {$SIMD="-DUSE_SIMD=""AVX"""} else {$SIMD=""}
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
-		-DCMAKE_PREFIX_PATH="$root/src-stage3/staged_install/Release" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INCLUDE_PATH="$root/build/$configuration/include" `
 		-DCMAKE_LIBRARY_PATH="$root/build/$configuration/lib" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
