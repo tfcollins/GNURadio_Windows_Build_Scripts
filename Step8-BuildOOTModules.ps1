@@ -324,9 +324,9 @@ function BuildOOTModules
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-acars2/build/$configuration  2>&1 >> $Log
 	Copy-Item -Force $root\src-stage3\staged_install\$configuration\include\gnuradio\swig\gnuradio.i $root/bin/Lib
 	cd $root/src-stage3/oot_code/gr-acars2/build/$configuration 
-	$env:_CL_ = " $arch ";
-	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-	$env:_CL_ = $env:_CL_  + " -DUSING_GLEW -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$linkflags = " /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_LINK_= ""
+	$env:_CL_ = ""
 	$env:Path="" 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -344,6 +344,11 @@ function BuildOOTModules
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
+		-DCMAKE_MODULE_LINKER_FLAGS=" $linkflags  " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-acars2..."
