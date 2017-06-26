@@ -215,8 +215,11 @@ function BuildDrivers
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
-		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 " `
-		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
+		-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27$debug_ext.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib/" `
@@ -227,6 +230,7 @@ function BuildDrivers
 		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
 		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
 		-DLINK_LIBRARIES="gnuradio-pmt.lib"  `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building..."
 	msbuild .\gr-iqbalance.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
