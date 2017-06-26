@@ -97,8 +97,8 @@ function getPackage
 		if (!((Test-Path $root\$destdir\$archiveName) -or ($newname -ne "" -and (Test-Path $root\$destdir\$newName)))) {
 			$archive = "$root/packages/$archiveName/$archiveName$archiveExt"
 			if ($AddFolderName) {
-				New-Item -Force -ItemType Directory $root/$destdir/$archiveName
-				cd "$root\$destdir\$archiveName"
+				New-Item -Force -ItemType Directory $root/$destdir/$archiveName >> $Log
+				cd "$root\$destdir\$archiveName" >> $Log
 			} else {
 				cd "$root\$destdir"
 			}
