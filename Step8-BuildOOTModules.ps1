@@ -427,7 +427,6 @@ function BuildOOTModules
 		-DBOOST_ROOT="$root/build/$configuration/" `
 		-DPYUIC4_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/pyuic4.bat" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_BUILD_TYPE="$buildconfig" `
 		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
