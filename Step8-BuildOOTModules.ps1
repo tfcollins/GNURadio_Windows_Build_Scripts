@@ -552,8 +552,8 @@ function BuildOOTModules
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration\gqrx" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DBOOST_LIBRARYDIR="$root\build\$configuration\lib" `
-		-DCMAKE_C_FLAGS=" $arch /EHsc " `
-		-DCMAKE_CXX_FLAGS=" $arch /EHsc " `
+		-DCMAKE_C_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
+		-DCMAKE_CXX_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
 		-Wno-dev 2>&1 >> $Log
 	Write-Host -NoNewline "building..."
 	msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
