@@ -28,10 +28,14 @@ function BuildDrivers
 	$configuration = $args[0]
 	$buildsymbols=$true
 	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
-	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
+	if ($configuration -match "Release") {
+		$buildconfig="Release";$pythonexe = "python.exe";  $debugext = "";  $debug_ext = "";  $runtime = "/MD"
+	} 
+	else {
+		$buildconfig="Debug";  $pythonexe = "python_d.exe";$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"
+	}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
-	if ($configuration -match "Debug") {$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"} else {$debugext = ""; $debug_ext = "";$runtime = "/MD"}
+	if ($configuration -match "AVX2") {$arch="/arch:AVX2"} else {$arch=""}
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -304,10 +308,14 @@ function BuildOOTModules
 	$configuration = $args[0]
 	$buildsymbols=$true
 	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
-	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
-	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
+	if ($configuration -match "Release") {
+		$buildconfig="Release";$pythonexe = "python.exe";  $debugext = "";  $debug_ext = "";  $runtime = "/MD"
+	} 
+	else {
+		$buildconfig="Debug";  $pythonexe = "python_d.exe";$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"
+	}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
-	if ($configuration -match "Debug") {$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"} else {$debugext = ""; $debug_ext = "";$runtime = "/MD"}
+	if ($configuration -match "AVX2") {$arch="/arch:AVX2"} else {$arch=""}
 
 	# ____________________________________________________________________________________________________________
 	#
