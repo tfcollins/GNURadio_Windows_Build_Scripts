@@ -220,8 +220,8 @@ function BuildDrivers
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
-		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
-		-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
+		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /EHsc /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
+		-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime /EHsc /DWIN32 /D_WINDOWS /W3 /DENABLE_GR_LOG=ON " `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27$debug_ext.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
