@@ -232,7 +232,7 @@ function BuildDrivers
 	msbuild .\gr-iqbalance.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	Validate "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig\gnuradio-iqbalance.dll"
+	Validate "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig\gnuradio-iqbalance.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\gnuradio\iqbalance\_iqbalance_swig.pyd"
 	CheckNoAVX "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig"
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
@@ -356,7 +356,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	"complete"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-acars2.dll" "$root/src-stage3/staged_install/$configuration/lib/site-packages/acars2/_acars2_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -442,7 +442,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	Validate "$root/src-stage3/oot_code/gr-air-modes/build/$configuration/lib/$buildconfig/air_modes.dll"
+	Validate "$root/src-stage3/oot_code/gr-air-modes/build/$configuration/lib/$buildconfig/air_modes.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\air_modes\_air_modes_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -525,7 +525,7 @@ function BuildOOTModules
 		$env:_CL_ = ""
 		$env:Path = $oldPath 
 		$ErrorActionPreference = "Stop"
-		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-fosphor.dll"
+		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-fosphor.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\gnuradio\fosphor\_fosphor_swig.pyd"
 	} else {
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
 	}
@@ -713,7 +713,7 @@ function BuildOOTModules
 		cp -Recurse -Force $root/src-stage3/oot_code/gr-inspector/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-inspector 2>&1 >> $Log
 		$env:_CL_ = ""
 		$env:_LINK_ = ""
-		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-inspector.dll"
+		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-inspector.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\inspector\_inspector_swig.pyd"
 	}
 	# ____________________________________________________________________________________________________________
 	#
@@ -760,7 +760,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-cdma/python/fsm_files/*.fsm $root/src-stage3/staged_install/$configuration/lib/site-packages/cdma/python/fsm_files 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-cdma.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-cdma.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\cdma\_cdma_swig.pyd"
 	
 	# ____________________________________________________________________________________________________________
 	#
@@ -802,7 +802,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-rds/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-rds 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-rds.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-rds.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\rds\_rds_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -844,7 +844,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-ais/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ais 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-ais.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-ais.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\ais\_ais_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -889,7 +889,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-display/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-display 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-display.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-display.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\display\_display_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -931,7 +931,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-ax25/apps/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-ax25 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-afsk.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-afsk.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\afsk\_afsk_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -983,7 +983,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-radar/examples/* $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-radar 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-radar.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-radar.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\radar\_radar_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1027,7 +1027,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-paint/apps/*.bin $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-paint 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-paint.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-paint.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\paint\_paint_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1070,7 +1070,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-paint/examples/*.py $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-mapper 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-mapper.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-mapper.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\mapper\_mapper_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1115,7 +1115,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-nacl/examples/*.file $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-nacl 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-nacl.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-nacl.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\nacl\_nacl_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1169,7 +1169,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-eventstream/apps/*.py $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-eventstream 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/eventstream.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/eventstream.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\es\_es_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1211,7 +1211,7 @@ function BuildOOTModules
 	cp -Recurse -Force $root/src-stage3/oot_code/gr-burst/examples/*.grc $root/src-stage3/staged_install/$configuration/share/gnuradio/examples/gr-burst 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-burst.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-burst.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\burst\_burst_swig.pyd"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1260,7 +1260,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll"
+	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\lte\_lte_swig.pyd"
 
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
