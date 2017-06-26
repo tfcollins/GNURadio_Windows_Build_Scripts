@@ -147,13 +147,13 @@ function BuildGNURadio {
 	# We will repeat for the OOT modules	
 	if ($configuration -match "Debug") {
 		pushd $root/src-stage3/staged_install/$configuration
-		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig","_swig_d" } 
-		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig0","_swig0_d" } 
-		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig1","_swig1_d" } 
-		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig2","_swig2_d" } 
-		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig3","_swig3_d" } 
-		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig4","_swig4_d" } 
-		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Rename-Item -NewName {$_.name -replace "_swig5","_swig5_d" } 
+		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig","_swig_d" } 
+		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig0","_swig0_d" } 
+		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig1","_swig1_d" } 
+		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig2","_swig2_d" } 
+		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig3","_swig3_d" } 
+		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig4","_swig4_d" } 
+		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig5","_swig5_d" } 
 		popd
 	}
 
