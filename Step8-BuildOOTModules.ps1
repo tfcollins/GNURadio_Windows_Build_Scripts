@@ -31,6 +31,7 @@ function BuildDrivers
 	if ($configuration -match "Release") {$pythonexe = "python.exe"} else {$pythonexe = "python_d.exe"}
 	if ($configuration -match "AVX2") {$arch="/arch:AVX2"; $buildconfig="Release"} else {$arch=""; $buildconfig=$configuration}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
+	if ($configuration -match "Debug") {$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"} else {$debugext = ""; $debug_ext = "";$runtime = "/MD"}
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -41,7 +42,7 @@ function BuildDrivers
 	SetLog "airspy $configuration"
 	Write-Host -NoNewline "building $configuration airspy..."
 	cd $root/src-stage3/oot_code/airspy/libairspy/vc
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	msbuild .\airspy_2015.sln /m /p:"configuration=$configuration;platform=x64"  2>&1 >> $Log
 	Write-Host -NoNewLine "installing..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/staged_install/$configuration/include/libairspy  2>&1 >> $Log
@@ -65,7 +66,7 @@ function BuildDrivers
 	SetLog "bladeRF $configuration"
 	Write-Host -NoNewline "configuring $configuration bladeRF..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/bladeRF/host/build/$configuration  2>&1 >> $Log
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	cd $root/src-stage3/oot_code/bladeRF/host/build/$configuration
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -100,7 +101,7 @@ function BuildDrivers
 	SetLog "rtl-sdr $configuration"
 	Write-Host -NoNewline "configuring $configuration rtl-sdr..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/rtl-sdr/build/$configuration  2>&1 >> $Log
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	cd $root/src-stage3/oot_code/rtl-sdr/build/$configuration 
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -127,7 +128,7 @@ function BuildDrivers
 	Write-Host -NoNewline "configuring $configuration HackRF..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/hackrf/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/hackrf/build/$configuration 
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	$ErrorActionPreference = "Continue"
 	cmake ../../host/ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -160,7 +161,7 @@ function BuildDrivers
 	Write-Host -NoNewline "configuring $configuration osmo-sdr..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/osmo-sdr/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/osmo-sdr/build/$configuration 
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	cmake ../../software/libosmosdr/ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -209,7 +210,7 @@ function BuildDrivers
 	Write-Host -NoNewline "configuring $configuration gr-iqbal..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG "
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 	cmake ../../ `
@@ -221,7 +222,7 @@ function BuildDrivers
 		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib/" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
-		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch " `
+		-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime " `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-DFFTW3F_LIBRARIES="$root/build/Release/lib/libfftw3f.lib" `
 		-DFFTW3F_INCLUDE_DIRS="$root/build/Release/include/" `
@@ -252,7 +253,7 @@ function BuildDrivers
 	cd $root/src-stage3/oot_code/gr-osmosdr/build/$configuration
 	$ErrorActionPreference = "Continue"
 	$env:LIB = "$root/build/$configuration/lib;" + $oldlib
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	if ($configuration -match "AVX") {$SIMD="-DUSE_SIMD=""AVX"""} else {$SIMD=""}
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -329,7 +330,8 @@ function BuildOOTModules
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
 		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
 		-DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DCMAKE_C_FLAGS=" /DUSING_GLEW /EHsc /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" /I""$root/src-stage3/staged_install/$configuration/include""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_CXX_FLAGS=" /DUSING_GLEW /EHsc /D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" /I""$root/src-stage3/staged_install/$configuration/include""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
@@ -366,7 +368,7 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-adsb..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-adsb/build/$configuration  2>&1 >> $Log
 	cd $root/src-stage3/oot_code/gr-adsb/build/$configuration 
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	$env:_LINK_= "  $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + "  -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:Path="" 
@@ -375,7 +377,7 @@ function BuildOOTModules
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
 		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-Wno-dev 2>&1 >> $Log
@@ -452,7 +454,7 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration glfw..."
 	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/glfw/build/$configuration 2>&1 >> $Log
 	cd $root/src-stage3/oot_code/glfw/build/$configuration
-	$env:_CL_ = " $arch "
+	$env:_CL_ = " $arch $runtime "
 	$ErrorActionPreference = "Continue"
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -500,8 +502,8 @@ function BuildOOTModules
 			-DOpenCL_INCLUDE_DIR="$env:AMDAPPSDKROOT/include" `
 			-DFREETYPE2_PKG_INCLUDE_DIRS="$root/build/$configuration/include" `
 			-DFREETYPE2_PKG_LIBRARY_DIRS="$root/build/$configuration/lib" `
-			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /Zi /EHsc " `
-			-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /Zi /EHsc" `
+			-DCMAKE_C_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /Zi /EHsc " `
+			-DCMAKE_CXX_FLAGS="/D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /Zi /EHsc" `
 			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
 			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
@@ -587,8 +589,8 @@ function BuildOOTModules
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
 		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration""  /I""$root/src-stage3/staged_install/$configuration/include/swig"" " `
 		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
@@ -627,8 +629,8 @@ function BuildOOTModules
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 			-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
-			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig"" $runtime " `
-			-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig""  $runtime " `
+			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig"" $arch $runtime  " `
+			-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED /DWIN32 /D_WINDOWS /W3 /EHsc /I""$root/src-stage3/staged_install/$configuration/include"" /I""$root/src-stage3/staged_install/$configuration/include/swig""  $arch $runtime  " `
 			-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
 			-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
 			-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
@@ -681,8 +683,8 @@ function BuildOOTModules
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
 			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-			-DCMAKE_C_FLAGS=" $arch /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
-			-DCMAKE_CXX_FLAGS=" $arch /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
+			-DCMAKE_C_FLAGS=" $arch $runtime  /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
+			-DCMAKE_CXX_FLAGS=" $arch $runtime  /D_USE_MATH_DEFINES /DNOMINMAX /D_TIMESPEC_DEFINED  /EHsc /Zi " `
 			-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
 			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 			-DBOOST_ROOT="$root/build/$configuration/" `
@@ -742,8 +744,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-cdma..."
@@ -787,8 +789,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-rds..."
@@ -829,8 +831,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-ais..."
@@ -874,8 +876,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-display..."
@@ -916,8 +918,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-ax25..."
@@ -964,8 +966,8 @@ function BuildOOTModules
 		-DQT_RCC_EXECUTABLE="$root/build/$configuration/bin/rcc.exe" `
 		-DQWT_INCLUDE_DIRS="$root\build\$configuration\include\qwt6" `
 		-DQWT_LIBRARIES="$root\build\$configuration\lib\qwt${debugext}6.lib" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch  $runtime " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch  $runtime " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-DCMAKE_SHARED_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_EXE_LINKER_FLAGS=" $linkflags " `
 		-DCMAKE_STATIC_LINKER_FLAGS=" $linkflags " `
@@ -1010,8 +1012,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-paint..."
@@ -1054,8 +1056,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-mapper..."
@@ -1099,8 +1101,8 @@ function BuildOOTModules
 		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
 		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
 		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi " `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi " `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime " `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /DNOMINMAX /Zi $arch $runtime " `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-nacl..."
