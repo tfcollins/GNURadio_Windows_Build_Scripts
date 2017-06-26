@@ -1,17 +1,19 @@
-GNURadio Windows Build Scripts v1.2
+GNURadio Windows Build Scripts v1.3
 =====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
 
 For more details on this effort, please see the support [website](http://www.gcndevelopment.com/gnuradio)
 
+IF YOU JUST WANT TO USE GNURADIO ON WINDOWS, DON'T USE THESE SCRIPTS... use the binaries that are posted at the above site.  The Linux way is to build from source, this is usually not helpful on Windows, so use the installers unless you just want to tinker, in which case enjoy!
+
 The finished MSI includes:
 
 Device Support: UHD, RTL-SDR, hackrf, airspy, BladeRF, osmoSDR, FCD
 
-GNURadio modules: 3.7.11 with all but gr-comedi modules built and included
+GNURadio modules: 3.7.11.1 with all but gr-comedi modules built and included
 
-OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool
+OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool, gr-air-modes, gr-ais, gr-ax25, gr-burst (incl. bitarray), gr-cdma, gr-display (incl. matplotlib), gr-eventstream, gr-inspector (incl. tensorflow), gr-lte, gr-mapper, gr-nacl, gr-paint (incl. PIL), gr-radar, gr-rds, gr-specest, OpenLTE
 
 Other Applications: gqrx
 
@@ -55,15 +57,13 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 5- If your connection is spotty, you may get partially downloaded packages which cause build failures.  To correct, DELETE the suspect package from the /packages directory so it will retry the download.
 
-6- The Debug build will currently fail to build PyGTK and Wx, so GRC will not be available.  The build process will continue but GNURadio will have these features enabled and the shortcuts provided during install will not function.  gr-acars will also fail for the debug build only
+6- The following devices are NOT currently supported: FCD Pro+, RFSPACE, MiriSDR, SoapySDR, SDRPlay
 
-7- The following devices are NOT currently supported: FCD Pro+, RFSPACE, MiriSDR, SoapySDR
+7- Installing MSVC to a non-standard path may cause the dependency checks to fail 
 
-8- Installing MSVC to a non-standard path may cause the dependency checks to fail 
+8- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
 
-9- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
-
-10- Zadig must be manually added to the /bin directory prior to MSI creation
+9- Zadig must be manually added to the /bin directory prior to MSI creation
 
 <h2>LICENSE</h2>
 The scripts themselves are released under the GPLv3.  The resulting MSI's are also GPLv3 compatible, see www.gcndevelopment.com/gnuradio for details and access to all modifications to original source code.  All patches are released under the same license as the original package it applies to.
