@@ -143,6 +143,20 @@ function BuildGNURadio {
 	Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	Copy-Item -Force -Recurse -Path $root\src-stage3\icons $root/src-stage3/staged_install/$configuration/share  2>&1 >> $Log
 
+	# the swig libraries aren't properly named for the debug build, so do it here
+	# We will repeat for the OOT modules	
+	if ($configuration -match "Debug") {
+		pushd $root/src-stage3/staged_install/$configuration
+		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig","_swig_d" } 
+		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig0","_swig0_d" } 
+		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig1","_swig1_d" } 
+		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig2","_swig2_d" } 
+		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig3","_swig3_d" } 
+		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig4","_swig4_d" } 
+		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.name -replace "_swig5","_swig5_d" } 
+		popd
+	}
+
 	# ensure the GR build went well by checking for newmod package, and if found then build
 	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt
 	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
