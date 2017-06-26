@@ -1158,7 +1158,7 @@ function BuildOOTModules
 	$env:Path = $oldPath
 	Write-Host -NoNewline "building gr-eventstream..."
 	# test_eventstream build will fail because dependency is set incorrectly
-	msbuild .\eventstream_static.vcxproj /m /p:"configuration=$buildconfig;platform=x64"  2>&1 >> $Log
+	msbuild .\lib\eventstream_static.vcxproj /m /p:"configuration=$buildconfig;platform=x64"  2>&1 >> $Log
 	msbuild .\eventstream.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "installing..."
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
