@@ -1128,7 +1128,7 @@ function BuildOOTModules
 	cd $root/src-stage3/oot_code/gr-eventstream/build/$configuration
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	$linkflags = " /DEBUG " 
+	$linkflags = " /DEBUG /DEFAULTLIB:$root\src-stage3\build\$configuration\gnuradio-runtime\swig\$buildconfig\_runtime_swig.lib " 
 	$ErrorActionPreference = "Continue"
 	$env:Path= ""
 	& cmake ../../ `
