@@ -1278,6 +1278,46 @@ function BuildOOTModules
 	$ErrorActionPreference = "Stop"
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\lte\_lte_swig.pyd"
 
+	# ____________________________________________________________________________________________________________
+	#
+	# gr-gsm
+	#
+	SetLog "gr-gsm $configuration"
+	$ErrorActionPreference = "Continue"
+	Write-Host -NoNewline "configuring $configuration gr-gsm..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-gsm/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-gsm/build/$configuration 
+	$env:_CL_ = " $arch "
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	$env:Path = ""
+	cmake ../../ `
+		-G "Visual Studio 14 2015 Win64" `
+		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+		-DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
+		-DCPPUNIT_INCLUDE_DIRS="$root/build/$configuration/include" `
+		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
+		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
+		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+		-Wno-dev 2>&1 >> $Log
+	$env:Path = $oldPath
+	Write-Host -NoNewline "building gr-gsm..."
+	msbuild .\gr-gsm.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	$env:_CL_ = ""
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
+	"complete"
+
+
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
@@ -1395,67 +1435,6 @@ function BuildOOTModules
 		$env:_CL_ = ""
 		$env:_LINK_ = ""
 		$env:FFTW3_DIR = ""
-
-		# ____________________________________________________________________________________________________________
-		#
-		# libosmocore
-		#
-		# This is a problem as it's linux only and depends on autoconf not cmake
-		#
-
-		# PLACEHOLDER
-
-		# ____________________________________________________________________________________________________________
-		#
-		# gr-gsm
-		#
-		# NOT WORKING
-		#
-		# Requires libosmocore
-		#
-		SetLog "gr-gsm $configuration"
-		$ErrorActionPreference = "Continue"
-		Write-Host -NoNewline "configuring $configuration gr-gsm..."
-		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-gsm/build/$configuration  2>&1 >> $Log
-		cd $root/src-stage3/oot_code/gr-gsm/build/$configuration 
-		$env:_CL_ = " $arch "
-		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-		$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-		$env:Path = ""
-		cmake ../../ `
-			-G "Visual Studio 14 2015 Win64" `
-			-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
-			-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
-			-DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
-			-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
-			-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
-			-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
-			-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
-			-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-			-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
-			-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
-			-DBOOST_ROOT="$root/build/$configuration/" `
-			-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-			-Wno-dev 2>&1 >> $Log
-		$env:Path = $oldPath
-		Write-Host -NoNewline "building gr-gsm..."
-		msbuild .\gr-gsm.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-		Write-Host -NoNewline "installing..."
-		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-		# the cmake files don't install the samples or examples or docs so let's see what we can do here
-		# TODO update the CMAKE file to move these over
-		New-Item -ItemType Directory -Force $root/src-stage3/staged_install/$configuration/share/gsm/examples 2>&1 >> $Log
-		Copy-Item $root/src-stage3/oot_code/gr-gsm/examples/simple.grc $root/src-stage3/staged_install/$configuration/share/gsm/examples
-		Copy-Item $root/src-stage3/oot_code/gr-gsm/samples/*.grc $root/src-stage3/staged_install/$configuration/share/gsm/examples
-		Copy-Item $root/src-stage3/oot_code/gr-gsm/samples/*.wav $root/src-stage3/staged_install/$configuration/share/gsm/examples
-		Copy-Item $root/src-stage3/oot_code/gr-gsm/samples/*.py $root/src-stage3/staged_install/$configuration/share/gsm/examples
-		$env:_CL_ = ""
-		$env:_LINK_ = ""
-		$ErrorActionPreference = "Stop"
-		"complete"
-
-
-
 	
 	    # ____________________________________________________________________________________________________________
 	    #

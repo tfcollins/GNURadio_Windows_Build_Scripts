@@ -228,6 +228,12 @@ GetPackage https://github.com/gnieboer/gr-lte.git -Stage3 -branch "msvc_fixes"
 #
 GetPackage https://downloads.sourceforge.net/project/openlte/openlte_v$openlte_version.tgz -Stage3
 
+# ____________________________________________________________________________________________________________
+#
+# gr-gsm
+#
+GetPackage https://github.com/ptrkrysik/gr-gsm.git -Stage3
+
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
 if ($false) 
@@ -245,11 +251,6 @@ if ($false)
 	#
 	GetPackage https://github.com/gnss-sdr/gnss-sdr.git -Stage3
 
-	# ____________________________________________________________________________________________________________
-	#
-	# gr-gsm
-	#
-	GetPackage https://github.com/ptrkrysik/gr-gsm.git -Stage3
 }
 # ____________________________________________________________________________________________________________
 #
