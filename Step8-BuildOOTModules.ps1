@@ -1297,6 +1297,7 @@ function BuildOOTModules
 		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
 		-DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
 		-DCPPUNIT_INCLUDE_DIRS="$root/build/$configuration/include" `
+		-DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED /EHsc  /DNOMINMAX  /Zi $arch $runtime  " `
 		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
 		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
 		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
@@ -1305,6 +1306,7 @@ function BuildOOTModules
 		-DBOOST_LIBRARYDIR=" $root/build/$configuration/lib" `
 		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
 		-DBOOST_ROOT="$root/build/$configuration/" `
+		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
 		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
 		-Wno-dev 2>&1 >> $Log
 	$env:Path = $oldPath
