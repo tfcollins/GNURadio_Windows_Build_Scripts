@@ -13,5 +13,6 @@ set GRC_BLOCKS_PATH=%~dp0..\share\gnuradio\grc\blocks
 REM --- Set UHD environment ---
 set UHD_PKG_DATA_PATH=%~dp0..\share\uhd;%~dp0..\share\uhd\images
 set UHD_IMAGES_DIR=%~dp0..\share\uhd\images
+set UHD_RFNOC_DIR=%~dp0..\share\uhd\rfnoc\
 
 CALL gqrx.exe %1 %2 %3 %4

@@ -13,6 +13,8 @@ set GRC_BLOCKS_PATH=%~dp0..\share\gnuradio\grc\blocks
 REM --- Set UHD environment ---
 set UHD_PKG_DATA_PATH=%~dp0..\share\uhd;%~dp0..\share\uhd\images
 set UHD_IMAGES_DIR=%~dp0..\share\uhd\images
+set UHD_RFNOC_DIR=%~dp0..\share\uhd\rfnoc\
+
 if "%1"=="" goto noscript
 
 CALL "%~dp0..\gr-python27\python.exe" %1 %2 %3 %4 %5 %6 %7 %8 %9
