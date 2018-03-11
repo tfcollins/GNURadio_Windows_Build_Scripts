@@ -459,6 +459,9 @@ if (!(Test-Path variable:global:oldlibrary)) {Set-Variable -Name oldlibrary -Val
 # import .NET modules
 Add-Type -assembly "system.io.compression.filesystem"
 
+# Ensure we are using a compatible SSL protocol with github
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 # set initial state
 set-alias sz "$root\bin\7za.exe"  
 cd $root
