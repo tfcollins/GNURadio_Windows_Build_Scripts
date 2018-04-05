@@ -402,29 +402,32 @@ $myprog = "${Env:ProgramFiles(x86)}"
 # Check for binary dependencies
 
 # check for git/tar
-if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed.  Aborting script"} 
-set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"  
+if ((Get-Command "git.exe" -ErrorAction SilentlyContinue) -eq $null) {throw "Git For Windows must be installed.  Aborting script"}
+Set-Alias git "git.exe"
+if ((Get-Command "tar.exe" -ErrorAction SilentlyContinue) -eq $null) {throw "Git For Windows (or any other tar.exe) must be installed.  Aborting script"} 
+set-alias tar "tar.exe"  
 
 # CMake (to build gnuradio)
-if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed.  Aborting script"} 
-Set-Alias cmake "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe"
+if ((Get-Command "cmake.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "CMake must be installed and on the path.  Aborting script"} 
+Set-Alias cmake "cmake.exe"
 	
 # ActivePerl (to build OpenSSL)
-if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed.  Aborting script"} 
+if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed and on the path.  Aborting script"} 
 	
 # MSVC 2015
-if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed.  Aborting script"} 
+if (-not ((Get-Command msbuild).Version.Major -eq 14)) {throw "Visual Studio 2015 must be installed.  Aborting script"} 
 
 # WIX
 if (-not (test-path $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
 
 # doxygen
-if (-not (test-path "$env:ProgramFiles\doxygen")) {throw "Doxygen must be installed.  Aborting script"} 
+if ((Get-Command "doxygen.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "Doxygen must be installed and on the path.  Aborting script"} 
 	
 # set VS 2015 environment
 if (!(Test-Path variable:global:oldpath))
 {
-	pushd "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC"
+	$VCdir  = (Get-Command cl).Source | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent
+	pushd "${VCdir}"
 	cmd /c "vcvarsall.bat amd64&set" |
 	foreach {
 		if ($_ -match "=") {
