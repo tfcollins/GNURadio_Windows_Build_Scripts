@@ -1,4 +1,4 @@
-GNURadio Windows Build Scripts v1.3
+GNURadio Windows Build Scripts v1.4
 =====================================
 
 A series of Powershell scripts to automatically download,  build from source, and install GNURadio and -all- it's dependencies as 64-bit native binaries then package as an .msi using Visual Studio 2015.
@@ -11,23 +11,24 @@ The finished MSI includes:
 
 Device Support: UHD, RTL-SDR, hackrf, airspy, BladeRF, osmoSDR, FCD
 
-GNURadio modules: 3.7.11.1 with all but gr-comedi modules built and included
+GNURadio modules: 3.7.12 with all but gr-comedi modules built and included
 
-OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool, gr-air-modes, gr-ais, gr-ax25, gr-burst (incl. bitarray), gr-cdma, gr-display (incl. matplotlib), gr-eventstream, gr-inspector (incl. tensorflow), gr-lte, gr-mapper, gr-nacl, gr-paint (incl. PIL), gr-radar, gr-rds, gr-specest, OpenLTE
+OOT modules: gr-iqbal, gr-fosphor, gr-osmosdr, gr-acars, gr-adsb, gr-modtool, gr-air-modes, gr-ais, gr-ax25, gr-burst (incl. bitarray), gr-cdma, gr-display (incl. matplotlib), gr-eventstream, gr-inspector (incl. tensorflow), gr-lte, gr-mapper, gr-nacl, gr-paint (incl. PIL), gr-radar, gr-rds, gr-specest, OpenLTE, gr-gsm
 
 Other Applications: gqrx
 
 <h2>PREREQUISITES</h2>
+Windows 10 64-bit (though binaries will run on Win 7)
 
 The following tools must be installed:  
 - MS Visual Studio 2015 (Community or higher)  
 - Git For Windows  
-- CMake  
+- CMake 3.3
 - Doxygen  
 - ActiveState Perl  
 - Wix toolset for VS 2015  
 
-Also, the complete build requires no less than **60 GB** of free disk space.
+Also, the complete build requires no less than **120 GB** of free disk space.
 
 <h2>INSTALLATION & BUILD</h2>
 
@@ -59,11 +60,9 @@ Once complete, msi files can be found in the [root]/src-stage4-installer/dist su
 
 6- The following devices are NOT currently supported: FCD Pro+, RFSPACE, MiriSDR, SoapySDR, SDRPlay
 
-7- Installing MSVC to a non-standard path may cause the dependency checks to fail 
+7- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
 
-8- CMake 3.3 is the only version currently supported.  CMake 3.5 has been reported to have issues detecting the custom python install when at the BuildGNURadio step. 
-
-9- Zadig must be manually added to the /bin directory prior to MSI creation
+8- Zadig must be manually added to the /bin directory prior to MSI creation
 
 <h2>LICENSE</h2>
 The scripts themselves are released under the GPLv3.  The resulting MSI's are also GPLv3 compatible, see www.gcndevelopment.com/gnuradio for details and access to all modifications to original source code.  All patches are released under the same license as the original package it applies to.
