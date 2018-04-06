@@ -481,7 +481,7 @@ Function SetupPython
 			& $pythonroot/$pythonexe setup.py clean  2>&1 >> $log
 			& $pythonroot/$pythonexe setup.py config --fcompiler=intelvem --compiler=msvc  2>&1 >> $log
 			Write-Host -NoNewline "building..."
-			$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib"" /NODEFAULTLIB:""LIBMMT.lib"" /DEFAULTLIB:""libifport.lib"" /DEFAULTLIB:""legacy_stdio_definitions.lib"" /DEFAULTLIB:""libipgo.lib"" /DEFAULTLIB:""LIBIRC.lib"" /DEFAULTLIB:""LIBMMDS.lib"" "
+			$env:_LINK_=" /NODEFAULTLIB:""LIBCMT.lib""  /NODEFAULTLIB:""LIBIFCOREMD.lib"" /DEFAULTLIB:""LIBIFCOREMT.lib"" /NODEFAULTLIB:""SVML_DISPMD.lib"" /DEFAULTLIB:""SVML_DISPMT.lib""  /NODEFAULTLIB:""LIBMMD.lib"" /DEFAULTLIB:""LIBMMDS.lib"" /DEFAULTLIB:""LIBMMT.lib"" /DEFAULTLIB:""libifport.lib"" /DEFAULTLIB:""legacy_stdio_definitions.lib"" /DEFAULTLIB:""libipgo.lib"" /DEFAULTLIB:""LIBIRC.lib""  "
 			# setup.py doesn't handle debug flag correctly for windows ifort, it adds a -g flag which is ambiguous so we'll do our best to emulate it manually
 			if ($configuration -match "Debug") {$env:__INTEL_POST_FFLAGS = " /debug:all "} else {$env:__INTEL_POST_FFLAGS = ""}
 			& $pythonroot/$pythonexe setup.py build --compiler=msvc --fcompiler=intelvem 2>&1 >> $log
