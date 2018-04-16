@@ -403,13 +403,13 @@ $myprog = "${Env:ProgramFiles(x86)}"
 
 # check for git/tar
 if ((Get-Command "git.exe" -ErrorAction SilentlyContinue) -eq $null) {throw "Git For Windows must be installed.  Aborting script"}
-Set-Alias git "git.exe"
+Set-Alias git (Get-Command "git.exe").Source
 if ((Get-Command "tar.exe" -ErrorAction SilentlyContinue) -eq $null) {throw "Git For Windows (or any other tar.exe) must be installed.  Aborting script"} 
-set-alias tar "tar.exe"  
+set-alias tar (Get-Command "tar.exe").Source
 
 # CMake (to build gnuradio)
 if ((Get-Command "cmake.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "CMake must be installed and on the path.  Aborting script"} 
-Set-Alias cmake "cmake.exe"
+Set-Alias cmake (Get-Command "cmake.exe").Source
 	
 # ActivePerl (to build OpenSSL)
 if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed and on the path.  Aborting script"} 
