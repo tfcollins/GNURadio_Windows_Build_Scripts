@@ -279,7 +279,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio)) {
     # however, since this is the one most users might want to modify, we'll get more.
 	git clone --depth=150 --no-single-branch --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log
 	cd gnuradio
-  git checkout maint
+  git checkout maint-3.7
 	git pull --recurse-submodules=on
 	#git submodule update
 	cd ..
