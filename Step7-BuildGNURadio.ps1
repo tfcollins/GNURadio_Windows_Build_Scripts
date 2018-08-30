@@ -25,12 +25,12 @@ $env:PYTHONPATH=""
 if (!(Test-Path $root/src-stage3/build)) {
 	cd $root/src-stage3
 	mkdir build >> $null
-} 
+}
 
 if (!(Test-Path $root/src-stage3/staged_install)) {
 	cd $root/src-stage3
 	mkdir staged_install >> $null
-} 
+}
 
 function BuildGNURadio {
 	$configuration = $args[0]
@@ -42,11 +42,11 @@ function BuildGNURadio {
 	if (!(Test-Path $root/src-stage3/staged_install/$configuration)) {
 		cd $root/src-stage3/staged_install
 		mkdir $configuration
-	} 
+	}
 	if (!(Test-Path $root/src-stage3/build/$configuration)) {
 		cd $root/src-stage3/build
 		mkdir $configuration
-	} 
+	}
 	cd $root/src-stage3/build/$configuration
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
 
@@ -96,7 +96,7 @@ function BuildGNURadio {
 	#
 	# incorrectly detects compiler (vs 10.0) nuisance only?
 	# doesn't find MSVC-ASM ? (nasm) how would nasm be used?
-	
+
 	# before we build we need to trim from SWIG cmd.exe lines in the VS projects, as cmd.exe has a 8192 character limit, and some of the swig commands will likely be > 9000
 	# the good news is that the includes are very repetitive so we can use a swizzy regex to get rid to them
 	Write-Host -NoNewline "Fixing swig > 8192 char includes..."
@@ -104,9 +104,9 @@ function BuildGNURadio {
 	{
 		$filename = $args[0]
 		(Get-Content -Path "$filename") `
-			-replace '(-I[^ \n]+)[ ](?=.+?[ ]\1[ ])(?<=.+swig\.exe.+)', '' | Out-File -Encoding utf8 "$filename.temp" 
+			-replace '(-I[^ \n]+)[ ](?=.+?[ ]\1[ ])(?<=.+swig\.exe.+)', '' | Out-File -Encoding utf8 "$filename.temp"
 		Copy-Item -Force "$filename.temp" "$filename"
-		Remove-Item "$filename.temp"	
+		Remove-Item "$filename.temp"
 	}
 	FixSwigIncludes "$root\src-stage3\build\$configuration\gr-blocks\swig\blocks_swig5_gr_blocks_swig_a6e57.vcxproj"
 	FixSwigIncludes "$root\src-stage3\build\$configuration\gr-blocks\swig\blocks_swig4_gr_blocks_swig_a6e57.vcxproj"
@@ -114,10 +114,10 @@ function BuildGNURadio {
 
 	# NOW we build gnuradio finally
 	Write-Host -NoNewline "Build GNURadio $configuration..."
-	Write-Host -NoNewline "building..." 
-	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log 
+	Write-Host -NoNewline "building..."
+	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log
 	Write-Host -NoNewline "staging install..."
-	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log 
+	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 
 	# Then combine it into a useable staged install with the dependencies it will need
 	Write-Host -NoNewline "moving add'l libraries..."
@@ -126,7 +126,7 @@ function BuildGNURadio {
 
 	Write-Host -NoNewline "moving python..."
 	Copy-Item -Force -Recurse -Path $pythonroot $root/src-stage3/staged_install/$configuration  2>&1 >> $Log
-	if ((Test-Path $root/src-stage3/staged_install/$configuration/gr-python27) -and (($pythonroot -match "avx2") -or ($pythonroot -match "debug"))) 
+	if ((Test-Path $root/src-stage3/staged_install/$configuration/gr-python27) -and (($pythonroot -match "avx2") -or ($pythonroot -match "debug")))
 	{
 		del -Recurse -Force $root/src-stage3/staged_install/$configuration/gr-python27
 	}
@@ -139,27 +139,27 @@ function BuildGNURadio {
 		Copy-Item -Force -Path $root\src-stage3\src\run_gr.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	}
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
-	Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
-	Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	#Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	#Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	Copy-Item -Force -Recurse -Path $root\src-stage3\icons $root/src-stage3/staged_install/$configuration/share  2>&1 >> $Log
 
 	# the swig libraries aren't properly named for the debug build, so do it here
-	# We will repeat for the OOT modules	
+	# We will repeat for the OOT modules
 	if ($configuration -match "Debug") {
 		pushd $root/src-stage3/staged_install/$configuration
-		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig","_swig_d" } 
-		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig0","_swig0_d" } 
-		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig1","_swig1_d" } 
-		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig2","_swig2_d" } 
-		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig3","_swig3_d" } 
-		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig4","_swig4_d" } 
-		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig5","_swig5_d" } 
+		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig","_swig_d" }
+		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig0","_swig0_d" }
+		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig1","_swig1_d" }
+		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig2","_swig2_d" }
+		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig3","_swig3_d" }
+		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig4","_swig4_d" }
+		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig5","_swig5_d" }
 		popd
 	}
 
 	# ensure the GR build went well by checking for newmod package, and if found then build
 	Validate  $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/CMakeLists.txt
-	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build 
+	New-Item -Force -ItemType Directory $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
 	cd $root/src-stage3/staged_install/$configuration/share/gnuradio/modtool/gr-newmod/build
 	$ErrorActionPreference = "Continue"
 	cmake ../ `
@@ -174,7 +174,7 @@ function BuildGNURadio {
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	
+
 	Write-Host -NoNewline "confirming AVX configuration..."
 	CheckNoAVX "$root/src-stage3/staged_install/$configuration"
 
@@ -208,7 +208,7 @@ Catch
 	"Debug GNURadio build FAILED... aborting but continuing with other builds"
 	""
 }
-cd $root/scripts 
+cd $root/scripts
 
 ""
 "COMPLETED STEP 7: Core GNURadio has been built from source"

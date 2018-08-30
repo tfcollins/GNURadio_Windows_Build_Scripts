@@ -19,6 +19,7 @@ Write-Host "- gr-benchmark"
 Write-Host "- gr-fosphor"
 Write-Host "- gr-adsb"
 Write-Host "- gr-acars2"
+Write-Host "- gr-iio"
 Write-Host ""
 Write-Host "The only GNURadio component not currently built is gr-comedi."
 Write-Host ""
@@ -33,7 +34,7 @@ Write-Host ""
 
 $buildoption = Read-Host "Please choose an option (1,2)<2>"
 if (!$buildoption) {$buildoption = "2"}
-if ($buildoption -ne "1" -and $buildoption -ne "2" ) 
+if ($buildoption -ne "1" -and $buildoption -ne "2" )
 {
     Write-Host "'$buildoption' was not a valid choice.  Exiting script."
     return
@@ -49,7 +50,7 @@ if ($script:MyInvocation.MyCommand.Path -eq $null) {
 SetLog "Initial Configuration"
 
 Write-Host "Dependencies checked passed: VS 2015, git, perl, cmake, 7-zip, & doxygen are installed."
-if ($hasIFORT -and $buildoption -eq "1") 
+if ($hasIFORT -and $buildoption -eq "1")
 {
     Write-Host "Intel Fortran compiler has been detected.  Numpy/Scipy will be built from source"
 } elseif ($buildoption -eq "1") {
@@ -111,17 +112,17 @@ Write-Host ""
 
 # RUN
 
-if ($buildoption -eq "1") 
+if ($buildoption -eq "1")
 {
 	& $root\scripts\Step2-GetStage1Packages.ps1
-	& $root\scripts\Step3-BuildStage1Packages.ps1 
-	& $root\scripts\Step4-BuildPythonPackages.ps1 
-	& $root\scripts\Step5-ConsolidateLibs.ps1 
+	& $root\scripts\Step3-BuildStage1Packages.ps1
+	& $root\scripts\Step4-BuildPythonPackages.ps1
+	& $root\scripts\Step5-ConsolidateLibs.ps1
 } else {
-    & $root\scripts\Step5a-DownloadDependencies.ps1 
+    & $root\scripts\Step5a-DownloadDependencies.ps1
 }
 
 & $root\scripts\Step6-GetStage3Packages.ps1
 & $root\scripts\Step7-BuildGNURadio.ps1 $configmode
 & $root\scripts\Step8-BuildOOTModules.ps1 $configmode
-& $root\scripts\Step9-BuildMSI.ps1 $configmode 
+& $root\scripts\Step9-BuildMSI.ps1 $configmode

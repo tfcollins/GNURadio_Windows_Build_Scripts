@@ -23,19 +23,128 @@ $configmode = $args[0]
 if ($configmode -eq $null) {$configmode = "all"}
 $env:PYTHONPATH=""
 
-function BuildDrivers 
+function BuildDrivers
 {
 	$configuration = $args[0]
 	$buildsymbols=$true
 	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
 	if ($configuration -match "Release") {
 		$buildconfig="Release";$pythonexe = "python.exe";  $debugext = "";  $debug_ext = "";  $runtime = "/MD"
-	} 
+	}
 	else {
 		$buildconfig="Debug";  $pythonexe = "python_d.exe";$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"
 	}
 	if ($buildsymbols -and $buildconfig -eq "Release") {$buildconfig="RelWithDebInfo"}
 	if ($configuration -match "AVX2") {$arch="/arch:AVX2"} else {$arch=""}
+
+  # ____________________________________________________________________________________________________________
+	#
+	# gr-iio
+	#
+	#
+
+  Function download_gr_iio_deps
+  {
+    $configuration = "Release"
+    $Dest = "$root/src-stage3/staged_install/$configuration/bin/"
+    $DestH = "$root/src-stage3/staged_install/$configuration/include"
+    #$Dest = "$root/build/$configuration/bin/"
+    #$DestH = "$root/build/$configuration/include/"
+
+    mkdir $root/tmp
+
+    # Get the dlls/libs for gr-iio
+    wget https://ci.appveyor.com/api/projects/analogdevicesinc/libiio/artifacts/libiio.zip?branch=master -OutFile $root/libiio.zip
+    [io.compression.zipfile]::ExtractToDirectory("$root/libiio.zip", "$root/tmp") #>> $Log
+
+    mv "$root/tmp/libiio*" "$root/tmp/libiio"
+    cp -Force $root/tmp/libiio/MS64/libiio.dll $Dest
+    cp -Force $root/tmp/libiio/MS64/libiio.exp $Dest
+    cp -Force $root/tmp/libiio/MS64/libiio.lib $Dest
+    cp -Force $root/tmp/libiio/MS64/libxml2.dll $Dest
+    cp -Force $root/tmp/libiio/MS64/libserialport-0.dll $Dest
+    cp -Force $root/tmp/libiio/include/iio.h $DestH
+
+    del $root/tmp -Force -Recurse
+    del libiio.zip
+
+    mkdir $root/tmp
+
+    wget https://ci.appveyor.com/api/projects/analogdevicesinc/libad9361-iio/artifacts/libad9361-win64.zip?branch=master -OutFile $root/libad9361.zip
+    [io.compression.zipfile]::ExtractToDirectory("$root/libad9361.zip", "$root/tmp") #>> $Log
+
+    mv "$root/tmp/libad9361*" "$root/tmp/libad9361"
+    cp -Force $root/tmp/libad9361/libad9361.dll $Dest
+    cp -Force $root/tmp/libad9361/libad9361.exp $Dest
+    cp -Force $root/tmp/libad9361/libad9361.lib $Dest
+    cp -Force $root/tmp/libad9361/ad9361.h $DestH
+
+    del $root/tmp -Force -Recurse
+    del libad9361.zip
+
+    mkdir $root/tmp
+
+    #wget https://sourceforge.net/projects/winflexbison/files/old_versions/win_flex_bison-2.5.6.zip -OutFile $root/win_flex_bison.zip
+    wget https://github.com/lexxmark/winflexbison/releases/download/v.2.5.10/win_flex_bison-2.5.10.zip -OutFile $root/win_flex_bison.zip
+    [io.compression.zipfile]::ExtractToDirectory("$root/win_flex_bison.zip", "$root/tmp") #>> $Log
+
+    mv "$root/tmp/win_flex_bison*" "$root/tmp/win_flex_bison"
+    cp -Force $root/tmp/win_bison.exe $Dest
+    cp -Force $root/tmp/win_flex.exe $Dest
+    cp -Force -Recurse $root/tmp/data $Dest
+    cp -Force -Recurse $root/tmp/custom_build_rules $Dest
+    cp -Force $root/tmp/FlexLexer.h $DestH
+
+    del $root/tmp -Force -Recurse
+    del win_flex_bison.zip
+
+    "complete"
+
+  }
+
+	SetLog "gr-iio $configuration"
+  $ErrorActionPreference = "Continue"
+  download_gr_iio_deps
+	Write-Host -NoNewline "configuring $configuration gr-iio..."
+	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iio/build/$configuration  2>&1 >> $Log
+	cd $root/src-stage3/oot_code/gr-iio/build/$configuration
+	$env:_CL_ = " $arch $runtime "
+	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG $root/src-stage3/staged_install/$configuration/bin/libiio.lib $root/src-stage3/staged_install/$configuration/bin/libad9361.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib"
+	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
+  cmake ../.. `
+    -G "Visual Studio 14 2015 Win64" `
+    -DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+    -DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+    -DCMAKE_BUILD_TYPE:STRING=Release `
+    -DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+    -DBOOST_LIBRARYDIR=" $root/build/$configuration/lib/" `
+    -DLINK_LIBRARIES="gnuradio-pmt.lib"  `
+    -DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+    -DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27$debug_ext.lib" `
+    -DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+    -DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
+    -DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+    -DIIO_INCLUDE_DIRS:PATH="$root/src-stage3/staged_install/$configuration/include" `
+    -DIIO_LIBRARIES:FILEPATH=$root/src-stage3/staged_install/$configuration/bin/libiio.lib `
+    -DFLEX_EXECUTABLE:FILEPATH=$root/src-stage3/staged_install/$configuration/bin/win_flex.exe `
+    -DBISON_EXECUTABLE:FILEPATH=$root/src-stage3/staged_install/$configuration/bin/win_bison.exe `
+    -DAD9361_INCLUDE_DIRS:PATH="$root/src-stage3/staged_install/$configuration/include" `
+    -DAD9361_LIBRARIES:FILEPATH=$root/src-stage3/staged_install/$configuration/bin/libad9361.lib `
+    -DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
+		-DGNURADIO_RUNTIME_INCLUDE_DIRS="$root/src-stage3/staged_install/$configuration/include" `
+    -DGnuradio_DIR:PATH="$root/src-stage3/staged_install/$configuration/lib/cmake/gnuradio" `
+    -DCPPUNIT_LIBRARIES="$root/build/$configuration/lib/cppunit.lib" `
+		-DCPPUNIT_INCLUDE_DIRS="$root/build/$configuration/include" `
+    -Wno-dev #2>&1 >> $Log
+
+	Write-Host -NoNewline "building..."
+	msbuild .\gr-iio.sln /m /p:"configuration=$buildconfig;platform=x64" #2>&1 >> $Log
+	Write-Host -NoNewline "installing..."
+	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" #2>&1 >> $Log
+	Validate "$root\src-stage3\oot_code\gr-iio\build\$configuration\lib\$buildconfig\gnuradio-iio.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\gnuradio\iio\_iio_swig.pyd"
+	CheckNoAVX "$root\src-stage3\oot_code\gr-iio\build\$configuration\lib\$buildconfig"
+	$env:_LINK_ = ""
+	$ErrorActionPreference = "Stop"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -65,8 +174,9 @@ function BuildDrivers
 	# links to libusb dynamically and pthreads statically
 	# Note that to get this to build without a patch, we needed to place pthreads and libusb dll's in non-standard locations.
 	# pthreads dll can actually be deleted afterwards since we statically link it in this build
-	# 
+	#
 
+  <#
 	SetLog "bladeRF $configuration"
 	Write-Host -NoNewline "configuring $configuration bladeRF..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/bladeRF/host/build/$configuration  2>&1 >> $Log
@@ -96,6 +206,7 @@ function BuildDrivers
 	Validate "$root/src-stage3/oot_code/bladeRF/host/build/$configuration/output/$buildconfig/bladeRF.dll"
 	CheckNoAVX "$root/src-stage3/oot_code/bladeRF/host/build/$configuration/output/$buildconfig"
 
+
 	# ____________________________________________________________________________________________________________
 	#
 	# rtl-sdr
@@ -106,7 +217,7 @@ function BuildDrivers
 	Write-Host -NoNewline "configuring $configuration rtl-sdr..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/rtl-sdr/build/$configuration  2>&1 >> $Log
 	$env:_CL_ = " $arch $runtime "
-	cd $root/src-stage3/oot_code/rtl-sdr/build/$configuration 
+	cd $root/src-stage3/oot_code/rtl-sdr/build/$configuration
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DTHREADS_PTHREADS_WIN32_LIBRARY="$root/build/$configuration/lib/pthreadVC2.lib" `
@@ -131,7 +242,7 @@ function BuildDrivers
 	SetLog "HackRF $configuration"
 	Write-Host -NoNewline "configuring $configuration HackRF..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/hackrf/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/hackrf/build/$configuration 
+	cd $root/src-stage3/oot_code/hackrf/build/$configuration
 	$env:_CL_ = " $arch $runtime "
 	$ErrorActionPreference = "Continue"
 	cmake ../../host/ `
@@ -164,7 +275,7 @@ function BuildDrivers
 	SetLog "osmo-sdr $configuration"
 	Write-Host -NoNewline "configuring $configuration osmo-sdr..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/osmo-sdr/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/osmo-sdr/build/$configuration 
+	cd $root/src-stage3/oot_code/osmo-sdr/build/$configuration
 	$env:_CL_ = " $arch $runtime "
 	cmake ../../software/libosmosdr/ `
 		-G "Visual Studio 14 2015 Win64" `
@@ -179,7 +290,7 @@ function BuildDrivers
 	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 	Validate "$root\src-stage3\oot_code\osmo-sdr\build\$configuration\src\$buildconfig\osmosdr.dll"
 	CheckNoAVX "$root\src-stage3\oot_code\osmo-sdr\build\$configuration\src\$buildconfig"
-	
+
 	# ____________________________________________________________________________________________________________
 	#
 	# UHD
@@ -191,15 +302,17 @@ function BuildDrivers
 	#
 	SetLog "UHD $configuration configuration"
 	Write-Host -NoNewline "configuring $configuration UHD..."
-	robocopy "$root/build/$configuration/uhd" "$root/src-stage3/staged_install/$configuration" /e 2>&1 >> $log 
-	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/uhd/images -Force 2>&1 >> $log 
+	robocopy "$root/build/$configuration/uhd" "$root/src-stage3/staged_install/$configuration" /e 2>&1 >> $log
+	New-Item -ItemType Directory $root/src-stage3/staged_install/$configuration/share/uhd/images -Force 2>&1 >> $log
 	"complete"
 	Write-Host -NoNewline "downloading $configuration UHD firmware images..."
 	if ($configuration -match "Debug") {$ErrorActionPreference = "Continue"}
-	& $pythonroot/$pythonexe $root/src-stage3/staged_install/$configuration/lib/uhd/utils/uhd_images_downloader.py -v -i "$root/src-stage3/staged_install/$configuration/share/uhd/images" 2>&1 >> $log 
+	& $pythonroot/$pythonexe $root/src-stage3/staged_install/$configuration/lib/uhd/utils/uhd_images_downloader.py -v -i "$root/src-stage3/staged_install/$configuration/share/uhd/images" 2>&1 >> $log
 	"complete"
 	$ErrorActionPreference = "Stop"
-	
+
+  #>
+
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-iqbal
@@ -213,7 +326,7 @@ function BuildDrivers
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-iqbal..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-iqbal/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration 
+	cd $root/src-stage3/oot_code/gr-iqbal/build/$configuration
 	$env:_CL_ = " $arch $runtime "
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG "
 	if (Test-Path CMakeCache.txt) {Remove-Item -Force CMakeCache.txt} # Don't keep the old cache because if the user is fixing a config problem it may not re-check the fix
@@ -248,69 +361,69 @@ function BuildDrivers
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-osmosdr
-	# 
+	#
 	# Note this must be built at the end, after all the other libraries are ready
 	#
 	# /EHsc is important or else you get boost::throw_exception linker errors
 	# ENABLE_RFSPACE=False is because the latest gr-osmosdr has linux-only support for that SDR
 	# /DNOMINMAX prevents errors related to std::min definition
-	# 
-	SetLog "gr-osmosdr $configuration"
-	Write-Host -NoNewline "configuring $configuration gr-osmosdr..."
-	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-osmosdr/build/$configuration 2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gr-osmosdr/build/$configuration
-	$ErrorActionPreference = "Continue"
-	$env:LIB = "$root/build/$configuration/lib;" + $oldlib
-	$env:_CL_ = " $arch $runtime "
-	if ($configuration -match "AVX") {$SIMD="-DUSE_SIMD=""AVX"""} else {$SIMD=""}
-	& cmake ../../ `
-		-G "Visual Studio 14 2015 Win64" `
-		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
-		-DCMAKE_INCLUDE_PATH="$root/build/$configuration/include" `
-		-DCMAKE_LIBRARY_PATH="$root/build/$configuration/lib" `
-		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
-		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
-		-DBOOST_ROOT="$root/build/$configuration/" `
-		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
-		-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
-		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
-		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
-		-DLIBAIRSPY_INCLUDE_DIRS="..\libairspy\src" `
-		-DLIBAIRSPY_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\airspy.lib" `
-		-DLIBBLADERF_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
-		-DLIBBLADERF_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\bladeRF.lib" `
-		-DLIBHACKRF_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
-		-DLIBHACKRF_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\hackrf.lib" `
-		-DLIBRTLSDR_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
-		-DLIBRTLSDR_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\rtlsdr.lib" `
-		-DLIBOSMOSDR_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
-		-DLIBOSMOSDR_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\osmosdr.lib" `
-		-DCMAKE_CXX_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /I$root/build/$configuration/include /EHsc " `
-		-DCMAKE_C_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch  /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /EHsc " `
-		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
-		$SIMD `
-		-DENABLE_DOXYGEN="TRUE" `
-		-DENABLE_RFSPACE="FALSE" 2>&1 >> $Log  # RFSPACE not building in current git pull (0.1.5git 164a09fc 3/13/2016), due to having linux-only headers being added
-	
-	Write-Host -NoNewline "building..."
-	msbuild .\gr-osmosdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-	Write-Host -NoNewline "installing..."
-	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
-	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
-	Validate "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig\gnuradio-osmosdr.dll"
-	CheckNoAVX "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig"
+	#
+#	SetLog "gr-osmosdr $configuration"
+#	Write-Host -NoNewline "configuring $configuration gr-osmosdr..."
+#	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gr-osmosdr/build/$configuration 2>&1 >> $Log
+#	cd $root/src-stage3/oot_code/gr-osmosdr/build/$configuration
+#	$ErrorActionPreference = "Continue"
+#	$env:LIB = "$root/build/$configuration/lib;" + $oldlib
+#	$env:_CL_ = " $arch $runtime "
+#	if ($configuration -match "AVX") {$SIMD="-DUSE_SIMD=""AVX"""} else {$SIMD=""}
+#	& cmake ../../ `
+#		-G "Visual Studio 14 2015 Win64" `
+#		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+#		-DCMAKE_INCLUDE_PATH="$root/build/$configuration/include" `
+#		-DCMAKE_LIBRARY_PATH="$root/build/$configuration/lib" `
+#		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+#		-DBOOST_LIBRARYDIR="$root/build/$configuration/lib" `
+#		-DBOOST_INCLUDEDIR="$root/build/$configuration/include" `
+#		-DBOOST_ROOT="$root/build/$configuration/" `
+#		-DPYTHON_LIBRARY="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27.lib" `
+#  	-DPYTHON_LIBRARY_DEBUG="$root/src-stage3/staged_install/$configuration/gr-python27/libs/python27_d.lib" `
+#		-DPYTHON_EXECUTABLE="$root/src-stage3/staged_install/$configuration/gr-python27/$pythonexe" `
+#		-DPYTHON_INCLUDE_DIR="$root/src-stage3/staged_install/$configuration/gr-python27/include" `
+#		-DLIBAIRSPY_INCLUDE_DIRS="..\libairspy\src" `
+#		-DLIBAIRSPY_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\airspy.lib" `
+#		-DLIBBLADERF_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
+#		-DLIBBLADERF_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\bladeRF.lib" `
+#		-DLIBHACKRF_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
+#		-DLIBHACKRF_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\hackrf.lib" `
+#		-DLIBRTLSDR_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
+#		-DLIBRTLSDR_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\rtlsdr.lib" `
+#		-DLIBOSMOSDR_INCLUDE_DIRS="$root\src-stage3\staged_install\$configuration\include\"  `
+#		-DLIBOSMOSDR_LIBRARIES="$root\src-stage3\staged_install\$configuration\lib\osmosdr.lib" `
+#		-DCMAKE_CXX_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /I$root/build/$configuration/include /EHsc " `
+#		-DCMAKE_C_FLAGS="/DNOMINMAX /D_TIMESPEC_DEFINED $arch  /DWIN32 /D_WINDOWS /W3 /DPTW32_STATIC_LIB /EHsc " `
+#		-DSWIG_EXECUTABLE="$root/bin/swig.exe" `
+#		$SIMD `
+#		-DENABLE_DOXYGEN="TRUE" `
+#		-DENABLE_RFSPACE="FALSE" 2>&1 >> $Log  # RFSPACE not building in current git pull (0.1.5git 164a09fc 3/13/2016), due to having linux-only headers being added
+
+#	Write-Host -NoNewline "building..."
+#	msbuild .\gr-osmosdr.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+#	Write-Host -NoNewline "installing..."
+#	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+#	# osmocom_fft.py tries to set up a file sink to /dev/null, so we need to replace that with nul
+#	(Get-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py).replace('/dev/null', 'nul') | Set-Content $root\src-stage3\staged_install\$configuration\bin\osmocom_fft.py
+#	Validate "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig\gnuradio-osmosdr.dll"
+#	CheckNoAVX "$root\src-stage3\oot_code\gr-osmosdr\build\$configuration\lib\$buildconfig"
 }
 
-function BuildOOTModules 
+function BuildOOTModules
 {
 	$configuration = $args[0]
 	$buildsymbols=$true
 	$pythonroot = "$root/src-stage3/staged_install/$configuration/gr-python27"
 	if ($configuration -match "Release") {
 		$buildconfig="Release";$pythonexe = "python.exe";  $debugext = "";  $debug_ext = "";  $runtime = "/MD"
-	} 
+	}
 	else {
 		$buildconfig="Debug";  $pythonexe = "python_d.exe";$debugext = "d"; $debug_ext = "_d";$runtime = "/MDd"
 	}
@@ -331,11 +444,11 @@ function BuildOOTModules
 	Write-Host -NoNewline "configuring $configuration gr-acars2..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-acars2/build/$configuration  2>&1 >> $Log
 	Copy-Item -Force $root\src-stage3\staged_install\$configuration\include\gnuradio\swig\gnuradio.i $root/bin/Lib
-	cd $root/src-stage3/oot_code/gr-acars2/build/$configuration 
+	cd $root/src-stage3/oot_code/gr-acars2/build/$configuration
 	$linkflags = " /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_LINK_= ""
 	$env:_CL_ = ""
-	$env:Path="" 
+	$env:Path=""
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -384,11 +497,11 @@ function BuildOOTModules
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-adsb..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-adsb/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gr-adsb/build/$configuration 
+	cd $root/src-stage3/oot_code/gr-adsb/build/$configuration
 	$env:_CL_ = " $arch $runtime "
 	$env:_LINK_= "  $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = $env:_CL_  + "  -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-	$env:Path="" 
+	$env:Path=""
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -422,7 +535,7 @@ function BuildOOTModules
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-air-modes..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-air-modes/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gr-air-modes/build/$configuration 
+	cd $root/src-stage3/oot_code/gr-air-modes/build/$configuration
 	$linkflags = " /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = ""
 	$env:Path= "$root/build/$configuration/lib;" + $oldPath
@@ -485,20 +598,20 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$ErrorActionPreference = "Stop"
 	Validate "$root\src-stage3\oot_code\glfw\build\$configuration\src\$buildconfig\glfw3.dll"
-	 
+
 
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-fosphor
 	#
 	# needed to macro out __attribute__, include gnuradio-pmt, and include glew64.lib and a glewInit() call
-	# 
+	#
 	SetLog "gr-fosphor $configuration"
 	if ($env:AMDAPPSDKROOT) {
 		$ErrorActionPreference = "Continue"
 		Write-Host -NoNewline "configuring $configuration gr-fosphor..."
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-fosphor/build/$configuration  2>&1 >> $Log
-		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration 
+		cd $root/src-stage3/oot_code/gr-fosphor/build/$configuration
 		if ($configuration -match "AVX2") {
 			$DLLconfig="ReleaseDLL-AVX2"
 		} else {
@@ -506,7 +619,7 @@ function BuildOOTModules
 		}
 		$env:_CL_ = ""
 		$env:_LINK_= " /DEBUG /OPT:ref,icf "
-		$env:Path = $env:AMDAPPSDKROOT + ";" + $oldPath 
+		$env:Path = $env:AMDAPPSDKROOT + ";" + $oldPath
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -539,52 +652,52 @@ function BuildOOTModules
 		cp $env:AMDAPPSDKROOT/bin/x86_64/glew64.dll $root/src-stage3/staged_install/$configuration/bin
 		$env:_LINK_ = ""
 		$env:_CL_ = ""
-		$env:Path = $oldPath 
+		$env:Path = $oldPath
 		$ErrorActionPreference = "Stop"
 		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-fosphor.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\gnuradio\fosphor\_fosphor_swig.pyd"
 	} else {
 		"Unable to build gr-fosphor, AMD APP SDK not found, skipping"
 	}
-	
+
 
 	# ____________________________________________________________________________________________________________
 	#
 	# gqrx
 	#
-	# Requires Qt5, which is a pain because it conflicts with Qt4's headers.  
+	# Requires Qt5, which is a pain because it conflicts with Qt4's headers.
 	# TODO Doesn't currently seem to support UHD devices, even though the same gr-osmosdr block in GRC with the same device string will work.
 	#
-	SetLog "gqrx $configuration"
-	Write-Host -NoNewline "configuring $configuration gqrx..."
-	New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration 2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration
-	$ErrorActionPreference = "Continue"
-	$env:_CL_ = ""
-	& cmake ../../ `
-		-G "Visual Studio 14 2015 Win64" `
-		-DCMAKE_PREFIX_PATH="$root\build\$configuration\gqrx" `
-		-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
-		-DBOOST_LIBRARYDIR="$root\build\$configuration\lib" `
-		-DCMAKE_C_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
-		-DCMAKE_CXX_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
-		-Wno-dev 2>&1 >> $Log
-	Write-Host -NoNewline "building..."
-	msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-	Write-Host -NoNewline "installing..."
-	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	cp $root/build/$configuration/gqrx/bin/Qt5Network*.dll $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/bin/Qt5Core*.dll $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/bin/Qt5Gui*.dll $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/bin/Qt5Widgets*.dll $root\src-stage3\staged_install\$configuration\bin\
-	cp $root/build/$configuration/gqrx/bin/Qt5Svg*.dll $root\src-stage3\staged_install\$configuration\bin\
-	New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force 2>&1 >> $Log
-	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\bin
-	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\bin
-	cp -Recurse -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\bin
-	"[Paths]" | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII
-	"Prefix = ." | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII -append 
-	$env:_CL_ = ""
-	Validate "$root/src-stage3/staged_install/$configuration/bin/gqrx.exe"
+	#SetLog "gqrx $configuration"
+	#Write-Host -NoNewline "configuring $configuration gqrx..."
+	#New-Item -Force -ItemType Directory $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration 2>&1 >> $Log
+	#cd $root/src-stage3/oot_code/gqrx-$gqrx_version/build/$configuration
+	#$ErrorActionPreference = "Continue"
+	#$env:_CL_ = ""
+	#& cmake ../../ `
+	#	-G "Visual Studio 14 2015 Win64" `
+	#	-DCMAKE_PREFIX_PATH="$root\build\$configuration\gqrx" `
+	#	-DCMAKE_INSTALL_PREFIX="$root/src-stage3/staged_install/$configuration" `
+	#	-DBOOST_LIBRARYDIR="$root\build\$configuration\lib" `
+	#	-DCMAKE_C_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
+	#	-DCMAKE_CXX_FLAGS=" $arch $runtime  /EHsc /DENABLE_GR_LOG=ON " `
+	#	-Wno-dev 2>&1 >> $Log
+	#Write-Host -NoNewline "building..."
+	#msbuild .\gqrx.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	#Write-Host -NoNewline "installing..."
+	#msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	#cp $root/build/$configuration/gqrx/bin/Qt5Network*.dll $root\src-stage3\staged_install\$configuration\bin\
+	#cp $root/build/$configuration/gqrx/bin/Qt5Core*.dll $root\src-stage3\staged_install\$configuration\bin\
+	#cp $root/build/$configuration/gqrx/bin/Qt5Gui*.dll $root\src-stage3\staged_install\$configuration\bin\
+	#cp $root/build/$configuration/gqrx/bin/Qt5Widgets*.dll $root\src-stage3\staged_install\$configuration\bin\
+	#cp $root/build/$configuration/gqrx/bin/Qt5Svg*.dll $root\src-stage3\staged_install\$configuration\bin\
+	#New-Item -ItemType Directory $root\src-stage3\staged_install\$configuration\plugins -Force 2>&1 >> $Log
+	#cp -Recurse -Force $root/build/$configuration/gqrx/plugins/platforms $root\src-stage3\staged_install\$configuration\bin
+	#cp -Recurse -Force $root/build/$configuration/gqrx/plugins/iconengines $root\src-stage3\staged_install\$configuration\bin
+	#cp -Recurse -Force $root/build/$configuration/gqrx/plugins/imageformats $root\src-stage3\staged_install\$configuration\bin
+	#"[Paths]" | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII
+	#"Prefix = ." | out-file -FilePath $root/src-stage3/staged_install/$configuration/bin/qt.conf -encoding ASCII -append
+	#$env:_CL_ = ""
+	#Validate "$root/src-stage3/staged_install/$configuration/bin/gqrx.exe"
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -596,7 +709,7 @@ function BuildOOTModules
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration Armadillo..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/armadillo-7.800.1/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/armadillo-7.800.1/build/$configuration 
+	cd $root/src-stage3/oot_code/armadillo-7.800.1/build/$configuration
 	$linkflags= " /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
@@ -626,20 +739,20 @@ function BuildOOTModules
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-specest
-	# 
+	#
 	if ($hasIFORT) {
 		SetLog "gr-specest $configuration"
 		$ErrorActionPreference = "Continue"
 		Write-Host -NoNewline "configuring $configuration gr-specest..."
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-specest/build/$configuration  2>&1 >> $Log
-		cd $root/src-stage3/oot_code/gr-specest/build/$configuration 
+		cd $root/src-stage3/oot_code/gr-specest/build/$configuration
 		# the quotes that are likely to be in the below path make it impossible to added to the cmake config
 		$env:_LINK_ = " /LIBPATH:""${MY_IFORT}compiler/lib/intel64_win/"" "
 		$linkflags= " /DEBUG  /NODEFAULTLIB:m.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:LIBCMTD.lib  /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 		if ($configuration -match "AVX2") {$fortflags = " /QaxCORE-AVX2 /QxCORE-AVX2 /tune:haswell /arch:AVX2 "} else {$fortflags = " /arch:SSE2 "}
 		$froot = $root.Replace('\','/')
 		# set path to empty to ensure another GR install is not located
-		$env:Path="" 
+		$env:Path=""
 		cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -672,7 +785,7 @@ function BuildOOTModules
 		Write-Host -NoNewline "installing..."
 		msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 		$env:_CL_ = ""
-		$env:_LINK_ = "" 
+		$env:_LINK_ = ""
 		$ErrorActionPreference = "Stop"
 		Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-specest.dll" "$root/src-stage3/staged_install/$configuration/lib/site-packages/specest/_specest_swig.pyd"
 	} else {
@@ -694,7 +807,7 @@ function BuildOOTModules
 		$env:_CL_=""
 		$env:_LINK_= " /DEBUG:FULL "
 		$ErrorActionPreference = "Continue"
-		$env:Path="" 
+		$env:Path=""
 		& cmake ../../ `
 			-G "Visual Studio 14 2015 Win64" `
 			-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -745,7 +858,7 @@ function BuildOOTModules
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	(Get-Content "../../python/cdma_parameters.py").replace('/home/anastas/gr-cdma/', '../lib/site-packages/cdma') | Set-Content "../../python/cdma_parameters.py"
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -777,7 +890,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-cdma.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\cdma\_cdma_swig.pyd"
-	
+
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-rds
@@ -790,7 +903,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -832,7 +945,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -874,7 +987,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -919,7 +1032,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -962,7 +1075,7 @@ function BuildOOTModules
 	$env:_LINK_ = ""
 	$linkflags= " /DEBUG  /NODEFAULTLIB:m.lib  /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEFAULTLIB:$root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1013,7 +1126,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1057,7 +1170,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib  $root/src-stage3/staged_install/$configuration/lib/volk.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1100,7 +1213,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1144,7 +1257,7 @@ function BuildOOTModules
 	cd $root/src-stage3/oot_code/gr-eventstream/build/$configuration
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
-	$linkflags = " /DEBUG /DEFAULTLIB:$root\src-stage3\build\$configuration\gnuradio-runtime\swig\$buildconfig\_runtime_swig.lib " 
+	$linkflags = " /DEBUG /DEFAULTLIB:$root\src-stage3\build\$configuration\gnuradio-runtime\swig\$buildconfig\_runtime_swig.lib "
 	$ErrorActionPreference = "Continue"
 	$env:Path= ""
 	& cmake ../../ `
@@ -1199,7 +1312,7 @@ function BuildOOTModules
 	$env:_CL_ = " $arch ";
 	$env:_LINK_= " /DEBUG:FULL $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/gnuradio-fft.lib "
 	$ErrorActionPreference = "Continue"
-	$env:Path="" 
+	$env:Path=""
 	& cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
@@ -1238,10 +1351,10 @@ function BuildOOTModules
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gr-lte..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-lte/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gr-lte/build/$configuration 
+	cd $root/src-stage3/oot_code/gr-lte/build/$configuration
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib $root/src-stage3/staged_install/$configuration/lib/volk.lib /DEBUG /NODEFAULTLIB:m.lib "
 	$env:_CL_ = " $arch -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-	$env:Path="" 
+	$env:Path=""
 	cmake ../../ `
 		-G "Visual Studio 14 2015 Win64" `
 		-DGNURADIO_RUNTIME_LIBRARIES="$root/src-stage3/staged_install/$configuration/lib/gnuradio-runtime.lib" `
@@ -1281,7 +1394,7 @@ function BuildOOTModules
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
-	
+
 
 	#
 	# gflags
@@ -1293,7 +1406,7 @@ function BuildOOTModules
 	$ErrorActionPreference = "Continue"
 	Write-Host -NoNewline "configuring $configuration gflags..."
 	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gflags/build_folder/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/gflags/build_folder/$configuration 
+	cd $root/src-stage3/oot_code/gflags/build_folder/$configuration
 	$env:_CL_ = $arch + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
 	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 	cmake ../../ `
@@ -1318,36 +1431,36 @@ function BuildOOTModules
 	#
 	# Required by GNSS-SDR
 	#
-	SetLog "glog $configuration"
-	$ErrorActionPreference = "Continue"
-	Write-Host -NoNewline "configuring $configuration glog..."
-	New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/glog/build/$configuration  2>&1 >> $Log
-	cd $root/src-stage3/oot_code/glog/build/$configuration 
-	$env:_CL_ = " $arch "
-	$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
-	$env:_CL_ = $env:_CL_ + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
-	cmake ../../ `
-		-G "Visual Studio 14 2015 Win64" `
-		-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
-		-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
-		-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
-		-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
-		-Wno-dev 2>&1 >> $Log
-	Write-Host -NoNewline "building glog..."
-	msbuild .\google-glog.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
-	Write-Host -NoNewline "installing..."
-	msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
-	$env:_CL_ = ""
-	$env:_LINK_ = ""
-	$ErrorActionPreference = "Stop"
-	"complete"
+	#SetLog "glog $configuration"
+	#$ErrorActionPreference = "Continue"
+	#Write-Host -NoNewline "configuring $configuration glog..."
+	#New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/glog/build/$configuration  2>&1 >> $Log
+	#cd $root/src-stage3/oot_code/glog/build/$configuration
+	#$env:_CL_ = " $arch "
+	#$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
+	#$env:_CL_ = $env:_CL_ + " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
+	#cmake ../../ `
+	#	-G "Visual Studio 14 2015 Win64" `
+	#	-DCMAKE_PREFIX_PATH="$root\build\$configuration" `
+	#	-DCMAKE_INSTALL_PREFIX="$root\build\$configuration" `
+	#	-DCMAKE_SYSTEM_LIBRARY_PATH="$root\build\$configuration\lib" `
+	#	-DCMAKE_C_FLAGS="/D_USE_MATH_DEFINES /D_TIMESPEC_DEFINED $arch $runtime  /DWIN32 /D_WINDOWS /W3 /I""$root/src-stage3/staged_install/$configuration"" " `
+	#	-Wno-dev 2>&1 >> $Log
+	#Write-Host -NoNewline "building glog..."
+	#msbuild .\google-glog.sln /m /p:"configuration=$buildconfig;platform=x64" 2>&1 >> $Log
+	#Write-Host -NoNewline "installing..."
+	#msbuild .\INSTALL.vcxproj /m /p:"configuration=$buildconfig;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
+	#$env:_CL_ = ""
+	#$env:_LINK_ = ""
+	#$ErrorActionPreference = "Stop"
+	#"complete"
 
 
 	# the below are OOT modules that I would like to include but for various reasons are not able to run in windows
 	# There is hope for all of them though and they are at vary levels of maturity.
 	# Some will configure, some will build/install.  But none are currently working 100% so we'll exclude them from the .msi
 	# but keep this code here so tinkerers have a place to start.
-	if ($false) 
+	if ($false)
 	{
 
 		# ____________________________________________________________________________________________________________
@@ -1417,7 +1530,7 @@ function BuildOOTModules
 		$ErrorActionPreference = "Continue"
 		Write-Host -NoNewline "configuring $configuration gr-gsm..."
 		New-Item -ItemType Directory -Force -Path $root/src-stage3/oot_code/gr-gsm/build/$configuration  2>&1 >> $Log
-		cd $root/src-stage3/oot_code/gr-gsm/build/$configuration 
+		cd $root/src-stage3/oot_code/gr-gsm/build/$configuration
 		$env:_CL_ = " $arch "
 		$env:_LINK_= " $root/src-stage3/staged_install/$configuration/lib/gnuradio-pmt.lib /DEBUG /NODEFAULTLIB:m.lib "
 		$env:_CL_ = " -D_USE_MATH_DEFINES -I""$root/src-stage3/staged_install/$configuration/include""  -I""$root/src-stage3/staged_install/$configuration/include/swig"" "
@@ -1456,7 +1569,7 @@ function BuildOOTModules
 
 
 
-	
+
 	    # ____________________________________________________________________________________________________________
 	    #
 	    # GNSS-SDR
@@ -1500,13 +1613,13 @@ function BuildOOTModules
 	#the swig libraries aren't properly named for the debug build, so do it here
 	if ($configuration -match "Debug") {
 		pushd $root/src-stage3/staged_install/$configuration
-		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig","_swig_d" } 
-		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig0","_swig0_d" } 
-		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig1","_swig1_d" } 
-		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig2","_swig2_d" } 
-		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig3","_swig3_d" } 
-		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig4","_swig4_d" } 
-		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig5","_swig5_d" } 
+		Get-ChildItem -Filter "*_swig.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig","_swig_d" }
+		Get-ChildItem -Filter "*_swig0.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig0","_swig0_d" }
+		Get-ChildItem -Filter "*_swig1.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig1","_swig1_d" }
+		Get-ChildItem -Filter "*_swig2.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig2","_swig2_d" }
+		Get-ChildItem -Filter "*_swig3.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig3","_swig3_d" }
+		Get-ChildItem -Filter "*_swig4.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig4","_swig4_d" }
+		Get-ChildItem -Filter "*_swig5.pyd" -Recurse | Move-Item -Force -Destination {$_.FullName -replace "_swig5","_swig5_d" }
 		popd
 	}
 }
@@ -1516,13 +1629,13 @@ if ($configmode -eq "1" -or $configmode -eq "all") {BuildDrivers "Release"; Buil
 if ($configmode -eq "2" -or $configmode -eq "all") {BuildDrivers "Release-AVX2"; BuildOOTModules "Release-AVX2"}
 if ($configmode -eq "3" -or $configmode -eq "all") {BuildDrivers "Debug"; BuildOOTModules "Debug"}
 
-cd $root/scripts 
+cd $root/scripts
 
 ""
 "COMPLETED STEP 8: Selected OOT modules have been built from source and installed on top of the GNURadio installation(s)"
 ""
 
-if ($false) 
+if ($false)
 {
 	# debug shortcuts below
 

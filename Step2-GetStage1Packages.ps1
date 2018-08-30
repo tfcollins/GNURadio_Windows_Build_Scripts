@@ -20,12 +20,15 @@ if (Test-Path $mypath\Setup.ps1) {
 cd $root/src-stage1-dependencies
 SetLog "GetPackages"
 
+# libiio
+GetPackage https://github.com/analogdevicesinc/libiio/releases/download/v0.15/libiio-0.15.g6ecff5d-Windows.zip
+
 # libzmq
 getPackage https://github.com/zeromq/libzmq.git
 getPackage https://github.com/zeromq/cppzmq.git
 
 # pyzmq
-getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip 
+getPackage https://github.com/zeromq/pyzmq/archive/v$pyzmq_version.zip
 
 # libpng
 getPackage ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-$png_version.tar.xz libpng
@@ -40,7 +43,7 @@ cp libiconv-1.14\* .\gettext-msvc\libiconv-1.14 -Force -Recurse
 del .\libiconv-1.14 -Force -Recurse
 del .\gettext-0.19.4 -Force -Recurse
 
-# libxml2 
+# libxml2
 GetPackage https://github.com/GNOME/libxml2.git
 
 if ($Config.BuildGTKFromSource) {
@@ -95,7 +98,7 @@ GetPatch portaudio_vs2015.7z portaudio/build/msvc
 # asio SDK for portaudio
 GetPatch asiosdk2.3.7z portaudio/src/hostapi/asio
 
-# cppunit 
+# cppunit
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/cppunit-$cppunit_version.7z
 
 # fftw
@@ -117,7 +120,7 @@ GetPackage https://pypi.python.org/packages/source/w/wheel/wheel-0.29.0.tar.gz
 GetPackage https://github.com/gnieboer/zlib.git zlib-1.2.8
 
 # libsodium
-GetPackage https://github.com/gnieboer/libsodium.git 
+GetPackage https://github.com/gnieboer/libsodium.git
 
 # GSL
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gsl-$gsl_version.7z
@@ -126,12 +129,12 @@ GetPatch gsl-$gsl_version.build.vc14.zip gsl-$gsl_version
 # openssl
 GetPackage ftp://ftp.openssl.org/source/old/1.0.2/openssl-$openssl_version.tar.gz openssl
 GetPatch openssl-vs14.zip openssl
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug -Force >> $Log 
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release -Force >> $Log 
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\DebugDLL -Force >> $Log 
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL -Force >> $Log 
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release-AVX2 -Force >> $Log 
-mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL-AVX2 -Force >> $Log 
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Debug -Force >> $Log
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release -Force >> $Log
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\DebugDLL -Force >> $Log
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL -Force >> $Log
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\Release-AVX2 -Force >> $Log
+mkdir $root\src-stage1-dependencies\openssl\build\intermediate\x64\ReleaseDLL-AVX2 -Force >> $Log
 
 # Qt
 GetPackage http://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz Qt4
@@ -164,13 +167,13 @@ GetPackage https://github.com/cython/cython/archive/$cython_version.zip
 # numpy
 GetPackage https://github.com/numpy/numpy/archive/v$numpy_version.tar.gz
 
-# scipy 
+# scipy
 GetPackage https://github.com/scipy/scipy/releases/download/v$scipy_version/scipy-$scipy_version.tar.xz scipy
 
-# pyopengl 
+# pyopengl
 GetPackage https://pypi.python.org/packages/source/P/PyOpenGL/PyOpenGL-$pyopengl_version.tar.gz
 
-# pyopengl-accelerate 
+# pyopengl-accelerate
 GetPackage https://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-accelerate-$pyopengl_version.tar.gz
 
 # pygobject
@@ -207,10 +210,10 @@ GetPatch libusb_VS2015.7z libusb
 GetPackage https://github.com/EttusResearch/uhd/archive/release_$UHD_Version.tar.gz uhd
 
 # libxslt
-GetPackage https://github.com/GNOME/libxslt/archive/v$libxslt_version.tar.gz libxslt 
+GetPackage https://github.com/GNOME/libxslt/archive/v$libxslt_version.tar.gz libxslt
 
 # lxml
-GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz 
+GetPackage https://github.com/lxml/lxml/archive/lxml-$lxml_version.tar.gz
 
 # pthreads
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/pthreads-w32-$pthreads_version-release.7z pthreads
@@ -218,7 +221,7 @@ GetPatch pthreads.2.7z pthreads/pthreads.2
 
 # openblas
 if (!$BuildNumpyWithMKL) {
-	GetPackage https://github.com/xianyi/OpenBLAS/archive/v$openBLAS_version.tar.gz 
+	GetPackage https://github.com/xianyi/OpenBLAS/archive/v$openBLAS_version.tar.gz
 	GetPatch openblas_patch.7z  openblas-$openblas_version
 }
 
@@ -253,7 +256,7 @@ GetPackage https://pypi.python.org/packages/0a/da/9f61d28a20c42b4963334efacfd257
 # Required by OpenLTE
 #
 GetPackage https://github.com/ARMmbed/mbedtls/archive/mbedtls-$mbedtls_version.tar.gz mbedtls
-	
+
 # get GNURadio 3.8+ dependencies
 $mm = GetMajorMinor($gnuradio_version)
 if ($mm -eq "3.8") {

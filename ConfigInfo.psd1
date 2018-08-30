@@ -3,7 +3,7 @@
 #
 @{
 	VersionInfo = @{
-		gnuradio = '3.7.11' 
+		gnuradio = '3.7.11'
 		volk = '1.3'
 		libpng = '1.6.29'
 		openssl = '1.0.2j'
@@ -33,8 +33,8 @@
 		pkgconfig = '1.1.0'
 		log4cpp = '1.1.1'
 		gqrx = '2.6.1'
-		libusb = '1.0.21'   
-		fftw = '3.3.6-pl2'      
+		libusb = '1.0.21'
+		fftw = '3.3.6-pl2'
 		matplotlib = '2.0.0'
 		PIL = '1.1.7'
 		bitarray = '0.8.1'
@@ -45,8 +45,9 @@
 		pygtk = '2.24.0'    # Changing to 2.25+ will require other code changes
 		pygtk_git = '2_24_0_WINDOWS'    # Changing to 2.25+ will require other code changes
 		qt = '4.8.7'        # This isn't actually used.  4.8.7 is hardcoded but 4.8.7 is the last 4.x version to the change to Qt5 will change much more
-		python = '2.7.10'   # This isn't actually used.  2.7.10 is hardcoded 
+		python = '2.7.10'   # This isn't actually used.  2.7.10 is hardcoded
 		dp = '1.3'        # dependency pack version
+		libiio = '0.15'        # dependency pack version
 		# TODO The following libraries are currently downloaded from current git snapshot.  This should be replaced by specific release tags
 		# PyQwt (5.2.1, abandoned, no releases marked)
 		# zlib (1.2.8 but should rarely change)

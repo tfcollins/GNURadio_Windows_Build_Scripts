@@ -7,6 +7,8 @@
 # script setup
 $ErrorActionPreference = "Stop"
 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 # setup helper functions
 if ($script:MyInvocation.MyCommand.Path -eq $null) {
     $mypath = "."
@@ -18,6 +20,15 @@ if (Test-Path $mypath\Setup.ps1) {
 } else {
 	. $root\scripts\Setup.ps1 -Force
 }
+
+# ____________________________________________________________________________________________________________
+#
+# gr-iio
+#
+
+GetPackage https://github.com/analogdevicesinc/gr-iio.git -Stage3 -branch attr-block
+#GetPatch airspy_vs2015.7z airspy/libairspy/vc -Stage3
+
 
 # ____________________________________________________________________________________________________________
 #
@@ -55,7 +66,7 @@ GetPackage git://git.osmocom.org/osmo-sdr -Stage3
 #
 # gr-iqbal
 #
-# upstream: https://github.com/osmocom/gr-iqbal.git 
+# upstream: https://github.com/osmocom/gr-iqbal.git
 GetPackage http://www.gcndevelopment.com/gnuradio/downloads/sources/gr-iqbal.7z -Stage3
 
 # ____________________________________________________________________________________________________________
@@ -93,7 +104,7 @@ GetPackage https://github.com/gnieboer/gr-air-modes.git -Stage3
 #
 # awaiting merge requests to go back to upstream repo instead of my fork
 #
-GetPackage https://github.com/gnieboer/gr-fosphor.git -Stage3 
+GetPackage https://github.com/gnieboer/gr-fosphor.git -Stage3
 GetPackage https://github.com/glfw/glfw.git -Stage3
 
 # ____________________________________________________________________________________________________________
@@ -106,14 +117,14 @@ GetPackage https://github.com/csete/gqrx/archive/v$gqrx_version.zip -Stage3
 #
 # Armadillo
 #
-GetPackage https://downloads.sourceforge.net/project/arma/armadillo-7.800.1.tar.xz -Stage3 
+GetPackage https://downloads.sourceforge.net/project/arma/armadillo-7.800.1.tar.xz -Stage3
 
 
 # ____________________________________________________________________________________________________________
 #
 # gflags
 #
-GetPackage https://github.com/gflags/gflags.git -Stage3 
+GetPackage https://github.com/gflags/gflags.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
@@ -125,7 +136,7 @@ GetPackage https://github.com/google/glog.git -Stage3
 #
 # GNUTLS (binaries!)
 #
-GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.5.8-w64.zip gnutls -Stage3 -AddFolderName 
+GetPackage ftp://ftp.gnutls.org/gcrypt/gnutls/w32/gnutls-3.5.8-w64.zip gnutls -Stage3 -AddFolderName
 
 # ____________________________________________________________________________________________________________
 #
@@ -143,7 +154,7 @@ GetPackage https://github.com/gnieboer/gr-specest.git -Stage3 -branch "msvc_fixe
 #
 # gr-cdma
 #
-GetPackage https://github.com/anastas/gr-cdma.git -Stage3 
+GetPackage https://github.com/anastas/gr-cdma.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
@@ -155,7 +166,7 @@ GetPackage https://github.com/bastibl/gr-rds.git -Stage3
 #
 # gr-ais
 #
-# Awaiting incorporation of pull request 
+# Awaiting incorporation of pull request
 #
 GetPackage https://github.com/gnieboer/gr-ais.git -Stage3 -branch "msvc-fixes"
 
@@ -175,7 +186,7 @@ GetPackage https://github.com/dl1ksv/gr-ax25.git -Stage3
 #
 # gr-radar
 #
-# Awaiting incorporation of pull request 
+# Awaiting incorporation of pull request
 #
 GetPackage https://github.com/gnieboer/gr-radar.git -Stage3 -branch "msvc_fixes"
 
@@ -183,13 +194,13 @@ GetPackage https://github.com/gnieboer/gr-radar.git -Stage3 -branch "msvc_fixes"
 #
 # gr-paint
 #
-GetPackage https://github.com/drmpeg/gr-paint.git -Stage3 
+GetPackage https://github.com/drmpeg/gr-paint.git -Stage3
 
 # ____________________________________________________________________________________________________________
 #
 # gr-mapper
 #
-# Awaiting incorporation of pull request 
+# Awaiting incorporation of pull request
 #
 GetPackage https://github.com/gnieboer/gr-mapper.git -Stage3 -branch "msvc_fixes"
 
@@ -197,7 +208,7 @@ GetPackage https://github.com/gnieboer/gr-mapper.git -Stage3 -branch "msvc_fixes
 #
 # gr-nacl
 #
-# Awaiting incorporation of pull request 
+# Awaiting incorporation of pull request
 #
 GetPackage https://github.com/gnieboer/gr-nacl.git -Stage3 -branch "msvc_fixes"
 
@@ -230,7 +241,7 @@ GetPackage https://downloads.sourceforge.net/project/openlte/openlte_v$openlte_v
 
 # The below are all packages that will not currently build but are 'in work' for inclusion at a later date
 # please feel free to give them a shot.
-if ($false) 
+if ($false)
 {
 
 	# ____________________________________________________________________________________________________________
@@ -259,14 +270,14 @@ SetLog "Retrieve GNURadio"
 Write-Host -NoNewline "cloning GNURadio..."
 if (!(Test-Path $root/src-stage3/src)) {
 		cd $root/src-stage3
-		mkdir src 2>&1 >> $log 
-	} 
+		mkdir src 2>&1 >> $log
+	}
 if (!(Test-Path $root/src-stage3/src/gnuradio)) {
 	cd $root/src-stage3/src
     $ErrorActionPreference = "Continue"
     # most packages we just get the most recent commit when coming from git
     # however, since this is the one most users might want to modify, we'll get more.
-	git clone --depth=150 --no-single-branch --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log 
+	git clone --depth=150 --no-single-branch --recursive https://github.com/gnuradio/gnuradio.git 2>&1 >> $log
 	git checkout maint
 	cd gnuradio
 	git pull --recurse-submodules=on
@@ -281,7 +292,7 @@ if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 	cd $root/src-stage3/src/gnuradio
     $count = 0
     do {
-        Try 
+        Try
 		{
 			wget https://github.com/gnieboer/volk/archive/v$volk_version.zip -OutFile volk.zip
             $count = 999
@@ -299,12 +310,12 @@ if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
     }
 	$destination = "$root/$destdir"
 	[io.compression.zipfile]::ExtractToDirectory("$root/src-stage3/src/gnuradio/volk.zip", "$root/src-stage3/src/gnuradio") >> $Log
-	Remove-Item volk -Force -Recurse 
+	Remove-Item volk -Force -Recurse
 	Rename-Item volk-$volk_version volk -Force
 	Remove-Item volk.zip -Force
 	if (!(Test-Path $root/src-stage3/src/gnuradio/volk/CMakeLists.txt)) {
 		Write-Host -BackgroundColor Black -ForegroundColor Red "FATAL ERROR: Volk was not downloaded properly, GNURadio cannot build"
-		Exit 
+		Exit
 	}
 }
 
@@ -312,7 +323,7 @@ $ErrorActionPreference = "Stop"
 
 "complete"
 
-cd $root/scripts 
+cd $root/scripts
 
 ""
 "COMPLETED STEP 6: GNURadio and OOT package source code has been downloaded"

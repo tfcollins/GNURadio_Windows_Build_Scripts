@@ -48,7 +48,7 @@
     </InstallExecuteSequence>
   </Fragment>
   -->
-  
+
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFiles64Folder">
@@ -121,6 +121,7 @@
           WorkingDirectory="BINARYFILES"/>
       </Component>
     </DirectoryRef>
+    <!--
     <DirectoryRef Id="ApplicationUHDSubFolder" >
       <Component Id="AppShortCutsUHD" Guid="2AE587EF-EDCB-4B51-984D-7FBFCAD8D7D8">
         <CreateFolder />
@@ -161,6 +162,7 @@
                   Directory="ApplicationOtherSubFolder"/>
       </Component>
     </DirectoryRef>
+    -->
   </Fragment>
 
   <Fragment>
