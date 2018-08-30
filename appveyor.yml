@@ -13,7 +13,8 @@ install:
     - appveyor-retry nuget install Doxygen -Version 1.8.14
 
 build_script:
-    - cd c:\projects\gnuradio-windows-build-scripts
     - dir
+    - cd c:\projects\gnuradio-windows-build-scripts
+    - set PATH=%PATH%;C:\Doxygen
     # - ps: Set-ExecutionPolicy Unrestricted
     - ps: .\RUNME_AUTO.ps1

@@ -115,7 +115,8 @@ function BuildGNURadio {
 	# NOW we build gnuradio finally
 	Write-Host -NoNewline "Build GNURadio $configuration..."
 	Write-Host -NoNewline "building..."
-	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log
+#	msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64" 2>&1 >> $Log
+  msbuild .\gnuradio.sln /m /p:"configuration=$buildtype;platform=x64"
 	Write-Host -NoNewline "staging install..."
 	msbuild INSTALL.vcxproj  /m  /p:"configuration=$buildtype;platform=x64;BuildProjectReferences=false" 2>&1 >> $Log
 
@@ -140,7 +141,7 @@ function BuildGNURadio {
 	}
 	Copy-Item -Force -Path $root\src-stage3\src\run_GRC.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	#Copy-Item -Force -Path $root\src-stage3\src\run_gqrx.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
-	#Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
+	Copy-Item -Force -Path $root\src-stage3\src\gr_filter_design.bat $root/src-stage3/staged_install/$configuration/bin  2>&1 >> $Log
 	Copy-Item -Force -Recurse -Path $root\src-stage3\icons $root/src-stage3/staged_install/$configuration/share  2>&1 >> $Log
 
 	# the swig libraries aren't properly named for the debug build, so do it here
