@@ -8,7 +8,7 @@ function getPackage
 	Param(
 		[Parameter(Mandatory=$True,Position=1)]
 		[string]$toGet,
-
+	
 		[Parameter(Mandatory=$False, Position=2)]
 		[string]$newname = "",
 
@@ -28,7 +28,7 @@ function getPackage
 	Write-Host -NoNewline "$archiveName..."
 	if ($isTar -eq ".tar") {
 		$archiveExt = $isTar + $archiveExt
-		$archiveName = [io.path]::GetFileNameWithoutExtension($archiveName)
+		$archiveName = [io.path]::GetFileNameWithoutExtension($archiveName)  
 	}
 	if ($archiveExt -eq ".git" -or $toGet.StartsWith("git://")) {
 		# the source is a git repo, so make a shallow clone
@@ -37,15 +37,15 @@ function getPackage
 			(($newname -ne "") -and (Test-Path $root\$destdir\$newname))) {
 			"previously shallowed cloned"
 		} else {
-			cd $root\$destdir
+			cd $root\$destdir	
 			if (Test-Path $root\$destdir\$archiveName) {
 				Remove-Item  $root\$destdir\$archiveName -Force -Recurse
 			}
 			$ErrorActionPreference = "Continue"
 			if ($branch -eq "") {
-				git clone --recursive --depth=1 $toGet  2>&1 >> $Log
+				git clone --recursive --depth=1 $toGet  2>&1 >> $Log 
 			} else {
-				git clone --recursive --depth=1 $toGet --branch $branch  2>&1 >> $Log
+				git clone --recursive --depth=1 $toGet --branch $branch  2>&1 >> $Log 
 			}
 			$ErrorActionPreference = "Stop"
 			if ($LastErrorCode -eq 1) {
@@ -74,7 +74,7 @@ function getPackage
 			# user-agent is for sourceforge downloads
             $count = 0
             do {
-                Try
+                Try 
 			    {
 				    wget $toGet -OutFile "$archiveName$archiveExt" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox
                     $count = 999
@@ -146,63 +146,63 @@ function getPatch
 	Param(
 		[Parameter(Mandatory=$True,Position=1)]
 		[string]$toGet,
-
+	
 		[Parameter(Mandatory=$True, Position=2)]
 		[string]$whereToPlace = "",
 
 		[Parameter(Mandatory=$False)]
 		[switch]$Stage3,
-
+		
 		[Parameter(Mandatory=$False)]
-		[switch]$gnuradio
+		[switch]$gnuradio 
 	)
-	if ($Stage3) {$IntDir = "src-stage3/oot_code"}
+	if ($Stage3) {$IntDir = "src-stage3/oot_code"} 
 	elseif ($gnuradio) {$IntDir = "src-stage3/src"}
 	else {$IntDir = "src-stage1-dependencies"}
 	$archiveName = [io.path]::GetFileNameWithoutExtension($toGet)
 	$archiveExt = [io.path]::GetExtension($toGet)
 	$isTar = [io.path]::GetExtension($archiveName)
-
+	
 	Write-Host -NoNewline "patch $archiveName..."
 
 	if ($isTar -eq ".tar") {
 		$archiveExt = $isTar + $archiveExt
-		$archiveName = [io.path]::GetFileNameWithoutExtension($archiveName)
+		$archiveName = [io.path]::GetFileNameWithoutExtension($archiveName)  
 	}
-	$url = "http://www.gcndevelopment.com/gnuradio/downloads/sources/" + $toGet
+	$url = "http://www.gcndevelopment.com/gnuradio/downloads/sources/" + $toGet 
 	if (!(Test-Path $root/packages/patches)) {
 		mkdir $root/packages/patches
 	}
 	cd $root/packages/patches
 	if (!(Test-Path $root/packages/patches/$toGet)) {
 		Write-Host -NoNewline "retrieving..."
-		wget $url -OutFile $toGet >> $Log
+		wget $url -OutFile $toGet >> $Log 
 		Write-Host -NoNewline "retrieved..."
 	} else {
 		Write-Host -NoNewline "previously retrieved..."
 	}
-
+	
 	$archive = "$root/packages/patches/$toGet"
 	$destination = "$root/$IntDir/$whereToPlace"
 	if ($archiveExt -eq ".7z" -or $archiveExt -eq ".zip") {
 		New-Item -path $destination -type directory -force >> $Log
-		cd $destination
+		cd $destination 
 		sz x -y $archive 2>&1 >> $Log
 	} elseif ($archiveExt -eq ".tar.gz") {
 		New-Item -path $destination -type directory -force >> $Log
-		cd $destination
+		cd $destination 
 		tar zxf $archive 2>&1 >> $Log
 	} elseif ($archiveExt -eq ".tar.xz") {
 		New-Item -path $destination -type directory -force >> $Log
-		cd $destination
+		cd $destination 
 		sz x -y $archive 2>&1 >> $Log
 		sz x -aoa -ttar "$archiveName.tar" 2>&1 >> $Log
 		del "$archiveName.tar"
 	} elseif ($archiveExt -eq ".diff") {
 		New-Item -path $destination -type directory -force >> $Log
-		cd $destination
-		Copy-Item $archive $destination -Force >> $Log
-		git apply --verbose --whitespace=fix $toGet >> $Log
+		cd $destination 
+		Copy-Item $archive $destination -Force >> $Log 
+		git apply --verbose --whitespace=fix $toGet >> $Log 
 	} else {
 		throw "Unknown file extension on $archiveName$archiveExt"
 	}
@@ -230,11 +230,11 @@ function SetLog ($name)
 	if ($Global:LogNumber -eq $null) {$Global:LogNumber = 1}
 	$LogNumStr = $Global:LogNumber.ToString("00")
 	$Global:Log = "$root\logs\$LogNumStr-$name.txt"
-	"" > $Log
+	"" > $Log 
 	$Global:LogNumber ++
 }
 
-function ResetLog
+function ResetLog 
 {
 	$Global:LogNumber = 1
 	del $root/logs/*.*
@@ -255,10 +255,10 @@ function TryValidate
 	foreach ($i in $args)
 	{
 		if (!(Test-Path $i)) {
-			$retval = $false
+			$retval = $false 
 		}
 	}
-	return $retval
+	return $retval 
 }
 
 function Validate
@@ -283,9 +283,9 @@ function CheckNoAVX
 	if ($thisroot.Length.Equals(0)) {
 		$thisroot=$PWD
 	}
-	cd $thisroot
+	cd $thisroot 
 	$avxfound = $false
-	$dirs = $thisroot
+	$dirs = $thisroot 
 	$Include=@("*.lib","*.pyd","*.dll", "*.exe")
 
 	$libs = $dirs | Get-ChildItem -Recurse -File -Include "$Include"
@@ -293,7 +293,7 @@ function CheckNoAVX
 		$result = & dumpbin $lib.FullName /DISASM:nobytes /NOLOGO | select-string -pattern "ymm[0-9]"
 		if ($result.length -gt 0) {
 			if ($AVX_Whitelist -notcontains $lib.Name ) {
-				Write-Host -BackgroundColor Black -ForegroundColor Red $lib.FullName + ": AVX FOUND <-----------------------------"
+				Write-Host -BackgroundColor Black -ForegroundColor Red $lib.FullName + ": AVX FOUND <-----------------------------" 
 				$avxfound = $true
 			}
 		}
@@ -303,7 +303,7 @@ function CheckNoAVX
 
 #load configuration variables
 $mypath =  Split-Path $script:MyInvocation.MyCommand.Path
-$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1
+$Config = Import-LocalizedData -BaseDirectory $mypath -FileName ConfigInfo.psd1 
 $gnuradio_version = $Config.VersionInfo.gnuradio
 $png_version = $Config.VersionInfo.libpng
 $sdl_version = $Config.VersionInfo.SDL
@@ -319,26 +319,26 @@ $scipy_version = $Config.VersionInfo.scipy
 $pyopengl_version = $Config.VersionInfo.pyopengl
 $fftw_version = $Config.VersionInfo.fftw
 $libusb_version = $Config.VersionInfo.libusb
-$cheetah_version = $Config.VersionInfo.cheetah
+$cheetah_version = $Config.VersionInfo.cheetah 
 $wxpython_version = $Config.VersionInfo.wxpython
 $py2cairo_version = $Config.VersionInfo.py2cairo
-$pygobject_version = $Config.VersionInfo.pygobject
+$pygobject_version = $Config.VersionInfo.pygobject 
 $pygtk_version = $Config.VersionInfo.pygtk
 $pygtk_gitversion = $Config.VersionInfo.pygtk_git
 $gsl_version = $Config.VersionInfo.gsl
-$boost_version = $Config.VersionInfo.boost
-$boost_version_ = $Config.VersionInfo.boost_
+$boost_version = $Config.VersionInfo.boost 
+$boost_version_ = $Config.VersionInfo.boost_ 
 $pthreads_version = $Config.VersionInfo.pthreads
 $lapack_version = $Config.VersionInfo.lapack
-$openBLAS_version = $Config.VersionInfo.OpenBLAS
+$openBLAS_version = $Config.VersionInfo.OpenBLAS 
 $UHD_version = $Config.VersionInfo.UHD
 $pyzmq_version = $Config.VersionInfo.pyzmq
 $lxml_version = $Config.VersionInfo.lxml
-$pkgconfig_version = $Config.VersionInfo.pkgconfig
+$pkgconfig_version = $Config.VersionInfo.pkgconfig 
 $dp_version = $Config.VersionInfo.dp
 $log4cpp_version = $Config.VersionInfo.log4cpp
 $gqrx_version = $Config.VersionInfo.gqrx
-$volk_version = $Config.VersionInfo.volk
+$volk_version = $Config.VersionInfo.volk 
 $libxslt_version = $Config.VersionInfo.libxslt
 $matplotlib_version = $Config.VersionInfo.matplotlib
 $PIL_version = $Config.VersionInfo.PIL
@@ -347,7 +347,7 @@ $mbedtls_version = $Config.VersionInfo.mbedtls
 $openlte_version = $Config.VersionInfo.openlte
 
 # The below libraries will have AVX code detected, even for non-AVX builds
-# these libraries all have guards to ensure the feature is supported
+# these libraries all have guards to ensure the feature is supported 
 # whether in the code itself or because the intel fortran compiler added them
 # or it's a known false alarm
 $AVX_Whitelist = @(
@@ -364,9 +364,9 @@ $AVX_Whitelist = @(
 	"ssleay32.lib",                 # openssl built with guards
 	"_hashlib.pyd",                 # includes openssl
 	"_ssl.pyd",                     # includes openssl
-	"_hashlib_d.pyd",               # includes openssl
+	"_hashlib_d.pyd",               # includes openssl 
 	"_ssl_d.pyd",                   # includes openssl
-
+	
 	"_vq.pyd",                      # scipy begin
 	"lsoda.pyd",
 	"vode.pyd",
@@ -396,31 +396,31 @@ $AVX_Whitelist = @(
 if (!$Global:root) {$Global:root = Split-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path)}
 
 # ensure on a 64-bit machine
-if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"}
+if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") {throw "It appears you are using 32-bit windows.  This build requires 64-bit windows"} 
 $myprog = "${Env:ProgramFiles(x86)}"
 
 # Check for binary dependencies
 
 # check for git/tar
-if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed.  Aborting script"}
-set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"
+if (-not (test-path "$env:ProgramFiles\Git\usr\bin\tar.exe")) {throw "Git For Windows must be installed.  Aborting script"} 
+set-alias tar "$env:ProgramFiles\Git\usr\bin\tar.exe"  
 
 # CMake (to build gnuradio)
-if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed.  Aborting script"}
+if (-not (test-path "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe")) {throw "CMake must be installed.  Aborting script"} 
 Set-Alias cmake "${env:ProgramFiles(x86)}\Cmake\bin\cmake.exe"
-
+	
 # ActivePerl (to build OpenSSL)
-if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed.  Aborting script"}
-
+if ((Get-Command "perl.exe" -ErrorAction SilentlyContinue) -eq $null)  {throw "ActiveState Perl must be installed.  Aborting script"} 
+	
 # MSVC 2015
-if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed.  Aborting script"}
+if (-not (test-path "${env:ProgramFiles(x86)}\Microsoft Visual Studio 14.0\VC")) {throw "Visual Studio 2015 must be installed.  Aborting script"} 
 
 # WIX
 if (-not (test-path $env:WIX)) {throw "WIX toolset must be installed.  Aborting script"}
 
 # doxygen
-if (-not (test-path "C:\doxygen")) {throw "Doxygen must be installed.  Aborting script"} 
-
+if (-not (test-path "$env:ProgramFiles\doxygen")) {throw "Doxygen must be installed.  Aborting script"} 
+	
 # set VS 2015 environment
 if (!(Test-Path variable:global:oldpath))
 {
@@ -433,14 +433,14 @@ if (!(Test-Path variable:global:oldpath))
 	}
 	popd
 	write-host "Visual Studio 2015 Command Prompt variables set." -ForegroundColor Yellow
-	# set Intel Fortran environment (if exists)... will detect 2016/2017 compilers only
+	# set Intel Fortran environment (if exists)... will detect 2016/2017 compilers only 
 	if (Test-Path env:IFORT_COMPILER17) {
-		& $env:IFORT_COMPILER17\bin\ifortvars.bat -arch intel64 -platform vs2015
+		& $env:IFORT_COMPILER17\bin\ifortvars.bat -arch intel64 -platform vs2015 
 		$Global:MY_IFORT = $env:IFORT_COMPILER17
 		$Global:hasIFORT = $true
 	} else {
 		if (Test-Path env:IFORT_COMPILER16) {
-			& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015
+			& $env:IFORT_COMPILER16\bin\ifortvars.bat -arch intel64 -platform vs2015 
 			$Global:MY_IFORT = $env:IFORT_COMPILER16
 			$Global:hasIFORT = $true
 		} else {
@@ -460,5 +460,9 @@ if (!(Test-Path variable:global:oldlibrary)) {Set-Variable -Name oldlibrary -Val
 Add-Type -assembly "system.io.compression.filesystem"
 
 # set initial state
-set-alias sz "$root\bin\7za.exe"
+set-alias sz "$root\bin\7za.exe"  
 cd $root
+
+
+
+
