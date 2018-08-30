@@ -1,0 +1,17 @@
+clone_depth: 1
+
+install:
+    - cd c:\
+
+    # Install Boost libraries
+    - appveyor-retry nuget install boost_atomic-vc120 -Version 1.61.0
+    - appveyor-retry nuget install boost_system-vc120 -Version 1.61.0
+    - appveyor-retry nuget install boost_filesystem-vc120 -Version 1.61.0
+    - appveyor-retry nuget install boost_chrono-vc120 -Version 1.61.0
+    - appveyor-retry nuget install boost_date_time-vc120 -Version 1.61.0
+    - appveyor-retry nuget install boost_thread-vc120 -Version 1.61.0
+
+build_script:
+    - cd c:\projects\GNURadio_Windows_Build_Scripts
+    - ps: Set-ExecutionPolicy Unrestricted
+    - ps: .\RUNME_AUTO.ps1
