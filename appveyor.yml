@@ -14,5 +14,6 @@ install:
 
 build_script:
     - cd c:\projects\gnuradio-windows-build-scripts
+    - dir
     # - ps: Set-ExecutionPolicy Unrestricted
     - ps: .\RUNME_AUTO.ps1
