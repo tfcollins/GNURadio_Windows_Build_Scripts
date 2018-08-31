@@ -314,6 +314,7 @@ function BuildDrivers
 
   #>
 
+<#
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-iqbal
@@ -358,7 +359,7 @@ function BuildDrivers
 	CheckNoAVX "$root\src-stage3\oot_code\gr-iqbal\build\$configuration\lib\$buildconfig"
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
-
+#>
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-osmosdr
@@ -1251,6 +1252,7 @@ function BuildOOTModules
 	$env:_LINK_ = ""
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-nacl.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\nacl\_nacl_swig.pyd"
 
+<#
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-eventstream
@@ -1395,12 +1397,12 @@ function BuildOOTModules
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-lte.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\lte\_lte_swig.pyd"
-
+#>
 	# ___________________________________STILL IN WORK____________________________________________________________
 	# ____________________________________________________________________________________________________________
 	# ____________________________________________________________________________________________________________
 
-
+<#
 	#
 	# gflags
 	#
@@ -1429,6 +1431,7 @@ function BuildOOTModules
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 	"complete"
+#>
 
 	# ____________________________________________________________________________________________________________
 	#
