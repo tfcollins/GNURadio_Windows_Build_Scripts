@@ -20,5 +20,5 @@ build_script:
     - ps: .\RUNME_AUTO.ps1
     # Push it!
     - cd c:\grb
-    - cp C:\grb\src-stage4-installer\dist\Release\*.msi gnuradio_3_7_11_iiosupport.msi
+    - ps: cp C:\grb\src-stage4-installer\dist\Release\*.msi gnuradio_3_7_11_iiosupport.msi
     - appveyor PushArtifact c:\grb\gnuradio_3_7_11_iiosupport.msi
