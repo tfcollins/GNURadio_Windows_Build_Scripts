@@ -146,6 +146,7 @@ function BuildDrivers
 	$env:_LINK_ = ""
 	$ErrorActionPreference = "Stop"
 
+<#
 	# ____________________________________________________________________________________________________________
 	#
 	# airspy
@@ -166,7 +167,7 @@ function BuildDrivers
 	Copy-Item -Force -Path "$root/src-stage3/oot_code/airspy/libairspy/src/airspy_commands.h" "$root/src-stage3/staged_install/$configuration/include/libairspy" 2>&1 >> $Log
 	Validate "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration/airspy.dll"
 	CheckNoAVX "$root/src-stage3/oot_code/airspy/libairspy/x64/$configuration"
-
+#>
 	# ____________________________________________________________________________________________________________
 	#
 	# bladeRF
@@ -525,6 +526,7 @@ function BuildOOTModules
 	$ErrorActionPreference = "Stop"
 	Validate "$root/src-stage3/staged_install/$configuration/Lib/site-packages/adsb/decoder.py"
 
+<#
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-air-modes
@@ -791,6 +793,7 @@ function BuildOOTModules
 	} else {
 		Write-Host "skipping $configuration gr-specest, no fortran compiler available"
 	}
+#>
 
 	# ____________________________________________________________________________________________________________
 	#
@@ -1062,6 +1065,7 @@ function BuildOOTModules
 	$env:_LINK_ = ""
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-afsk.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\afsk\_afsk_swig.pyd"
 
+<#
 	# ____________________________________________________________________________________________________________
 	#
 	# gr-radar
@@ -1113,6 +1117,7 @@ function BuildOOTModules
 	$env:_CL_ = ""
 	$env:_LINK_ = ""
 	Validate "$root/src-stage3/staged_install/$configuration/bin/gnuradio-radar.dll" "$root\src-stage3\staged_install\$configuration\lib\site-packages\radar\_radar_swig.pyd"
+#>
 
 	# ____________________________________________________________________________________________________________
 	#
