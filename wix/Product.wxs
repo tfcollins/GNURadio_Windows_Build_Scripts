@@ -12,12 +12,12 @@
     <Feature Id="ProductFeature" Title="GNURadio-3.7" Level="1">
       <ComponentGroupRef Id="GRGroup"/>
       <ComponentRef Id="AppShortCuts"/>
-      <ComponentRef Id="ApplicationUHDSubDir"/>
-      <ComponentRef Id="ApplicationOtherSubDir"/>
+      <!-- <ComponentRef Id="ApplicationUHDSubDir"/> -->
+      <!-- <ComponentRef Id="ApplicationOtherSubDir"/> -->
       <ComponentRef Id="MODTOOLCONF"/>
       <ComponentRef Id="CONFIGCONF"/>
-      <ComponentRef Id="AppShortCutsUHD"/>
-      <ComponentRef Id="AppShortCutsOther"/>
+      <!-- <ComponentRef Id="AppShortCutsUHD"/> -->
+      <!-- <ComponentRef Id="AppShortCutsOther"/> -->
     </Feature>
     <Feature Id="VCRedist" Title="Visual C++ 14.0 Runtime" AllowAdvertise="no" Display="hidden" Level="1">
       <MergeRef Id="VCRedist"/>
@@ -74,7 +74,7 @@
       </Directory>
       <Directory Id="ProgramMenuFolder">
         <Directory Id="ApplicationProgramsFolder" Name="GNURadio 3.7">
-          <Directory Id="ApplicationUHDSubFolder" Name="USRP Applications">
+          <!-- <Directory Id="ApplicationUHDSubFolder" Name="USRP Applications">
             <Component Id="ApplicationUHDSubDir" Guid="F20EF51E-E33F-4A07-9ACC-992B7277B235">
               <RemoveFolder Id="ApplicationUHDSubDir" On="uninstall"/>
               <RegistryValue Root="HKCU" Key="Software\GNU Radio"
@@ -87,7 +87,7 @@
               <RegistryValue Root="HKCU" Key="Software\GNU Radio"
                              Type="integer" Value="1" Name="installed" KeyPath="yes" />
             </Component>
-          </Directory>
+          </Directory> -->
         </Directory>
       </Directory>
     </Directory>
@@ -100,12 +100,12 @@
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
         <RegistryValue Root="HKCU" Key="Software\GNU Radio"
                        Type="integer" Value="1" Name="installed" KeyPath="yes" />
-				<Shortcut Id="ApplicationStartMenuShortcutgqrx"
+				<!-- <Shortcut Id="ApplicationStartMenuShortcutgqrx"
           Name="gqrx"
           Description="Run the gqrx radio receiver"
           Target="[BINARYFILES]run_gqrx.bat"
           Icon="gqrx.ico"
-          WorkingDirectory="BINARYFILES"/>
+          WorkingDirectory="BINARYFILES"/> -->
 				<Shortcut Id="ApplicationStartMenuShortcutCommandPrompt"
           Name="GNURadio Command Prompt"
           Description="Runs a command prompt configured for GNURadio scripts"
